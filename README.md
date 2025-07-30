@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/0x4m4-hexstrike-ai-badge.png)](https://mseep.ai/app/0x4m4-hexstrike-ai)
+
 <div align="center">
 
 <img src="assets/hexstrike-logo.png" alt="HexStrike AI Logo" width="220" style="margin-bottom: 20px;"/>
