@@ -15062,7 +15062,10 @@ def get_alternative_tools():
 # Create the banner after all classes are defined
 BANNER = ModernVisualEngine.create_banner()
 
-if __name__ == "__main__":
+def main():
+    """Main entry point for the HexStrike AI API Server."""
+    global DEBUG_MODE, API_PORT
+    
     # Display the beautiful new banner
     print(BANNER)
     
@@ -15096,3 +15099,7 @@ if __name__ == "__main__":
             logger.info(line)
     
     app.run(host="0.0.0.0", port=API_PORT, debug=DEBUG_MODE)
+
+
+if __name__ == "__main__":
+    main()
