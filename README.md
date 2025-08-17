@@ -148,7 +148,7 @@ graph TD
 
 ```bash
 OS: Kali Linux 2024.1+ / Ubuntu 22.04+ / Debian 12+
-Python: 3.9+ with pip (3.11+ recommended)
+Python: 3.9+ (3.11+ recommended)
 RAM: 8GB+ (16GB recommended)
 Storage: 50GB+ free space
 CPU: 4+ cores (8+ cores recommended)
@@ -156,7 +156,34 @@ Network: High-speed internet
 GPU: Optional (for hashcat acceleration)
 ```
 
-### Quick Setup
+### Quick Setup with UV (Recommended)
+
+**Install UV (Fast Python Package Manager):**
+```bash
+# Install UV (if not already installed)
+curl -LsSf https://astral.sh/uv/install.sh | sh
+# OR using pip
+pip install uv
+```
+
+**Setup HexStrike AI:**
+```bash
+# 1. Clone the repository
+git clone https://github.com/0x4m4/hexstrike-ai.git
+cd hexstrike-ai
+
+# 2. Install dependencies with UV (creates virtual environment automatically)
+uv sync
+
+# 3. Install development dependencies (optional)
+uv sync --extra dev
+
+# 4. Verify installation
+uv run hexstrike-server --help
+uv run hexstrike-mcp --help
+```
+
+### Alternative Setup (Traditional)
 
 ```bash
 # 1. Clone the repository
@@ -169,10 +196,10 @@ source hexstrike-env/bin/activate  # Linux/Mac
 # hexstrike-env\Scripts\activate   # Windows
 
 # 3. Install Python dependencies
-pip3 install -r requirements.txt
+pip3 install -e .
 
-# 4. Install Browser Agent dependencies
-pip3 install selenium beautifulsoup4 mitmproxy webdriver-manager
+# 4. Install development dependencies (optional)
+pip3 install -e ".[dev]"
 ```
 
 ### Install Security Tools
@@ -214,15 +241,34 @@ sudo apt update && sudo apt install google-chrome-stable
 
 ### Start the Server
 
+**Using UV (Recommended):**
 ```bash
-# Start the MCP server
+# Start the HexStrike server
+uv run hexstrike-server
+
+# Start with debug mode
+uv run hexstrike-server --debug
+
+# Start with custom port
+uv run hexstrike-server --port 8888
+
+# Start the MCP server (for AI agent integration)
+uv run hexstrike-mcp --server http://localhost:8888
+```
+
+**Using Traditional Python:**
+```bash
+# Start the HexStrike server
 python3 hexstrike_server.py
 
-# Optional: Start with debug mode
+# Start with debug mode
 python3 hexstrike_server.py --debug
 
-# Optional: Custom port configuration
+# Start with custom port
 python3 hexstrike_server.py --port 8888
+
+# Start the MCP server
+python3 hexstrike_mcp.py --server http://localhost:8888
 ```
 
 ### Verify Installation
@@ -235,6 +281,9 @@ curl http://localhost:8888/health
 curl -X POST http://localhost:8888/api/intelligence/analyze-target \
   -H "Content-Type: application/json" \
   -d '{"target": "example.com", "analysis_type": "comprehensive"}'
+
+# Test MCP server connection
+curl http://localhost:8888/mcp/health
 ```
 
 ---
