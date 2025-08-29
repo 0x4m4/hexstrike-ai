@@ -1,0 +1,28 @@
+# Memory Forensics - Using Volatility Framework
+from volatility3.framework import interfaces, contexts
+from volatility3.framework import plugins
+from volatility3.cli import main
+
+def analyze_memory_dump(memory_image_path):
+    # Example: analyze running processes in a memory dump
+    main.main(["-f", memory_image_path, "windows.pslist"])
+    # Add further automated analysis as needed
+
+# AI-powered decision support
+import openai
+
+openai.api_key = "YOUR_OPENAI_API_KEY"
+
+def ai_forensic_summary(input_text):
+    response = openai.ChatCompletion.create(
+        model="gpt-4o",
+        messages=[{"role": "system", "content": "You are a cyberforensics expert."}, {"role": "user", "content": input_text}]
+    )
+    return response.choices.message['content']
+
+# Example workflow
+memory_image = "/path/to/memory.dmp"
+analyze_memory_dump(memory_image)
+
+forensic_findings = "Suspicious DLLs found in process 1234."
+print(ai_forensic_summary(forensic_findings))
