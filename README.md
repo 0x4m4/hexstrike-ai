@@ -127,6 +127,14 @@ pip3 install -r requirements.txt
 
 ```
 
+### Nix flake installation
+
+For Nix users, the flake can be used to run hexstrike-ai with many of its dependencies:
+
+```
+nix --extra-experimental-features "flakes nix-command" run "github:0x4m4/hexstrike-ai"
+```
+
 ### Installation and Setting Up Guide for various AI Clients:
 
 #### Installation & Demo Video
