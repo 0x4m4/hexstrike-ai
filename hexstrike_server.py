@@ -1009,55 +1009,36 @@ class IntelligentDecisionEngine:
         if hasattr(self, '_use_advanced_optimizer') and self._use_advanced_optimizer:
             return parameter_optimizer.optimize_parameters_advanced(tool, profile, context)
 
-        # Fallback to legacy optimization for compatibility
-        optimized_params = {}
+        # Mapping of tool names to corresponding optimization methods
+        tool_optimizers = {
+            "nmap": self._optimize_nmap_params,
+            "gobuster": self._optimize_gobuster_params,
+            "nuclei": self._optimize_nuclei_params,
+            "sqlmap": self._optimize_sqlmap_params,
+            "ffuf": self._optimize_ffuf_params,
+            "hydra": self._optimize_hydra_params,
+            "rustscan": self._optimize_rustscan_params,
+            "masscan": self._optimize_masscan_params,
+            "nmap-advanced": self._optimize_nmap_advanced_params,
+            "enum4linux-ng": self._optimize_enum4linux_ng_params,
+            "autorecon": self._optimize_autorecon_params,
+            "ghidra": self._optimize_ghidra_params,
+            "pwntools": self._optimize_pwntools_params,
+            "ropper": self._optimize_ropper_params,
+            "angr": self._optimize_angr_params,
+            "prowler": self._optimize_prowler_params,
+            "scout-suite": self._optimize_scout_suite_params,
+            "kube-hunter": self._optimize_kube_hunter_params,
+            "trivy": self._optimize_trivy_params,
+            "checkov": self._optimize_checkov_params
+        }
 
-        # Tool-specific parameter optimization
-        if tool == "nmap":
-            optimized_params = self._optimize_nmap_params(profile, context)
-        elif tool == "gobuster":
-            optimized_params = self._optimize_gobuster_params(profile, context)
-        elif tool == "nuclei":
-            optimized_params = self._optimize_nuclei_params(profile, context)
-        elif tool == "sqlmap":
-            optimized_params = self._optimize_sqlmap_params(profile, context)
-        elif tool == "ffuf":
-            optimized_params = self._optimize_ffuf_params(profile, context)
-        elif tool == "hydra":
-            optimized_params = self._optimize_hydra_params(profile, context)
-        elif tool == "rustscan":
-            optimized_params = self._optimize_rustscan_params(profile, context)
-        elif tool == "masscan":
-            optimized_params = self._optimize_masscan_params(profile, context)
-        elif tool == "nmap-advanced":
-            optimized_params = self._optimize_nmap_advanced_params(profile, context)
-        elif tool == "enum4linux-ng":
-            optimized_params = self._optimize_enum4linux_ng_params(profile, context)
-        elif tool == "autorecon":
-            optimized_params = self._optimize_autorecon_params(profile, context)
-        elif tool == "ghidra":
-            optimized_params = self._optimize_ghidra_params(profile, context)
-        elif tool == "pwntools":
-            optimized_params = self._optimize_pwntools_params(profile, context)
-        elif tool == "ropper":
-            optimized_params = self._optimize_ropper_params(profile, context)
-        elif tool == "angr":
-            optimized_params = self._optimize_angr_params(profile, context)
-        elif tool == "prowler":
-            optimized_params = self._optimize_prowler_params(profile, context)
-        elif tool == "scout-suite":
-            optimized_params = self._optimize_scout_suite_params(profile, context)
-        elif tool == "kube-hunter":
-            optimized_params = self._optimize_kube_hunter_params(profile, context)
-        elif tool == "trivy":
-            optimized_params = self._optimize_trivy_params(profile, context)
-        elif tool == "checkov":
-            optimized_params = self._optimize_checkov_params(profile, context)
+        optimizer_func = tool_optimizers.get(tool)
+        if optimizer_func is not None:
+            return optimizer_func(profile, context)
         else:
             # Use advanced optimizer for unknown tools
             return parameter_optimizer.optimize_parameters_advanced(tool, profile, context)
-
-        return optimized_params
 
     def enable_advanced_optimization(self):
         """Enable advanced parameter optimization"""
@@ -7285,9 +7266,7 @@ def generic_command():
     except Exception as e:
         logger.error(f"💥 Error in command endpoint: {str(e)}")
         logger.error(traceback.format_exc())
-        return jsonify({
-            "error": f"Server error: {str(e)}"
-        }), 500
+        return jsonify({"error": f"Server error: {str(e)}"}), 500
 
 # File Operations API Endpoints
 
@@ -8501,9 +8480,7 @@ def nmap():
 
     except Exception as e:
         logger.error(f"💥 Error in nmap endpoint: {str(e)}")
-        return jsonify({
-            "error": f"Server error: {str(e)}"
-        }), 500
+        return jsonify({"error": f"Server error: {str(e)}"}), 500
 
 @app.route("/api/tools/gobuster", methods=["POST"])
 def gobuster():
@@ -8553,9 +8530,7 @@ def gobuster():
 
     except Exception as e:
         logger.error(f"💥 Error in gobuster endpoint: {str(e)}")
-        return jsonify({
-            "error": f"Server error: {str(e)}"
-        }), 500
+        return jsonify({"error": f"Server error: {str(e)}"}), 500
 
 @app.route("/api/tools/nuclei", methods=["POST"])
 def nuclei():
@@ -8609,9 +8584,7 @@ def nuclei():
 
     except Exception as e:
         logger.error(f"💥 Error in nuclei endpoint: {str(e)}")
-        return jsonify({
-            "error": f"Server error: {str(e)}"
-        }), 500
+        return jsonify({"error": f"Server error: {str(e)}"}), 500
 
 # ============================================================================
 # CLOUD SECURITY TOOLS
@@ -8657,9 +8630,7 @@ def prowler():
         return jsonify(result)
     except Exception as e:
         logger.error(f"💥 Error in prowler endpoint: {str(e)}")
-        return jsonify({
-            "error": f"Server error: {str(e)}"
-        }), 500
+        return jsonify({"error": f"Server error: {str(e)}"}), 500
 
 @app.route("/api/tools/trivy", methods=["POST"])
 def trivy():
@@ -8701,9 +8672,7 @@ def trivy():
         return jsonify(result)
     except Exception as e:
         logger.error(f"💥 Error in trivy endpoint: {str(e)}")
-        return jsonify({
-            "error": f"Server error: {str(e)}"
-        }), 500
+        return jsonify({"error": f"Server error: {str(e)}"}), 500
 
 # ============================================================================
 # ENHANCED CLOUD AND CONTAINER SECURITY TOOLS (v6.0)
@@ -9111,9 +9080,7 @@ def dirb():
         return jsonify(result)
     except Exception as e:
         logger.error(f"💥 Error in dirb endpoint: {str(e)}")
-        return jsonify({
-            "error": f"Server error: {str(e)}"
-        }), 500
+        return jsonify({"error": f"Server error: {str(e)}"}), 500
 
 @app.route("/api/tools/nikto", methods=["POST"])
 def nikto():
@@ -9140,9 +9107,7 @@ def nikto():
         return jsonify(result)
     except Exception as e:
         logger.error(f"💥 Error in nikto endpoint: {str(e)}")
-        return jsonify({
-            "error": f"Server error: {str(e)}"
-        }), 500
+        return jsonify({"error": f"Server error: {str(e)}"}), 500
 
 @app.route("/api/tools/sqlmap", methods=["POST"])
 def sqlmap():
@@ -9173,9 +9138,7 @@ def sqlmap():
         return jsonify(result)
     except Exception as e:
         logger.error(f"💥 Error in sqlmap endpoint: {str(e)}")
-        return jsonify({
-            "error": f"Server error: {str(e)}"
-        }), 500
+        return jsonify({"error": f"Server error: {str(e)}"}), 500
 
 @app.route("/api/tools/metasploit", methods=["POST"])
 def metasploit():
@@ -9217,9 +9180,7 @@ def metasploit():
         return jsonify(result)
     except Exception as e:
         logger.error(f"💥 Error in metasploit endpoint: {str(e)}")
-        return jsonify({
-            "error": f"Server error: {str(e)}"
-        }), 500
+        return jsonify({"error": f"Server error: {str(e)}"}), 500
 
 @app.route("/api/tools/hydra", methods=["POST"])
 def hydra():
@@ -9269,9 +9230,7 @@ def hydra():
         return jsonify(result)
     except Exception as e:
         logger.error(f"💥 Error in hydra endpoint: {str(e)}")
-        return jsonify({
-            "error": f"Server error: {str(e)}"
-        }), 500
+        return jsonify({"error": f"Server error: {str(e)}"}), 500
 
 @app.route("/api/tools/john", methods=["POST"])
 def john():
@@ -9308,9 +9267,7 @@ def john():
         return jsonify(result)
     except Exception as e:
         logger.error(f"💥 Error in john endpoint: {str(e)}")
-        return jsonify({
-            "error": f"Server error: {str(e)}"
-        }), 500
+        return jsonify({"error": f"Server error: {str(e)}"}), 500
 
 @app.route("/api/tools/wpscan", methods=["POST"])
 def wpscan():
@@ -9337,9 +9294,7 @@ def wpscan():
         return jsonify(result)
     except Exception as e:
         logger.error(f"💥 Error in wpscan endpoint: {str(e)}")
-        return jsonify({
-            "error": f"Server error: {str(e)}"
-        }), 500
+        return jsonify({"error": f"Server error: {str(e)}"}), 500
 
 @app.route("/api/tools/enum4linux", methods=["POST"])
 def enum4linux():
@@ -9363,9 +9318,7 @@ def enum4linux():
         return jsonify(result)
     except Exception as e:
         logger.error(f"💥 Error in enum4linux endpoint: {str(e)}")
-        return jsonify({
-            "error": f"Server error: {str(e)}"
-        }), 500
+        return jsonify({"error": f"Server error: {str(e)}"}), 500
 
 @app.route("/api/tools/ffuf", methods=["POST"])
 def ffuf():
@@ -9406,55 +9359,49 @@ def ffuf():
         return jsonify(result)
     except Exception as e:
         logger.error(f"💥 Error in ffuf endpoint: {str(e)}")
-        return jsonify({
-            "error": f"Server error: {str(e)}"
-        }), 500
+        return jsonify({"error": f"Server error: {str(e)}"}), 500
 
 @app.route("/api/tools/netexec", methods=["POST"])
 def netexec():
     """Execute NetExec (formerly CrackMapExec) with enhanced logging"""
     try:
-        params = request.json
+        params = request.json or {}
         target = params.get("target", "")
         protocol = params.get("protocol", "smb")
-        username = params.get("username", "")
-        password = params.get("password", "")
-        hash_value = params.get("hash", "")
-        module = params.get("module", "")
-        additional_args = params.get("additional_args", "")
 
         if not target:
             logger.warning("🎯 NetExec called without target parameter")
-            return jsonify({
-                "error": "Target parameter is required"
-            }), 400
+            return jsonify({"error": "Target parameter is required"}), 400
 
-        command = f"nxc {protocol} {target}"
+        command_parts = [f"nxc {protocol} {target}"]
 
-        if username:
-            command += f" -u {username}"
+        flags = {
+            "username": "-u",
+            "password": "-p",
+            "hash": "-H",
+            "module": "-M"
+        }
 
-        if password:
-            command += f" -p {password}"
+        for param, flag in flags.items():
+            value = params.get(param, "")
+            if value:
+                command_parts.append(f"{flag} {value}")
 
-        if hash_value:
-            command += f" -H {hash_value}"
-
-        if module:
-            command += f" -M {module}"
-
+        additional_args = params.get("additional_args", "")
         if additional_args:
-            command += f" {additional_args}"
+            command_parts.append(additional_args)
+
+        command = " ".join(command_parts)
 
         logger.info(f"🔍 Starting NetExec {protocol} scan: {target}")
         result = execute_command(command)
         logger.info(f"📊 NetExec scan completed for {target}")
         return jsonify(result)
+
     except Exception as e:
         logger.error(f"💥 Error in netexec endpoint: {str(e)}")
-        return jsonify({
-            "error": f"Server error: {str(e)}"
-        }), 500
+        return jsonify({"error": f"Server error: {str(e)}"}), 500
+
 
 @app.route("/api/tools/amass", methods=["POST"])
 def amass():
@@ -9487,9 +9434,7 @@ def amass():
         return jsonify(result)
     except Exception as e:
         logger.error(f"💥 Error in amass endpoint: {str(e)}")
-        return jsonify({
-            "error": f"Server error: {str(e)}"
-        }), 500
+        return jsonify({"error": f"Server error: {str(e)}"}), 500
 
 @app.route("/api/tools/hashcat", methods=["POST"])
 def hashcat():
@@ -9531,9 +9476,7 @@ def hashcat():
         return jsonify(result)
     except Exception as e:
         logger.error(f"💥 Error in hashcat endpoint: {str(e)}")
-        return jsonify({
-            "error": f"Server error: {str(e)}"
-        }), 500
+        return jsonify({"error": f"Server error: {str(e)}"}), 500
 
 @app.route("/api/tools/subfinder", methods=["POST"])
 def subfinder():
@@ -9568,9 +9511,7 @@ def subfinder():
         return jsonify(result)
     except Exception as e:
         logger.error(f"💥 Error in subfinder endpoint: {str(e)}")
-        return jsonify({
-            "error": f"Server error: {str(e)}"
-        }), 500
+        return jsonify({"error": f"Server error: {str(e)}"}), 500
 
 @app.route("/api/tools/smbmap", methods=["POST"])
 def smbmap():
@@ -9609,9 +9550,7 @@ def smbmap():
         return jsonify(result)
     except Exception as e:
         logger.error(f"💥 Error in smbmap endpoint: {str(e)}")
-        return jsonify({
-            "error": f"Server error: {str(e)}"
-        }), 500
+        return jsonify({"error": f"Server error: {str(e)}"}), 500
 
 # ============================================================================
 # ENHANCED NETWORK PENETRATION TESTING TOOLS (v6.0)
@@ -10035,9 +9974,7 @@ def volatility():
         return jsonify(result)
     except Exception as e:
         logger.error(f"💥 Error in volatility endpoint: {str(e)}")
-        return jsonify({
-            "error": f"Server error: {str(e)}"
-        }), 500
+        return jsonify({"error": f"Server error: {str(e)}"}), 500
 
 @app.route("/api/tools/msfvenom", methods=["POST"])
 def msfvenom():
@@ -10080,9 +10017,7 @@ def msfvenom():
         return jsonify(result)
     except Exception as e:
         logger.error(f"💥 Error in msfvenom endpoint: {str(e)}")
-        return jsonify({
-            "error": f"Server error: {str(e)}"
-        }), 500
+        return jsonify({"error": f"Server error: {str(e)}"}), 500
 
 # ============================================================================
 # BINARY ANALYSIS & REVERSE ENGINEERING TOOLS
@@ -10133,9 +10068,7 @@ def gdb():
         return jsonify(result)
     except Exception as e:
         logger.error(f"💥 Error in gdb endpoint: {str(e)}")
-        return jsonify({
-            "error": f"Server error: {str(e)}"
-        }), 500
+        return jsonify({"error": f"Server error: {str(e)}"}), 500
 
 @app.route("/api/tools/radare2", methods=["POST"])
 def radare2():
@@ -10176,9 +10109,7 @@ def radare2():
         return jsonify(result)
     except Exception as e:
         logger.error(f"💥 Error in radare2 endpoint: {str(e)}")
-        return jsonify({
-            "error": f"Server error: {str(e)}"
-        }), 500
+        return jsonify({"error": f"Server error: {str(e)}"}), 500
 
 @app.route("/api/tools/binwalk", methods=["POST"])
 def binwalk():
@@ -10211,9 +10142,7 @@ def binwalk():
         return jsonify(result)
     except Exception as e:
         logger.error(f"💥 Error in binwalk endpoint: {str(e)}")
-        return jsonify({
-            "error": f"Server error: {str(e)}"
-        }), 500
+        return jsonify({"error": f"Server error: {str(e)}"}), 500
 
 @app.route("/api/tools/ropgadget", methods=["POST"])
 def ropgadget():
@@ -10244,9 +10173,7 @@ def ropgadget():
         return jsonify(result)
     except Exception as e:
         logger.error(f"💥 Error in ropgadget endpoint: {str(e)}")
-        return jsonify({
-            "error": f"Server error: {str(e)}"
-        }), 500
+        return jsonify({"error": f"Server error: {str(e)}"}), 500
 
 @app.route("/api/tools/checksec", methods=["POST"])
 def checksec():
@@ -10269,9 +10196,7 @@ def checksec():
         return jsonify(result)
     except Exception as e:
         logger.error(f"💥 Error in checksec endpoint: {str(e)}")
-        return jsonify({
-            "error": f"Server error: {str(e)}"
-        }), 500
+        return jsonify({"error": f"Server error: {str(e)}"}), 500
 
 @app.route("/api/tools/xxd", methods=["POST"])
 def xxd():
@@ -10305,9 +10230,7 @@ def xxd():
         return jsonify(result)
     except Exception as e:
         logger.error(f"💥 Error in xxd endpoint: {str(e)}")
-        return jsonify({
-            "error": f"Server error: {str(e)}"
-        }), 500
+        return jsonify({"error": f"Server error: {str(e)}"}), 500
 
 @app.route("/api/tools/strings", methods=["POST"])
 def strings():
@@ -10337,9 +10260,7 @@ def strings():
         return jsonify(result)
     except Exception as e:
         logger.error(f"💥 Error in strings endpoint: {str(e)}")
-        return jsonify({
-            "error": f"Server error: {str(e)}"
-        }), 500
+        return jsonify({"error": f"Server error: {str(e)}"}), 500
 
 @app.route("/api/tools/objdump", methods=["POST"])
 def objdump():
@@ -10374,9 +10295,7 @@ def objdump():
         return jsonify(result)
     except Exception as e:
         logger.error(f"💥 Error in objdump endpoint: {str(e)}")
-        return jsonify({
-            "error": f"Server error: {str(e)}"
-        }), 500
+        return jsonify({"error": f"Server error: {str(e)}"}), 500
 
 # ============================================================================
 # ENHANCED BINARY ANALYSIS AND EXPLOITATION FRAMEWORK (v6.0)
@@ -10735,14 +10654,15 @@ def ropper():
 
         command = f"ropper --file {binary}"
 
-        if gadget_type == "rop":
-            command += " --rop"
-        elif gadget_type == "jop":
-            command += " --jop"
-        elif gadget_type == "sys":
-            command += " --sys"
-        elif gadget_type == "all":
-            command += " --all"
+        gadgets = {
+            "rop": "--rop",
+            "jop": "--jop",
+            "sys": "--sys",
+            "all": "--all"
+        }
+
+        if gadget_type in gadgets:
+            command += f" {gadgets[gadget_type]}"
 
         if quality > 1:
             command += f" --quality {quality}"
@@ -10755,6 +10675,7 @@ def ropper():
 
         if additional_args:
             command += f" {additional_args}"
+
 
         logger.info(f"🔧 Starting ropper analysis: {binary}")
         result = execute_command(command)
@@ -10832,9 +10753,7 @@ def feroxbuster():
         return jsonify(result)
     except Exception as e:
         logger.error(f"💥 Error in feroxbuster endpoint: {str(e)}")
-        return jsonify({
-            "error": f"Server error: {str(e)}"
-        }), 500
+        return jsonify({"error": f"Server error: {str(e)}"}), 500
 
 @app.route("/api/tools/dotdotpwn", methods=["POST"])
 def dotdotpwn():
@@ -10864,9 +10783,7 @@ def dotdotpwn():
         return jsonify(result)
     except Exception as e:
         logger.error(f"💥 Error in dotdotpwn endpoint: {str(e)}")
-        return jsonify({
-            "error": f"Server error: {str(e)}"
-        }), 500
+        return jsonify({"error": f"Server error: {str(e)}"}), 500
 
 @app.route("/api/tools/xsser", methods=["POST"])
 def xsser():
@@ -10897,9 +10814,7 @@ def xsser():
         return jsonify(result)
     except Exception as e:
         logger.error(f"💥 Error in xsser endpoint: {str(e)}")
-        return jsonify({
-            "error": f"Server error: {str(e)}"
-        }), 500
+        return jsonify({"error": f"Server error: {str(e)}"}), 500
 
 @app.route("/api/tools/wfuzz", methods=["POST"])
 def wfuzz():
@@ -10927,9 +10842,7 @@ def wfuzz():
         return jsonify(result)
     except Exception as e:
         logger.error(f"💥 Error in wfuzz endpoint: {str(e)}")
-        return jsonify({
-            "error": f"Server error: {str(e)}"
-        }), 500
+        return jsonify({"error": f"Server error: {str(e)}"}), 500
 
 # ============================================================================
 # ENHANCED WEB APPLICATION SECURITY TOOLS (v6.0)
@@ -11768,21 +11681,26 @@ class BrowserAgent:
             if headless:
                 chrome_options.add_argument('--headless')
 
-            chrome_options.add_argument('--no-sandbox')
-            chrome_options.add_argument('--disable-dev-shm-usage')
-            chrome_options.add_argument('--disable-gpu')
-            chrome_options.add_argument('--window-size=1920,1080')
-            chrome_options.add_argument('--user-agent=HexStrike-BrowserAgent/1.0 (Security Testing)')
+                chrome_args = [
+                    '--no-sandbox',
+                    '--disable-dev-shm-usage',
+                    '--disable-gpu',
+                    '--window-size=1920,1080',
+                    '--user-agent=HexStrike-BrowserAgent/1.0 (Security Testing)',
 
-            # Enable logging
-            chrome_options.add_argument('--enable-logging')
-            chrome_options.add_argument('--log-level=0')
+                    # Enable logging
+                    '--enable-logging',
+                    '--log-level=0',
 
-            # Security testing options
-            chrome_options.add_argument('--disable-web-security')
-            chrome_options.add_argument('--allow-running-insecure-content')
-            chrome_options.add_argument('--ignore-certificate-errors')
-            chrome_options.add_argument('--ignore-ssl-errors')
+                    # Security testing options
+                    '--disable-web-security',
+                    '--allow-running-insecure-content',
+                    '--ignore-certificate-errors',
+                    '--ignore-ssl-errors'
+                ]
+
+                for arg in chrome_args:
+                    chrome_options.add_argument(arg)
 
             if proxy_port:
                 chrome_options.add_argument(f'--proxy-server=http://127.0.0.1:{proxy_port}')
@@ -12441,10 +12359,6 @@ def burpsuite_alternative():
     except Exception as e:
         logger.error(f"{ModernVisualEngine.format_error_card('CRITICAL', 'BurpAlternative', str(e))}")
         return jsonify({"error": f"Server error: {str(e)}"}), 500
-        logger.error(f"💥 Error in burpsuite endpoint: {str(e)}")
-        return jsonify({
-            "error": f"Server error: {str(e)}"
-        }), 500
 
 @app.route("/api/tools/zap", methods=["POST"])
 def zap():
@@ -12492,9 +12406,7 @@ def zap():
         return jsonify(result)
     except Exception as e:
         logger.error(f"💥 Error in zap endpoint: {str(e)}")
-        return jsonify({
-            "error": f"Server error: {str(e)}"
-        }), 500
+        return jsonify({"error": f"Server error: {str(e)}"}), 500
 
 @app.route("/api/tools/wafw00f", methods=["POST"])
 def wafw00f():
@@ -12521,9 +12433,7 @@ def wafw00f():
         return jsonify(result)
     except Exception as e:
         logger.error(f"💥 Error in wafw00f endpoint: {str(e)}")
-        return jsonify({
-            "error": f"Server error: {str(e)}"
-        }), 500
+        return jsonify({"error": f"Server error: {str(e)}"}), 500
 
 @app.route("/api/tools/fierce", methods=["POST"])
 def fierce():
@@ -12554,9 +12464,7 @@ def fierce():
         return jsonify(result)
     except Exception as e:
         logger.error(f"💥 Error in fierce endpoint: {str(e)}")
-        return jsonify({
-            "error": f"Server error: {str(e)}"
-        }), 500
+        return jsonify({"error": f"Server error: {str(e)}"}), 500
 
 @app.route("/api/tools/dnsenum", methods=["POST"])
 def dnsenum():
@@ -12591,9 +12499,7 @@ def dnsenum():
         return jsonify(result)
     except Exception as e:
         logger.error(f"💥 Error in dnsenum endpoint: {str(e)}")
-        return jsonify({
-            "error": f"Server error: {str(e)}"
-        }), 500
+        return jsonify({"error": f"Server error: {str(e)}"}), 500
 
 # Python Environment Management Endpoints
 @app.route("/api/python/install", methods=["POST"])
@@ -13022,9 +12928,7 @@ def api_fuzzer():
 
     except Exception as e:
         logger.error(f"💥 Error in API fuzzer: {str(e)}")
-        return jsonify({
-            "error": f"Server error: {str(e)}"
-        }), 500
+        return jsonify({"error": f"Server error: {str(e)}"}), 500
 
 @app.route("/api/tools/graphql_scanner", methods=["POST"])
 def graphql_scanner():
@@ -13129,9 +13033,7 @@ def graphql_scanner():
 
     except Exception as e:
         logger.error(f"💥 Error in GraphQL scanner: {str(e)}")
-        return jsonify({
-            "error": f"Server error: {str(e)}"
-        }), 500
+        return jsonify({"error": f"Server error: {str(e)}"}), 500
 
 @app.route("/api/tools/jwt_analyzer", methods=["POST"])
 def jwt_analyzer():
@@ -13247,9 +13149,7 @@ def jwt_analyzer():
 
     except Exception as e:
         logger.error(f"💥 Error in JWT analyzer: {str(e)}")
-        return jsonify({
-            "error": f"Server error: {str(e)}"
-        }), 500
+        return jsonify({"error": f"Server error: {str(e)}"}), 500
 
 @app.route("/api/tools/api_schema_analyzer", methods=["POST"])
 def api_schema_analyzer():
@@ -13355,9 +13255,7 @@ def api_schema_analyzer():
 
     except Exception as e:
         logger.error(f"💥 Error in API schema analyzer: {str(e)}")
-        return jsonify({
-            "error": f"Server error: {str(e)}"
-        }), 500
+        return jsonify({"error": f"Server error: {str(e)}"}), 500
 
 # ============================================================================
 # ADVANCED CTF TOOLS (v5.0 ENHANCEMENT)
@@ -13399,9 +13297,7 @@ def volatility3():
         return jsonify(result)
     except Exception as e:
         logger.error(f"💥 Error in volatility3 endpoint: {str(e)}")
-        return jsonify({
-            "error": f"Server error: {str(e)}"
-        }), 500
+        return jsonify({"error": f"Server error: {str(e)}"}), 500
 
 @app.route("/api/tools/foremost", methods=["POST"])
 def foremost():
@@ -13439,9 +13335,7 @@ def foremost():
         return jsonify(result)
     except Exception as e:
         logger.error(f"💥 Error in foremost endpoint: {str(e)}")
-        return jsonify({
-            "error": f"Server error: {str(e)}"
-        }), 500
+        return jsonify({"error": f"Server error: {str(e)}"}), 500
 
 @app.route("/api/tools/steghide", methods=["POST"])
 def steghide():
@@ -13488,9 +13382,7 @@ def steghide():
         return jsonify(result)
     except Exception as e:
         logger.error(f"💥 Error in steghide endpoint: {str(e)}")
-        return jsonify({
-            "error": f"Server error: {str(e)}"
-        }), 500
+        return jsonify({"error": f"Server error: {str(e)}"}), 500
 
 @app.route("/api/tools/exiftool", methods=["POST"])
 def exiftool():
@@ -13527,9 +13419,7 @@ def exiftool():
         return jsonify(result)
     except Exception as e:
         logger.error(f"💥 Error in exiftool endpoint: {str(e)}")
-        return jsonify({
-            "error": f"Server error: {str(e)}"
-        }), 500
+        return jsonify({"error": f"Server error: {str(e)}"}), 500
 
 @app.route("/api/tools/hashpump", methods=["POST"])
 def hashpump():
@@ -13559,9 +13449,7 @@ def hashpump():
         return jsonify(result)
     except Exception as e:
         logger.error(f"💥 Error in hashpump endpoint: {str(e)}")
-        return jsonify({
-            "error": f"Server error: {str(e)}"
-        }), 500
+        return jsonify({"error": f"Server error: {str(e)}"}), 500
 
 # ============================================================================
 # BUG BOUNTY RECONNAISSANCE TOOLS (v5.0 ENHANCEMENT)
@@ -13616,9 +13504,7 @@ def hakrawler():
         return jsonify(result)
     except Exception as e:
         logger.error(f"💥 Error in hakrawler endpoint: {str(e)}")
-        return jsonify({
-            "error": f"Server error: {str(e)}"
-        }), 500
+        return jsonify({"error": f"Server error: {str(e)}"}), 500
 
 # ============================================================================
 # ADVANCED VULNERABILITY INTELLIGENCE API ENDPOINTS (v6.0 ENHANCEMENT)
@@ -14523,43 +14409,64 @@ def ctf_forensics_analyzer():
             "next_steps": []
         }
 
-        # Basic file analysis
         try:
             # File command
             file_result = subprocess.run(['file', file_path], capture_output=True, text=True, timeout=30)
             if file_result.returncode == 0:
-                results["file_info"]["type"] = file_result.stdout.strip()
+                file_output = file_result.stdout.strip()
+                results["file_info"]["type"] = file_output
 
-                # Determine file category and suggest tools
-                file_type = file_result.stdout.lower()
-                if "image" in file_type:
-                    results["recommended_tools"].extend(["exiftool", "steghide", "stegsolve", "zsteg"])
-                    results["next_steps"].extend([
-                        "Extract EXIF metadata",
-                        "Check for steganographic content",
-                        "Analyze color channels separately"
-                    ])
-                elif "audio" in file_type:
-                    results["recommended_tools"].extend(["audacity", "sonic-visualizer", "spectrum-analyzer"])
-                    results["next_steps"].extend([
-                        "Analyze audio spectrum",
-                        "Check for hidden data in audio channels",
-                        "Look for DTMF tones or morse code"
-                    ])
-                elif "pdf" in file_type:
-                    results["recommended_tools"].extend(["pdfinfo", "pdftotext", "binwalk"])
-                    results["next_steps"].extend([
-                        "Extract text and metadata",
-                        "Check for embedded files",
-                        "Analyze PDF structure"
-                    ])
-                elif "zip" in file_type or "archive" in file_type:
-                    results["recommended_tools"].extend(["unzip", "7zip", "binwalk"])
-                    results["next_steps"].extend([
-                        "Extract archive contents",
-                        "Check for password protection",
-                        "Look for hidden files"
-                    ])
+                # Mapping from keywords to tools and next steps
+                file_types = {
+                    "image": {
+                        "tools": ["exiftool", "steghide", "stegsolve", "zsteg"],
+                        "steps": [
+                            "Extract EXIF metadata",
+                            "Check for steganographic content",
+                            "Analyze color channels separately"
+                        ],
+                    },
+                    "audio": {
+                        "tools": ["audacity", "sonic-visualizer", "spectrum-analyzer"],
+                        "steps": [
+                            "Analyze audio spectrum",
+                            "Check for hidden data in audio channels",
+                            "Look for DTMF tones or morse code"
+                        ],
+                    },
+                    "pdf": {
+                        "tools": ["pdfinfo", "pdftotext", "binwalk"],
+                        "steps": [
+                            "Extract text and metadata",
+                            "Check for embedded files",
+                            "Analyze PDF structure"
+                        ],
+                    },
+                    "zip": {
+                        "tools": ["unzip", "7zip", "binwalk"],
+                        "steps": [
+                            "Extract archive contents",
+                            "Check for password protection",
+                            "Look for hidden files"
+                        ],
+                    },
+                    "archive": {
+                        "tools": ["unzip", "7zip", "binwalk"],
+                        "steps": [
+                            "Extract archive contents",
+                            "Check for password protection",
+                            "Look for hidden files"
+                        ],
+                    }
+                }
+
+                file_type_lower = file_output.lower()
+                for key, val in file_types.items():
+                    if key in file_type_lower:
+                        results["recommended_tools"].extend(val["tools"])
+                        results["next_steps"].extend(val["steps"])
+                        break
+
         except Exception as e:
             results["file_info"]["error"] = str(e)
 
@@ -14693,16 +14600,18 @@ def ctf_binary_analyzer():
                 if checksec_result.returncode == 0:
                     results["security_protections"]["checksec"] = checksec_result.stdout
 
-                    # Parse protections and provide exploitation hints
                     output = checksec_result.stdout.lower()
-                    if "no canary found" in output:
-                        results["exploitation_hints"].append("Stack canary disabled - buffer overflow exploitation possible")
-                    if "nx disabled" in output:
-                        results["exploitation_hints"].append("NX disabled - shellcode execution on stack possible")
-                    if "no pie" in output:
-                        results["exploitation_hints"].append("PIE disabled - fixed addresses, ROP/ret2libc easier")
-                    if "no relro" in output:
-                        results["exploitation_hints"].append("RELRO disabled - GOT overwrite attacks possible")
+
+                    hints = {
+                        "no canary found": "Stack canary disabled - buffer overflow exploitation possible",
+                        "nx disabled": "NX disabled - shellcode execution on stack possible",
+                        "no pie": "PIE disabled - fixed addresses, ROP/ret2libc easier",
+                        "no relro": "RELRO disabled - GOT overwrite attacks possible",
+                    }
+
+                    for key, hint in hints.items():
+                        if key in output:
+                            results["exploitation_hints"].append(hint)
             except Exception as e:
                 results["security_protections"]["error"] = str(e)
 
@@ -15076,10 +14985,8 @@ def manual_scale_pool():
 def process_health_check():
     """Comprehensive health check of the process management system"""
     try:
-        # Get all system stats
         comprehensive_stats = enhanced_process_manager.get_comprehensive_stats()
 
-        # Determine overall health
         resource_usage = comprehensive_stats["resource_usage"]
         pool_stats = comprehensive_stats["process_pool"]
         cache_stats = comprehensive_stats["cache"]
@@ -15087,53 +14994,37 @@ def process_health_check():
         health_score = 100
         issues = []
 
-        # CPU health
-        if resource_usage["cpu_percent"] > 95:
-            health_score -= 30
-            issues.append("Critical CPU usage")
-        elif resource_usage["cpu_percent"] > 80:
-            health_score -= 15
-            issues.append("High CPU usage")
+        # Define health check rules as (value, thresholds, deductions, issue descriptions)
+        health_checks = [
+            (resource_usage["cpu_percent"], [(95, 30, "Critical CPU usage"), (80, 15, "High CPU usage")]),
+            (resource_usage["memory_percent"], [(95, 25, "Critical memory usage"), (85, 10, "High memory usage")]),
+            (resource_usage["disk_percent"], [(98, 20, "Critical disk usage"), (90, 5, "High disk usage")]),
+            (pool_stats["queue_size"], [(50, 15, "High task queue backlog")], True),  # True indicates check is > threshold
+            (cache_stats["hit_rate"], [(30, 10, "Low cache hit rate")], False)        # False means check is < threshold
+        ]
 
-        # Memory health
-        if resource_usage["memory_percent"] > 95:
-            health_score -= 25
-            issues.append("Critical memory usage")
-        elif resource_usage["memory_percent"] > 85:
-            health_score -= 10
-            issues.append("High memory usage")
+        for idx, check in enumerate(health_checks):
+            value = check[0]
+            thresholds = check[1]
+            compare_greater = check[2] if len(check) > 2 else True
 
-        # Disk health
-        if resource_usage["disk_percent"] > 98:
-            health_score -= 20
-            issues.append("Critical disk usage")
-        elif resource_usage["disk_percent"] > 90:
-            health_score -= 5
-            issues.append("High disk usage")
-
-        # Process pool health
-        if pool_stats["queue_size"] > 50:
-            health_score -= 15
-            issues.append("High task queue backlog")
-
-        # Cache health
-        if cache_stats["hit_rate"] < 30:
-            health_score -= 10
-            issues.append("Low cache hit rate")
+            for threshold, deduction, issue in thresholds:
+                if (compare_greater and value > threshold) or (not compare_greater and value < threshold):
+                    health_score -= deduction
+                    issues.append(issue)
+                    break  # Only first threshold match applies
 
         health_score = max(0, health_score)
 
-        # Determine status
-        if health_score >= 90:
-            status = "excellent"
-        elif health_score >= 75:
-            status = "good"
-        elif health_score >= 50:
-            status = "fair"
-        elif health_score >= 25:
-            status = "poor"
-        else:
-            status = "critical"
+        # Health status mapping
+        status_map = [
+            (90, "excellent"),
+            (75, "good"),
+            (50, "fair"),
+            (25, "poor"),
+            (0, "critical")
+        ]
+        status = next(label for threshold, label in status_map if health_score >= threshold)
 
         health_report = {
             "overall_status": status,
@@ -15143,17 +15034,19 @@ def process_health_check():
             "recommendations": []
         }
 
-        # Add recommendations based on issues
-        if "High CPU usage" in issues:
-            health_report["recommendations"].append("Consider reducing concurrent processes or upgrading CPU")
-        if "High memory usage" in issues:
-            health_report["recommendations"].append("Clear caches or increase available memory")
-        if "High task queue backlog" in issues:
-            health_report["recommendations"].append("Scale up process pool or optimize task processing")
-        if "Low cache hit rate" in issues:
-            health_report["recommendations"].append("Review cache TTL settings or increase cache size")
+        # Recommendations mapped by issues
+        recommendations_map = {
+            "High CPU usage": "Consider reducing concurrent processes or upgrading CPU",
+            "High memory usage": "Clear caches or increase available memory",
+            "High task queue backlog": "Scale up process pool or optimize task processing",
+            "Low cache hit rate": "Review cache TTL settings or increase cache size"
+        }
+        for issue in issues:
+            if issue in recommendations_map:
+                health_report["recommendations"].append(recommendations_map[issue])
 
         logger.info(f"🏥 Health check completed | Status: {status} | Score: {health_score}/100")
+
         return jsonify({
             "success": True,
             "health_report": health_report,
@@ -15163,6 +15056,7 @@ def process_health_check():
     except Exception as e:
         logger.error(f"💥 Error in health check: {str(e)}")
         return jsonify({"error": f"Server error: {str(e)}"}), 500
+
 
 # ============================================================================
 # BANNER AND STARTUP CONFIGURATION
