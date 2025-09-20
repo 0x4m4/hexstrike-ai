@@ -1,0 +1,10 @@
+version: '3.8'
+services:
+  hexstrike-mcp:
+    build: .
+    container_name: hexstrike-mcp
+    ports:
+      - "8888:8888"
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
