@@ -42,7 +42,7 @@ class HexStrikeDashboard:
     def get_dashboard_data(self):
         """Fetch live dashboard data from HexStrike API"""
         try:
-            response = self.session.get(f"{self.api_base}/api/dashboard/live")
+            response = self.session.get(f"{self.api_base}/api/processes/dashbaord")
             if response.status_code == 200:
                 return response.json()
             else:
