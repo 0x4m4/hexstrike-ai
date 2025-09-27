@@ -33,7 +33,7 @@ show_dashboard() {
     echo
     
     # Get dashboard data via API call
-    RESPONSE=$(curl -s "${HEXSTRIKE_API}/api/dashboard/live" 2>/dev/null)
+    RESPONSE=$(curl -s "${HEXSTRIKE_API}/api/processes/dashboard" 2>/dev/null)
     
     if [ $? -eq 0 ] && [ ! -z "$RESPONSE" ]; then
         # Parse JSON response and display visual dashboard
