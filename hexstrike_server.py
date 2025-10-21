@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# hexstrike_server.py
 """
 HexStrike AI - Advanced Penetration Testing Framework Server
 
@@ -31,6 +32,7 @@ import hashlib
 import pickle
 import base64
 import queue
+import uuid
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta
 from typing import Dict, Any, Optional
@@ -844,12 +846,12 @@ class IntelligentDecisionEngine:
                 return TargetType.API_ENDPOINT
             return TargetType.WEB_APPLICATION
 
-        # IP address pattern
-        if re.match(r'^(\d{1,3}\.){3}\d{1,3}$', target):
+        # IP address pattern (port optional)
+        if re.match(r'^(\d{1,3}\.){3}\d{1,3}(:\d{1,5})?$', target):
             return TargetType.NETWORK_HOST
 
-        # Domain name pattern
-        if re.match(r'^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', target):
+        # Domain name pattern (port optional)
+        if re.match(r'^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(:\d{1,5})?$', target):
             return TargetType.WEB_APPLICATION
 
         # File patterns
@@ -8633,13 +8635,14 @@ cve_intelligence = CVEIntelligenceManager()
 exploit_generator = AIExploitGenerator()
 vulnerability_correlator = VulnerabilityCorrelator()
 
-def execute_command(command: str, use_cache: bool = True) -> Dict[str, Any]:
+def execute_command(command: str, use_cache: bool = True, timeout: int = COMMAND_TIMEOUT) -> Dict[str, Any]:
     """
     Execute a shell command with enhanced features
 
     Args:
         command: The command to execute
         use_cache: Whether to use caching for this command
+        timeout: Maximum execution time in seconds for the command
 
     Returns:
         A dictionary containing the stdout, stderr, return code, and metadata
@@ -8651,8 +8654,8 @@ def execute_command(command: str, use_cache: bool = True) -> Dict[str, Any]:
         if cached_result:
             return cached_result
 
-    # Execute command
-    executor = EnhancedCommandExecutor(command)
+    # Execute command (propagate timeout to the executor)
+    executor = EnhancedCommandExecutor(command, timeout=timeout)
     result = executor.execute()
 
     # Cache successful results
@@ -9093,14 +9096,18 @@ def health_check():
         password_tools + binary_tools + forensics_tools + cloud_tools +
         osint_tools + exploitation_tools + api_tools + wireless_tools + additional_tools
     )
+    # De-duplicate combined tool list to avoid inflated totals when a tool appears in multiple categories
+    unique_tools = sorted(set(all_tools))
     tools_status = {}
 
-    for tool in all_tools:
+    # Iterate once over unique tool names
+    for tool in unique_tools:
         try:
             result = execute_command(f"which {tool}", use_cache=True)
             tools_status[tool] = result["success"]
-        except:
+        except Exception:
             tools_status[tool] = False
+
 
     all_essential_tools_available = all(tools_status[tool] for tool in essential_tools)
 
@@ -9126,8 +9133,8 @@ def health_check():
         "version": "6.0.0",
         "tools_status": tools_status,
         "all_essential_tools_available": all_essential_tools_available,
-        "total_tools_available": sum(1 for tool, available in tools_status.items() if available),
-        "total_tools_count": len(all_tools),
+        "total_tools_available": sum(1 for _, available in tools_status.items() if available),
+        "total_tools_count": len(unique_tools),
         "category_stats": category_stats,
         "cache_stats": cache.get_stats(),
         "telemetry": telemetry.get_stats(),
@@ -9773,7 +9780,8 @@ def intelligent_smart_scan():
                 }
 
         # Execute tools in parallel using ThreadPoolExecutor
-        with ThreadPoolExecutor(max_workers=min(len(selected_tools), 5)) as executor:
+        workers = max(1, min(len(selected_tools), 5))
+        with ThreadPoolExecutor(max_workers=workers) as executor:
             # Submit all tool executions
             future_to_tool = {
                 executor.submit(execute_single_tool, tool, target, profile): tool
@@ -9822,24 +9830,107 @@ def intelligent_smart_scan():
         return jsonify({"error": f"Server error: {str(e)}", "success": False}), 500
 
 # Helper functions for intelligent smart scan tool execution
-def execute_nmap_scan(target, params):
-    """Execute nmap scan with optimized parameters"""
+def execute_nmap_scan(target: str, params: dict):
+    """
+    Execute nmap with safe target cleanup.
+    - If `target` is a URL, pass to nmap only host[:port]
+      (e.g. http://127.0.0.1:3000 -> host=127.0.0.1, port=3000).
+    - If a port is present, prepend it to user-provided `ports`.
+    - No imports added; relies on existing `re` and `execute_command`.
+    """
     try:
-        scan_type = params.get('scan_type', '-sV')
-        ports = params.get('ports', '')
-        additional_args = params.get('additional_args', '')
+        params = params or {}
+        scan_type = (params.get("scan_type") or "-sV").strip()
+        ports = (params.get("ports") or "").strip()
+        additional_args = (params.get("additional_args") or "").strip()
 
-        # Build nmap command
-        cmd_parts = ['nmap', scan_type]
-        if ports:
-            cmd_parts.extend(['-p', ports])
+        raw = (target or "").strip()
+
+        # Strip scheme if present (http://, https://, etc.)
+        m = re.match(r'^[a-zA-Z][a-zA-Z0-9+.\-]*://(.+)$', raw)
+        netloc = m.group(1) if m else raw
+
+        # Cut off path/query/fragment
+        for sep in ("/", "?", "#"):
+            i = netloc.find(sep)
+            if i != -1:
+                netloc = netloc[:i]
+                break
+
+        # Extract host and (optional) port
+        host = netloc
+        url_port = None
+
+        if host.startswith("["):  # [IPv6]:port
+            j = host.find("]")
+            if j != -1:
+                inside = host[1:j]
+                rest = host[j+1:]
+                host = inside
+                if rest.startswith(":"):
+                    p = rest[1:]
+                    if p.isdigit():
+                        url_port = int(p)
+        else:
+            # Heuristic: treat single-colon forms as host:port (IPv4/hostname)
+            if host.count(":") == 1:
+                h, p = host.split(":", 1)
+                if p.isdigit():
+                    host = h
+                    url_port = int(p)
+
+        # Merge URL port into -p if present
+        merged_ports = ports
+        if url_port:
+            merged_ports = f"{url_port}" + (f",{merged_ports}" if merged_ports else "")
+
+        # Build command line
+        cmd_parts = ["nmap"]
+        if scan_type:
+            cmd_parts.extend(scan_type.split())
+        if merged_ports:
+            cmd_parts.extend(["-p", merged_ports])
         if additional_args:
             cmd_parts.extend(additional_args.split())
-        cmd_parts.append(target)
+        cmd_parts.append(host)
 
-        return execute_command(' '.join(cmd_parts))
+        return execute_command(" ".join(cmd_parts))
     except Exception as e:
         return {"success": False, "error": str(e)}
+
+def _auto_handle_gobuster_wildcard(url: str, mode: str, additional_args: str) -> Tuple[str, Optional[str]]:
+    """Ensure gobuster handles wildcard responses from targets like Juice Shop."""
+    additional_args = (additional_args or "").strip()
+
+    # Only dir mode needs 200-everywhere mitigation
+    if mode != "dir" or not url:
+        return additional_args, None
+
+    # Respect explicit user handling
+    wildcard_keywords = ["--wildcard", "--exclude-length", "--exclude-status", "-b", "--status-codes"]
+    if any(keyword in additional_args for keyword in wildcard_keywords):
+        return additional_args, None
+
+    candidate_flag: Optional[str] = None
+
+    try:
+        random_path = uuid.uuid4().hex[:12]
+        normalized = url if url.endswith('/') else f"{url}/"
+        probe_url = urllib.parse.urljoin(normalized, random_path)
+        response = requests.get(probe_url, timeout=5, verify=False)
+
+        # If the target reflects wildcard successes, reuse that body length
+        if response.status_code < 500 and response.content:
+            candidate_flag = f"--exclude-length {len(response.content)}"
+    except Exception as exc:
+        logger.debug(f"Gobuster wildcard probe failed ({exc}); falling back to --wildcard")
+
+    if not candidate_flag:
+        candidate_flag = "--wildcard"
+
+    adjusted_args = f"{additional_args} {candidate_flag}".strip()
+    return adjusted_args, candidate_flag
+
 
 def execute_gobuster_scan(target, params):
     """Execute gobuster scan with optimized parameters"""
@@ -9848,9 +9939,14 @@ def execute_gobuster_scan(target, params):
         wordlist = params.get('wordlist', '/usr/share/wordlists/dirb/common.txt')
         additional_args = params.get('additional_args', '')
 
+        adjusted_args, auto_flag = _auto_handle_gobuster_wildcard(target, mode, additional_args)
+
         cmd_parts = ['gobuster', mode, '-u', target, '-w', wordlist]
-        if additional_args:
-            cmd_parts.extend(additional_args.split())
+        if adjusted_args:
+            cmd_parts.extend(adjusted_args.split())
+
+        if auto_flag:
+            logger.info(f"🧪 Auto-adjusted Gobuster args with {auto_flag}")
 
         return execute_command(' '.join(cmd_parts))
     except Exception as e:
@@ -10329,7 +10425,7 @@ def nmap():
     """Execute nmap scan with enhanced logging, caching, and intelligent error handling"""
     try:
         params = request.json
-        target = params.get("target", "")
+        target = (params.get("target") or "").strip()
         scan_type = params.get("scan_type", "-sCV")
         ports = params.get("ports", "")
         additional_args = params.get("additional_args", "-T4 -Pn")
@@ -10385,6 +10481,8 @@ def gobuster():
         additional_args = params.get("additional_args", "")
         use_recovery = params.get("use_recovery", True)
 
+        adjusted_args, auto_flag = _auto_handle_gobuster_wildcard(url, mode, additional_args)
+
         if not url:
             logger.warning("🌐 Gobuster called without URL parameter")
             return jsonify({
@@ -10400,8 +10498,11 @@ def gobuster():
 
         command = f"gobuster {mode} -u {url} -w {wordlist}"
 
-        if additional_args:
-            command += f" {additional_args}"
+        if adjusted_args:
+            command += f" {adjusted_args}"
+
+        if auto_flag:
+            logger.info(f"🧪 Applied Gobuster auto-adjustment: {auto_flag}")
 
         logger.info(f"📁 Starting Gobuster {mode} scan: {url}")
 
@@ -10411,7 +10512,8 @@ def gobuster():
                 "target": url,
                 "mode": mode,
                 "wordlist": wordlist,
-                "additional_args": additional_args
+                "additional_args": adjusted_args,
+                "auto_adjustment": auto_flag
             }
             result = execute_command_with_recovery("gobuster", command, tool_params)
         else:
@@ -10496,7 +10598,7 @@ def prowler():
         region = params.get("region", "")
         checks = params.get("checks", "")
         output_dir = params.get("output_dir", "/tmp/prowler_output")
-        output_format = params.get("output_format", "json")
+        output_format = params.get("output_format", "json-ocsf")
         additional_args = params.get("additional_args", "")
 
         # Ensure output directory exists
@@ -10514,7 +10616,7 @@ def prowler():
             command += f" --checks {checks}"
 
         command += f" --output-directory {output_dir}"
-        command += f" --output-format {output_format}"
+        command += f" --output-formats {output_format}"
 
         if additional_args:
             command += f" {additional_args}"
@@ -10831,10 +10933,12 @@ def clair():
             return jsonify({"error": "Image parameter is required"}), 400
 
         # Use clairctl for scanning
-        command = f"clairctl analyze {image}"
+        command = "clairctl"
 
         if config:
             command += f" --config {config}"
+
+        command += f" report {image}"
 
         if output_format:
             command += f" --format {output_format}"
@@ -10864,10 +10968,10 @@ def falco():
         command = f"timeout {duration} falco"
 
         if config_file:
-            command += f" --config {config_file}"
+            command += f" -c {config_file}"
 
         if rules_file:
-            command += f" --rules {rules_file}"
+            command += f" -r {rules_file}"
 
         if output_format == "json":
             command += " --json"
@@ -10989,7 +11093,7 @@ def nikto():
     """Execute nikto with enhanced logging"""
     try:
         params = request.json
-        target = params.get("target", "")
+        target = (params.get("target") or "").strip()
         additional_args = params.get("additional_args", "")
 
         if not target:
@@ -11686,19 +11790,21 @@ def enum4linux_ng():
         if domain:
             command += f" -d {domain}"
 
-        # Add specific enumeration options
-        enum_options = []
-        if shares:
-            enum_options.append("S")
-        if users:
-            enum_options.append("U")
-        if groups:
-            enum_options.append("G")
-        if policy:
-            enum_options.append("P")
+        enum_flags = []
 
-        if enum_options:
-            command += f" -A {','.join(enum_options)}"
+        if shares:
+            enum_flags.append("-S")
+        if users:
+            enum_flags.append("-U")
+        if groups:
+            enum_flags.append("-G")
+        if policy:
+            enum_flags.append("-P")
+
+        if enum_flags:
+            command += " " + " ".join(enum_flags)
+        else:
+            command += " -A"
 
         if additional_args:
             command += f" {additional_args}"
@@ -12278,7 +12384,7 @@ def ghidra():
             command += f" -postScript {script_file}"
 
         if output_format == "xml":
-            command += f" -postScript ExportXml.java {project_dir}/analysis.xml"
+            command += f" -postScript ExportProgramScript.java {project_dir}/analysis.xml true"
 
         if additional_args:
             command += f" {additional_args}"
@@ -12710,7 +12816,7 @@ def dotdotpwn():
     """Execute DotDotPwn for directory traversal testing with enhanced logging"""
     try:
         params = request.json
-        target = params.get("target", "")
+        target = (params.get("target") or "").strip()
         module = params.get("module", "http")
         additional_args = params.get("additional_args", "")
 
@@ -12720,10 +12826,50 @@ def dotdotpwn():
                 "error": "Target parameter is required"
             }), 400
 
-        command = f"dotdotpwn -m {module} -h {target}"
+        host = target
+        port = None
+
+        if "://" in host:
+            parsed = urlparse(host)
+            host = parsed.hostname or host
+            port = parsed.port
+            if port is None:
+                if parsed.scheme == "https":
+                    port = 443
+                elif parsed.scheme == "http":
+                    port = 80
+        else:
+            host_part = host.split("/", 1)[0]
+            if ":" in host_part:
+                candidate_host, candidate_port = host_part.rsplit(":", 1)
+                if candidate_port.isdigit():
+                    host = candidate_host
+                    port = int(candidate_port)
+                else:
+                    host = host_part
+            else:
+                host = host_part
+
+        command = f"dotdotpwn -m {module}"
+
+        if module == "http-url":
+            url = target or ""
+            if "TRAVERSAL" not in url.upper():
+                separator = "&" if "?" in url else ("" if url.endswith("TRAVERSAL") else "?")
+                url = f"{url}{separator}TRAVERSAL"
+            command += f" -u {url}"
+            if url.lower().startswith("https://") and (not additional_args or " -S" not in additional_args):
+                command += " -S"
+        else:
+            command += f" -h {host}"
+
+        has_port_flag = bool(additional_args and re.search(r"(^|\s)(-x)\b", additional_args))
 
         if additional_args:
             command += f" {additional_args}"
+
+        if port and not has_port_flag and module != "http-url":
+            command += f" -x {port}"
 
         command += " -b"
 
@@ -13138,6 +13284,8 @@ def httpx():
     try:
         params = request.json
         target = params.get("target", "")
+        target_file = params.get("target_file", "")
+        url = params.get("url", "")
         probe = params.get("probe", True)
         tech_detect = params.get("tech_detect", False)
         status_code = params.get("status_code", False)
@@ -13147,11 +13295,18 @@ def httpx():
         threads = params.get("threads", 50)
         additional_args = params.get("additional_args", "")
 
-        if not target:
+        # Accept either a list file (-l) or a single URL (-u)
+        if target_file:
+            command = f"httpx -l {target_file} -t {threads}"
+        elif target and (target.startswith("http://") or target.startswith("https://")):
+            command = f"httpx -u {target} -t {threads}"
+        elif target:
+            command = f"httpx -l {target} -t {threads}"
+        elif url:
+            command = f"httpx -u {url} -t {threads}"
+        else:
             logger.warning("🌐 httpx called without target parameter")
-            return jsonify({"error": "Target parameter is required"}), 400
-
-        command = f"httpx -l {target} -t {threads}"
+            return jsonify({"error": "Target parameter is required (target_file or target/url)"}), 400
 
         if probe:
             command += " -probe"
@@ -14221,6 +14376,110 @@ def browser_agent_endpoint():
         )
         return jsonify({"error": f"Server error: {str(e)}"}), 500
 
+@app.route("/api/tools/burpsuite", methods=["POST"])
+def burpsuite():
+    """Execute Burp Suite with enhanced logging; fallback to alternative workflow when CLI unsupported."""
+    try:
+        params = request.json or {}
+
+        project_file = params.get("project_file", "")
+        config_file = params.get("config_file", "")
+        target = params.get("target", "")
+        headless = params.get("headless", False)
+        scan_type = params.get("scan_type", "")
+        scan_config = params.get("scan_config", "")
+        output_file = params.get("output_file", "")
+        additional_args = params.get("additional_args", "")
+
+        if not target:
+            logger.warning("🎯 Burp Suite called without target parameter")
+            return jsonify({"error": "Target parameter is required"}), 400
+
+        command_parts = ["burpsuite"]
+
+        if headless:
+            command_parts.append("--headless")
+
+        if project_file:
+            command_parts.append(f'--project-file "{project_file}"')
+
+        if config_file:
+            command_parts.append(f'--config-file "{config_file}"')
+
+        if scan_type:
+            command_parts.append(f'--scan-type "{scan_type}"')
+
+        if scan_config:
+            command_parts.append(f'--scan-config "{scan_config}"')
+
+        command_parts.append(f'--scan-url "{target}"')
+
+        if output_file:
+            command_parts.append(f'--report-file "{output_file}"')
+
+        if additional_args:
+            command_parts.append(additional_args)
+
+        command = " ".join(command_parts)
+
+        logger.info(
+            f"{ModernVisualEngine.create_section_header('BURP SUITE', '🛡️', 'ORANGE_RED')}"
+        )
+        logger.info(
+            f"{ModernVisualEngine.format_tool_status('BurpSuite', 'RUNNING', target)}"
+        )
+
+        tool_params = {
+            "project_file": project_file,
+            "config_file": config_file,
+            "target": target,
+            "headless": headless,
+            "scan_type": scan_type,
+            "scan_config": scan_config,
+            "output_file": output_file,
+            "additional_args": additional_args,
+        }
+
+        result = execute_command_with_recovery(
+            "burpsuite", command, tool_params, use_cache=False
+        )
+
+        if result.get("success"):
+            logger.info(
+                f"{ModernVisualEngine.format_tool_status('BurpSuite', 'SUCCESS', target)}"
+            )
+            return jsonify(result)
+
+        stdout = result.get("stdout", "")
+        stderr = result.get("stderr", "")
+        fallback_triggers = [
+            "Unrecognized command-line argument",
+            "Do you accept the terms and conditions",
+        ]
+
+        if any(trigger in stdout for trigger in fallback_triggers):
+            logger.warning(
+                f"{ModernVisualEngine.format_tool_status('BurpSuite', 'RECOVERY', 'CLI unsupported, using alternative workflow')}"
+            )
+            fallback_params = params.copy()
+            with app.test_request_context(
+                "/api/tools/burpsuite-alternative",
+                method="POST",
+                json=fallback_params,
+            ):
+                logger.warning("⚠️ Burp Suite CLI unsupported – falling back to alternative workflow")
+                return burpsuite_alternative()
+
+        logger.error(
+            f"{ModernVisualEngine.format_error_card('ERROR', 'BurpSuite', stderr or 'Unknown error')}"
+        )
+        return jsonify(result), 500
+
+    except Exception as e:
+        logger.error(f"💥 Error in burpsuite endpoint: {str(e)}")
+        return jsonify({"error": f"Server error: {str(e)}"}), 500
+
+
 @app.route("/api/tools/burpsuite-alternative", methods=["POST"])
 def burpsuite_alternative():
     """Comprehensive Burp Suite alternative combining HTTP framework and browser agent"""
@@ -14354,6 +14613,77 @@ def zap():
 
         if additional_args:
             command += f" {additional_args}"
+
+        if daemon:
+            # Idempotent non-blocking start with readiness probe
+            try:
+                with socket.create_connection((host, int(port)), timeout=0.5):
+                    logger.info(f"ZAP already listening on {host}:{port}")
+                    return jsonify({
+                        "stdout": f"ZAP already running on {host}:{port}",
+                        "stderr": "",
+                        "return_code": 0,
+                        "success": True,
+                        "timed_out": False,
+                        "partial_results": False,
+                        "execution_time": 0,
+                        "timestamp": datetime.now().isoformat()
+                    })
+            except Exception:
+                pass
+
+            logger.info(f"Starting ZAP daemon on {host}:{port}")
+            try:
+                subprocess.Popen(
+                    command,
+                    shell=True,
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL
+                )
+            except Exception as e:
+                logger.error(f"Failed to start ZAP daemon: {e}")
+                return jsonify({
+                    "stdout": "",
+                    "stderr": str(e),
+                    "return_code": 1,
+                    "success": False,
+                    "timed_out": False,
+                    "partial_results": False,
+                    "execution_time": 0,
+                    "timestamp": datetime.now().isoformat()
+                }), 500
+
+            start_ts = time.time()
+            deadline = start_ts + 30.0
+            while time.time() < deadline:
+                try:
+                    with socket.create_connection((host, int(port)), timeout=0.5):
+                        exec_time = time.time() - start_ts
+                        logger.info(f"ZAP daemon is ready on {host}:{port} in {exec_time:.2f}s")
+                        return jsonify({
+                            "stdout": f"ZAP listening on {host}:{port}",
+                            "stderr": "",
+                            "return_code": 0,
+                            "success": True,
+                            "timed_out": False,
+                            "partial_results": False,
+                            "execution_time": exec_time,
+                            "timestamp": datetime.now().isoformat()
+                        })
+                except Exception:
+                    time.sleep(0.5)
+
+            logger.warning(f"ZAP daemon not ready after 30s on {host}:{port}")
+            return jsonify({
+                "stdout": "",
+                "stderr": f"ZAP did not become ready on {host}:{port} within 30s",
+                "return_code": 124,
+                "success": False,
+                "timed_out": True,
+                "partial_results": False,
+                "execution_time": 30.0,
+                "timestamp": datetime.now().isoformat()
+            })
 
         logger.info(f"🔍 Starting ZAP scan: {target}")
         result = execute_command(command)
