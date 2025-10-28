@@ -64,8 +64,15 @@ import mitmproxy
 from mitmproxy import http as mitmhttp
 from mitmproxy.tools.dump import DumpMaster
 from mitmproxy.options import Options as MitmOptions
-from monitoring.metrics import get_metrics, commands_executed, command_duration
-
+from monitoring.metrics import (
+    get_metrics, 
+    commands_executed, 
+    command_duration,
+    active_processes,
+    cache_hits,
+    cache_misses,
+    success_rate
+)
 # ============================================================================
 # LOGGING CONFIGURATION (MUST BE FIRST)
 # ============================================================================
