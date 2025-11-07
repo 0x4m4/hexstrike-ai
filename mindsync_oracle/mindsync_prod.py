@@ -43,6 +43,11 @@ from hybrid_memory_graph import HybridMemoryGraph
 from multi_llm_orchestrator import MultiLLMOrchestrator
 from live_threat_feed import LiveThreatFeed
 
+# Import v5 enhancements
+from deep_x_nexus import DeepXNexus
+from x_timeline_analyzer import XTimelineAnalyzer
+from x_researcher_dossier import XResearcherDossier
+
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
@@ -201,9 +206,42 @@ class MindSyncOracleProduction:
             if not self.config.get('threat_feed.enabled', False):
                 logger.info("⚠️  Threat feed disabled in config")
 
+        # Initialize v5 enhancements
+        if self.multi_llm and self.config.get('deep_x.enabled', False):
+            logger.info("Initializing v5 Deep X Intelligence Nexus...")
+
+            # v5: Deep X Nexus (researcher graphs)
+            self.deep_x = DeepXNexus(
+                self.multi_llm,
+                self.memory_graph,
+                self.config
+            )
+            logger.info(f"✅ Deep X Nexus (v5) - X graph intelligence")
+
+            # v5: Timeline Analyzer (temporal patterns)
+            self.x_timeline = XTimelineAnalyzer(
+                self.deep_x,
+                self.config
+            )
+            logger.info(f"✅ X Timeline Analyzer (v5) - Surge detection")
+
+            # v5: Researcher Dossier (influence profiling)
+            self.x_dossier = XResearcherDossier(
+                self.deep_x,
+                self.x_timeline,
+                self.config
+            )
+            logger.info(f"✅ X Researcher Dossier (v5) - Community profiling")
+        else:
+            self.deep_x = None
+            self.x_timeline = None
+            self.x_dossier = None
+            if not self.config.get('deep_x.enabled', False):
+                logger.info("⚠️  Deep X intelligence disabled in config")
+
         self.is_running = False
         logger.info("="*60)
-        logger.info("🚀 MindSync Oracle v4 ready! (Omniscient Multi-LLM AGI)")
+        logger.info("🚀 MindSync Oracle v5 ready! (Omniscient X-Augmented AGI)")
         logger.info("="*60)
 
     async def start(self, daemon_mode: bool = False):

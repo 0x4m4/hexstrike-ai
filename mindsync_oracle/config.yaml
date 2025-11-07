@@ -81,6 +81,32 @@ threat_feed:
     - exploit_db                      # Exploit database
     - threat_intel                    # General threat intelligence
 
+# Deep X Intelligence Nexus (v5)
+deep_x:
+  enabled: false                       # Enable for X researcher graphs & timeline analysis
+  check_interval: 7200                # Check every 2 hours (seconds)
+  min_posts_for_profile: 5            # Minimum posts to create researcher profile
+  track_researchers: true             # Build researcher dossiers
+  detect_clusters: true               # Detect collaboration networks
+  timeline_analysis: true             # Track temporal patterns
+
+  # Timeline parameters
+  surge_threshold: 2.0                # 2x baseline = surge
+  window_days: 30                     # Analysis window
+  baseline_days: 7                    # Baseline calculation period
+
+  # Researcher profiling
+  top_researchers_count: 50           # Track top N researchers
+  expertise_areas:
+    - web_security
+    - network_security
+    - exploit_dev
+    - reverse_engineering
+    - cloud_security
+    - mobile_security
+    - malware_analysis
+    - osint
+
 # Notifications
 notifications:
   enabled: true
