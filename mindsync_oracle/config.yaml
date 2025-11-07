@@ -136,6 +136,76 @@ swarm:
   refresh_interval: 5                 # Dashboard refresh interval (seconds)
   history_retention: 3600             # Metric history retention (seconds, 1 hour)
 
+# Real-Time Intelligence (v7)
+realtime_x:
+  enabled: false                      # Enable real-time X/Twitter firehose
+  keywords:                           # Keywords to filter
+    - CVE
+    - exploit
+    - vulnerability
+    - WordPress
+    - RCE
+    - SQL injection
+    - XSS
+    - authentication bypass
+
+  # Stream mode
+  websocket_enabled: false            # WebSocket streaming (not yet implemented)
+  polling_interval: 60                # Polling interval in seconds
+
+  # Filtering
+  min_relevance: 0.3                  # Minimum relevance score (0-1)
+  rate_limit: 100                     # Max posts per minute
+
+  # Surge detection
+  surge_window: 300                   # Surge detection window (5 minutes)
+  surge_threshold: 3.0                # Surge threshold (3x baseline)
+
+# Ethical Dark Web OSINT (v7)
+tor_osint:
+  enabled: false                      # Enable Tor dark web OSINT
+  ethical_mode: true                  # REQUIRED - must be true to run
+
+  # ⚠️  ETHICAL USE ONLY ⚠️
+  # This feature is STRICTLY for:
+  # - Authorized security research
+  # - Defensive threat intelligence
+  # - Public exploit database mirrors
+  # - Compliance with all applicable laws
+  #
+  # NOT for illegal activities, unauthorized access, or malicious purposes
+
+  # Tor configuration
+  tor_control_port: 9051              # Tor control port
+  tor_socks_port: 9050                # Tor SOCKS proxy port
+
+  # Allowed domains (strict allowlist)
+  allowed_domains: []                 # Add verified .onion domains only
+                                      # Example: ["exploit-db-mirror.onion"]
+                                      # IMPORTANT: Verify domains are legitimate
+                                      # public research sources before adding
+
+  # Scraping
+  scrape_interval: 1800               # Scrape interval (30 minutes)
+
+  # Credibility filtering
+  min_credibility: 0.6                # Minimum credibility score (60%)
+
+  # Audit logging
+  audit_log_path: "tor_osint_audit.log"  # Audit log for compliance
+
+# Unified Threat Hub (v7)
+unified_threat_hub:
+  enabled: false                      # Enable unified threat correlation
+
+  # Correlation
+  correlation_window: 3600            # Threat correlation window (1 hour)
+
+  # Auto-goal triggering
+  auto_goal_confidence_threshold: 0.75  # Min confidence for auto-goals (75%)
+  auto_goal_min_sources: 2            # Min sources for cross-validation
+  auto_goal_cooldown: 3600            # Cooldown between similar goals (1 hour)
+
 # Notifications
 notifications:
   enabled: true

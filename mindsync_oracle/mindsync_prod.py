@@ -54,6 +54,9 @@ from goal_sharding import GoalShardingEngine
 from swarm_consensus import SwarmConsensus
 from swarm_dashboard import SwarmDashboard
 
+# Import v7 enhancements
+from unified_threat_hub import UnifiedThreatHub
+
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
@@ -297,10 +300,41 @@ class MindSyncOracleProduction:
             self.swarm_dashboard = None
             logger.info("⚠️  Federated swarm disabled in config (single-oracle mode)")
 
+        # Initialize v7 enhancements
+        if self.config.get('unified_threat_hub.enabled', False):
+            logger.info("Initializing v7 Unified Threat Intelligence Hub...")
+
+            # v7: Unified Threat Hub (combines X firehose + Tor OSINT)
+            self.threat_hub = UnifiedThreatHub(
+                swarm=self.swarm,
+                multi_llm=self.multi_llm,
+                memory_graph=self.memory_graph,
+                goal_engine=self.goal_engine,
+                config=self.config
+            )
+            logger.info(f"✅ Unified Threat Hub (v7) - Omniscient intelligence mode")
+
+            # Check what's enabled
+            v7_features = []
+            if self.config.get('realtime_x.enabled', False):
+                v7_features.append("X Firehose")
+            if self.config.get('tor_osint.enabled', False):
+                v7_features.append("Tor OSINT (Ethical)")
+
+            if v7_features:
+                logger.info(f"✅ v7 Features active: {', '.join(v7_features)}")
+            else:
+                logger.warning("⚠️  Threat hub enabled but no intelligence streams active")
+
+        else:
+            self.threat_hub = None
+            logger.info("⚠️  Unified threat hub disabled in config")
+
         self.is_running = False
         logger.info("="*60)
         swarm_status = "Federated Hive Mind" if self.swarm else "Single Oracle"
-        logger.info(f"🚀 MindSync Oracle v6 ready! ({swarm_status})")
+        intel_mode = " + Real-Time Intelligence" if self.threat_hub else ""
+        logger.info(f"🚀 MindSync Oracle v7 ready! ({swarm_status}{intel_mode})")
         logger.info("="*60)
 
     async def start(self, daemon_mode: bool = False):
@@ -337,6 +371,11 @@ class MindSyncOracleProduction:
             asyncio.create_task(self._swarm_queue_processor())
             logger.info("🔄 Swarm goal sharding active")
 
+        # Start v7 threat hub if enabled
+        if self.threat_hub:
+            asyncio.create_task(self.threat_hub.start())
+            logger.info("🌐 Unified Threat Hub started (omniscient mode)")
+
     async def stop(self):
         """Stop MindSync Oracle."""
         logger.info("Stopping MindSync Oracle...")
@@ -354,6 +393,10 @@ class MindSyncOracleProduction:
         if self.swarm:
             self.swarm.stop()
             logger.info("Swarm communication stopped")
+
+        if self.threat_hub:
+            await self.threat_hub.stop()
+            logger.info("Threat hub stopped")
 
         logger.info("MindSync Oracle stopped")
 
@@ -507,6 +550,7 @@ class MindSyncCLI:
         print("  /context    - Show current context summary")
         print("  /status     - Show system status")
         print("  /swarm      - Show swarm dashboard (v6)")
+        print("  /threats    - Show threat intelligence hub (v7)")
         print("  /add-goal   - Add a new goal")
         print("  /help       - Show this help")
         print("  /quit       - Exit")
@@ -539,6 +583,9 @@ class MindSyncCLI:
                 elif user_input == "/swarm":
                     self._show_swarm_dashboard()
 
+                elif user_input == "/threats":
+                    self._show_threat_hub()
+
                 elif user_input == "/add-goal":
                     await self._add_goal_interactive()
 
@@ -567,6 +614,7 @@ MindSync Oracle Commands:
   /context    - Show what I know about you (patterns, projects)
   /status     - Show system status
   /swarm      - Show swarm dashboard (v6 federated hive)
+  /threats    - Show threat intelligence hub (v7 real-time OSINT)
   /add-goal   - Interactively add a new goal
   /help       - Show this help
   /quit       - Exit MindSync
@@ -577,6 +625,7 @@ You can also just chat naturally, and I'll:
 - Create goals automatically when appropriate
 - Work on goals autonomously in the background
 - Coordinate with other oracles in the swarm (if enabled)
+- Predict threats before they go mainstream (if v7 enabled)
 """)
 
     def _show_goals(self):
@@ -623,6 +672,7 @@ You can also just chat naturally, and I'll:
         print(f"  Multi-LLM (v4): {'✅ Grok+Claude' if self.oracle.multi_llm and self.oracle.multi_llm.grok_enabled else '⚠️ Claude Only' if self.oracle.multi_llm else '❌ Inactive'}")
         print(f"  Deep X Intelligence (v5): {'✅ Active' if self.oracle.deep_x else '❌ Inactive'}")
         print(f"  Federated Swarm (v6): {'✅ Active' if self.oracle.swarm else '❌ Inactive'}")
+        print(f"  Unified Threat Hub (v7): {'✅ Active' if self.oracle.threat_hub else '❌ Inactive'}")
         print(f"  Memory DB: {self.oracle.config.get('database.path')}")
 
     def _show_swarm_dashboard(self):
@@ -652,6 +702,34 @@ You can also just chat naturally, and I'll:
                 }.get(alert['severity'], '⚪')
                 print(f"  {severity_icon} [{alert['severity'].upper()}] {alert['type']}: {alert['message']}")
             print()
+
+    def _show_threat_hub(self):
+        """Show threat intelligence hub dashboard."""
+        if not self.oracle.threat_hub:
+            print("\n ⚠️  Unified Threat Hub is disabled.")
+            print(" Enable it in config.yaml (unified_threat_hub.enabled: true) for real-time intelligence.")
+            print("\n Available v7 features:")
+            print("  - Real-time X/Twitter firehose (realtime_x.enabled)")
+            print("  - Ethical Tor dark web OSINT (tor_osint.enabled)")
+            return
+
+        # Display threat hub dashboard
+        print("\n")
+        print(self.oracle.threat_hub.get_dashboard_summary())
+
+        # Show correlation summary
+        stats = self.oracle.threat_hub.get_stats()
+        if stats.get('active_clusters', 0) > 0:
+            print("\n🔴 Active Threat Clusters:")
+            high_conf = self.oracle.threat_hub.correlator.get_high_confidence_clusters()
+            for cluster in high_conf[:5]:  # Show top 5
+                print(f"\n  Cluster: {cluster['cluster_id']}")
+                print(f"    Confidence: {cluster['confidence']:.0%}")
+                print(f"    Threats: {cluster['threat_count']}")
+                print(f"    CVEs: {', '.join(cluster['cves'][:3])}")
+                print(f"    Sources: {', '.join(cluster['sources'])}")
+                if cluster['cross_source']:
+                    print(f"    ⚠️  Cross-validated by multiple sources!")
 
     async def _add_goal_interactive(self):
         """Add goal interactively."""
