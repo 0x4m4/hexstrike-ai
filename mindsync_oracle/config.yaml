@@ -278,6 +278,58 @@ xbow_mode:
     include_methodology: true         # Include detailed methodology
     include_ethical_notes: true       # Include ethical considerations
 
+# v9: Elite Orchestration Layer
+v9_orchestration:
+  enabled: false                      # Enable v9 enhancements
+
+  # MCP Integration
+  mcp:
+    shodan:
+      enabled: false                  # Shodan device/IP intelligence
+      api_key: ${SHODAN_API_KEY}      # Get at https://account.shodan.io/
+
+    virustotal:
+      enabled: false                  # VirusTotal malware/reputation
+      api_key: ${VIRUSTOTAL_API_KEY}  # Get at https://virustotal.com/
+
+    nist:
+      enabled: true                   # NIST NVD CVE database (public, no key)
+
+  # Confidence Scoring
+  confidence_scoring:
+    enabled: true                     # Enable confidence assessment
+
+    # Thresholds (0-1)
+    thresholds:
+      high: 0.8                       # High confidence (auto-approve)
+      medium: 0.7                     # Medium (proceed with caution)
+      low: 0.5                        # Low (route to human approval)
+      reject: 0.3                     # Very low (reject for safety)
+
+    # Factor weights
+    weights:
+      quality: 0.20                   # Output quality weight
+      certainty: 0.25                 # Certainty (inverse hedging) weight
+      graph_consistency: 0.25         # Memory graph validation weight
+      source_validation: 0.20         # Cross-source confirmation weight
+      historical_accuracy: 0.10       # Historical prediction accuracy weight
+
+    # Auto-routing
+    route_low_confidence_to_human: true      # <0.7 → human approval
+    route_very_low_to_swarm: true            # <0.5 → swarm consensus
+    reject_extremely_low: true               # <0.3 → hard reject
+
+  # Parallel Execution
+  parallel_execution:
+    enabled: true                     # Enable parallel chain execution
+    max_parallel: 5                   # Max concurrent steps
+    use_swarm: false                  # Distribute to v6 swarm (requires swarm enabled)
+    timeout: 60                       # Step timeout in seconds
+
+    # Optimization
+    estimate_sequential_time: true    # Calculate time saved vs sequential
+    cache_results: true               # Cache step results (1 hour TTL)
+
 # Notifications
 notifications:
   enabled: true
