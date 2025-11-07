@@ -37,7 +37,9 @@ class ProductionGoalEngine:
     This actually works - pursues goals in background without prompting.
     """
 
-    def __init__(self, memory_manager, agent_orchestrator, notification_system):
+    def __init__(self, memory_manager, agent_orchestrator, notification_system,
+                 tool_tracker=None, self_improvement=None, adaptive_notifier=None,
+                 memory_graph=None):
         """
         Initialize production goal engine.
 
@@ -45,15 +47,27 @@ class ProductionGoalEngine:
             memory_manager: MemoryManager instance
             agent_orchestrator: Claude orchestrator for execution
             notification_system: NotificationSystem for proactive alerts
+            tool_tracker: Optional ToolPerformanceTracker (v2)
+            self_improvement: Optional SelfImprovementEngine (v2)
+            adaptive_notifier: Optional AdaptiveNotificationEngine (v2)
+            memory_graph: Optional HybridMemoryGraph (v3)
         """
         self.memory = memory_manager
         self.orchestrator = agent_orchestrator
         self.notifier = notification_system
 
+        # v2/v3 enhancements (optional)
+        self.tool_tracker = tool_tracker
+        self.self_improvement = self_improvement
+        self.adaptive_notifier = adaptive_notifier
+        self.memory_graph = memory_graph
+
         self.active_executions = {}  # goal_id -> asyncio.Task
         self.is_running = False
 
-        logger.info("Production Goal Engine initialized")
+        logger.info("Production Goal Engine initialized (v2/v3 enhancements: {})".format(
+            "enabled" if tool_tracker else "disabled"
+        ))
 
     async def start_autonomous_loop(self):
         """
@@ -174,11 +188,51 @@ Use any available tools as needed. Provide detailed results."""
             # Step 4: Mark goal as completed
             self.memory.update_goal_progress(goal_id, 1.0, status='completed')
 
-            # Step 5: Notify user proactively
-            self.notifier.goal_completed(
-                goal_text,
-                f"Completed {len(sub_tasks)} tasks. {report[:200]}..."
-            )
+            # Step 5: v2/v3 Integration - Self-Improvement & Learning
+            execution_data = {
+                "success": True,
+                "goal_id": goal_id,
+                "results": results,
+                "report": report,
+                "duration": (datetime.now() - datetime.fromisoformat(goal.get('created_at', datetime.now().isoformat()))).total_seconds(),
+                "tools_used": self._extract_tools_from_results(results)
+            }
+
+            # v2: Self-improvement analysis
+            if self.self_improvement:
+                try:
+                    analysis = await self.self_improvement.analyze_goal_outcome(goal_id, execution_data)
+                    logger.info(f"Self-improvement analysis: {analysis.get('analysis', {}).get('success_rating', 'N/A')}/10")
+                except Exception as e:
+                    logger.error(f"Error in self-improvement: {e}")
+
+            # v3: Add to memory graph
+            if self.memory_graph:
+                try:
+                    tools_used = execution_data['tools_used']
+                    learnings = self._extract_learnings_from_results(results, analysis if self.self_improvement else {})
+                    self.memory_graph.add_goal_execution(
+                        goal_text,
+                        tools_used=tools_used,
+                        outcome={'success': True, 'duration': execution_data['duration']},
+                        learnings=learnings
+                    )
+                    logger.info(f"Added goal execution to memory graph")
+                except Exception as e:
+                    logger.error(f"Error adding to memory graph: {e}")
+
+            # Step 6: Notify user proactively (using adaptive notifier if available)
+            if self.adaptive_notifier:
+                await self.adaptive_notifier.send_adaptive(
+                    "Goal Completed",
+                    f"{goal_text}\n\nCompleted {len(sub_tasks)} tasks. {report[:200]}...",
+                    notification_type="goal_completed"
+                )
+            else:
+                self.notifier.goal_completed(
+                    goal_text,
+                    f"Completed {len(sub_tasks)} tasks. {report[:200]}..."
+                )
 
             logger.info(f"✅ Goal {goal_id} completed successfully")
 
@@ -298,6 +352,70 @@ Create a brief report (3-5 bullet points) highlighting key findings and results.
             "priority": g.get('priority', 'medium'),
             "status": "in_progress" if g['id'] in self.active_executions else "queued"
         } for g in goals]
+
+    # v2/v3 Integration Helper Methods
+
+    def _extract_tools_from_results(self, results: List[Dict[str, Any]]) -> List[str]:
+        """
+        Extract tool names from execution results.
+
+        Args:
+            results: List of execution results
+
+        Returns:
+            List of tool names used
+        """
+        tools = []
+        for result in results:
+            # Extract tools from result data
+            if isinstance(result, dict):
+                result_text = str(result.get('result', ''))
+                # Common security tools
+                common_tools = [
+                    'nmap', 'rustscan', 'masscan', 'nuclei', 'nikto',
+                    'gobuster', 'feroxbuster', 'ffuf', 'dirsearch',
+                    'amass', 'subfinder', 'sqlmap', 'hydra', 'john',
+                    'hashcat', 'metasploit', 'burpsuite', 'whatweb',
+                    'httpx', 'katana'
+                ]
+                for tool in common_tools:
+                    if tool in result_text.lower():
+                        if tool not in tools:
+                            tools.append(tool)
+
+        return tools if tools else ['claude']  # Default to claude if no specific tools detected
+
+    def _extract_learnings_from_results(self, results: List[Dict[str, Any]],
+                                       analysis: Dict[str, Any]) -> List[str]:
+        """
+        Extract learnings from execution results and self-improvement analysis.
+
+        Args:
+            results: List of execution results
+            analysis: Self-improvement analysis (if available)
+
+        Returns:
+            List of learning strings
+        """
+        learnings = []
+
+        # Extract from self-improvement analysis
+        if analysis and 'analysis' in analysis:
+            what_worked = analysis['analysis'].get('what_worked', [])
+            learnings.extend(what_worked[:3])  # Top 3 learnings
+
+            suggested = analysis['analysis'].get('suggested_improvements', [])
+            learnings.extend(suggested[:2])  # Top 2 improvements
+
+        # Extract from results
+        for result in results[:3]:  # First 3 results
+            if isinstance(result, dict):
+                result_text = str(result.get('result', ''))
+                # Extract key findings (simplified)
+                if 'found' in result_text.lower() or 'discovered' in result_text.lower():
+                    learnings.append(result_text[:100])  # First 100 chars
+
+        return learnings[:5] if learnings else ['Goal completed successfully']
 
 
 if __name__ == "__main__":

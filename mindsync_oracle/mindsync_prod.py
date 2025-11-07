@@ -33,6 +33,12 @@ from services.agent_orchestrator_prod import ProductionClaudeOrchestrator
 from agents.goal_engine_prod import ProductionGoalEngine
 from interfaces.input_processor import MultiModalInputProcessor
 
+# Import v2 and v3 enhancements
+from self_improvement import SelfImprovementEngine
+from adaptive_notifications import AdaptiveNotificationEngine
+from tool_learning import ToolPerformanceTracker
+from hybrid_memory_graph import HybridMemoryGraph
+
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
@@ -106,32 +112,65 @@ class MindSyncOracleProduction:
             logger.info("Running in limited mode without Claude integration")
             self.orchestrator = None
 
-        # Initialize goal engine
+        # Note: Goal engine initialization moved after v2/v3 enhancements
+        self.goal_engine = None  # Will be initialized after v2/v3 systems
+        self.scheduler = None  # Will be initialized after goal engine
+
+        # Initialize v2 and v3 enhancements
+        logger.info("Initializing v2/v3 enhancements...")
+
+        # v3: Hybrid Memory Graph
+        graph_path = self.config.get('database.graph_path', 'mindsync_graph.pkl')
+        self.memory_graph = HybridMemoryGraph(graph_path)
+        logger.info(f"✅ Hybrid Memory Graph (v3) - {self.memory_graph.get_graph_stats()['total_nodes']} nodes")
+
+        # v2: Tool Performance Tracker
+        self.tool_tracker = ToolPerformanceTracker(self.memory)
+        logger.info(f"✅ Tool Performance Tracker (v2)")
+
+        # v2: Self-Improvement Engine
+        if self.orchestrator:
+            self.self_improvement = SelfImprovementEngine(self.memory, self.orchestrator)
+            logger.info(f"✅ Self-Improvement Engine (v2)")
+        else:
+            self.self_improvement = None
+            logger.warning("Self-improvement disabled (no Claude orchestrator)")
+
+        # v2: Adaptive Notification Engine
+        self.adaptive_notifier = AdaptiveNotificationEngine(
+            self.notifier,
+            self.memory,
+            self.config
+        )
+        logger.info(f"✅ Adaptive Notification Engine (v2)")
+
+        # Initialize goal engine with v2/v3 enhancements
         if self.orchestrator:
             self.goal_engine = ProductionGoalEngine(
                 self.memory,
                 self.orchestrator,
-                self.notifier
+                self.notifier,
+                tool_tracker=self.tool_tracker,
+                self_improvement=self.self_improvement,
+                adaptive_notifier=self.adaptive_notifier,
+                memory_graph=self.memory_graph
             )
-            logger.info(f"✅ Goal engine initialized")
+            logger.info(f"✅ Goal engine initialized (v2/v3 integrated)")
         else:
-            self.goal_engine = None
             logger.warning("Goal engine disabled (no Claude orchestrator)")
 
-        # Initialize scheduler (if enabled)
+        # Re-initialize scheduler with goal engine now available
         if self.config.scheduler_enabled and self.goal_engine:
             self.scheduler = MindSyncScheduler(
                 self.goal_engine,
                 self.memory,
                 self.notifier
             )
-            logger.info(f"✅ Background scheduler")
-        else:
-            self.scheduler = None
+            logger.info(f"✅ Background scheduler (re-initialized)")
 
         self.is_running = False
         logger.info("="*60)
-        logger.info("🚀 MindSync Oracle ready!")
+        logger.info("🚀 MindSync Oracle v3 ready! (Self-Evolving AGI)")
         logger.info("="*60)
 
     async def start(self, daemon_mode: bool = False):
