@@ -1,0 +1,28 @@
+# MindSync Oracle - Requirements
+
+# Core AI
+anthropic>=0.40.0          # Claude Agent SDK
+openai>=1.54.0             # Whisper for voice transcription
+
+# MCP Integration
+mcp>=1.0.0                 # Model Context Protocol
+fastmcp>=0.1.0             # FastMCP for tool integration
+
+# Data & Storage
+sqlite3                    # Built-in, persistent memory
+
+# Async & Scheduling
+asyncio                    # Built-in, async operations
+APScheduler>=3.10.0        # Background task scheduling
+
+# Utilities
+python-dotenv>=1.0.0       # Environment variable management
+typing-extensions>=4.9.0   # Type hints
+
+# Optional: Audio processing
+pyaudio>=0.2.14           # Audio recording (optional for voice)
+pydub>=0.25.1             # Audio manipulation (optional)
+
+# Optional: Advanced features
+Pillow>=10.0.0            # Image processing
+numpy>=1.24.0             # Numerical operations
