@@ -39,6 +39,10 @@ from adaptive_notifications import AdaptiveNotificationEngine
 from tool_learning import ToolPerformanceTracker
 from hybrid_memory_graph import HybridMemoryGraph
 
+# Import v4 enhancements
+from multi_llm_orchestrator import MultiLLMOrchestrator
+from live_threat_feed import LiveThreatFeed
+
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
@@ -168,9 +172,38 @@ class MindSyncOracleProduction:
             )
             logger.info(f"✅ Background scheduler (re-initialized)")
 
+        # Initialize v4 enhancements
+        logger.info("Initializing v4 multi-LLM orchestration...")
+
+        # v4: Multi-LLM Orchestrator (Claude + Grok)
+        if self.orchestrator:
+            self.multi_llm = MultiLLMOrchestrator(
+                self.config,
+                self.orchestrator,
+                self.memory_graph
+            )
+            logger.info(f"✅ Multi-LLM Orchestrator (v4) - Grok: {self.multi_llm.grok_enabled}")
+        else:
+            self.multi_llm = None
+            logger.warning("Multi-LLM orchestrator disabled (no Claude orchestrator)")
+
+        # v4: Live Threat Feed
+        if self.multi_llm and self.config.get('threat_feed.enabled', False):
+            self.threat_feed = LiveThreatFeed(
+                self.multi_llm,
+                self.memory_graph,
+                self.goal_engine,
+                self.config
+            )
+            logger.info(f"✅ Live Threat Feed (v4) - Sources: {len(self.threat_feed.sources)}")
+        else:
+            self.threat_feed = None
+            if not self.config.get('threat_feed.enabled', False):
+                logger.info("⚠️  Threat feed disabled in config")
+
         self.is_running = False
         logger.info("="*60)
-        logger.info("🚀 MindSync Oracle v3 ready! (Self-Evolving AGI)")
+        logger.info("🚀 MindSync Oracle v4 ready! (Omniscient Multi-LLM AGI)")
         logger.info("="*60)
 
     async def start(self, daemon_mode: bool = False):
@@ -193,6 +226,11 @@ class MindSyncOracleProduction:
             self.scheduler.start()
             logger.info("📅 Background scheduler started")
 
+        # Start threat feed if enabled
+        if self.threat_feed:
+            asyncio.create_task(self.threat_feed.start())
+            logger.info("🔴 Live threat feed started")
+
     async def stop(self):
         """Stop MindSync Oracle."""
         logger.info("Stopping MindSync Oracle...")
@@ -203,6 +241,9 @@ class MindSyncOracleProduction:
 
         if self.scheduler:
             self.scheduler.stop()
+
+        if self.threat_feed:
+            await self.threat_feed.stop()
 
         logger.info("MindSync Oracle stopped")
 

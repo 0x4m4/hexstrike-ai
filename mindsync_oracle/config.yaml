@@ -5,9 +5,25 @@ api:
   anthropic_key: ${ANTHROPIC_API_KEY}  # Required for Claude
   openai_key: ${OPENAI_API_KEY}        # Optional for Whisper voice
 
+# xAI/Grok Integration (v4)
+xai:
+  enabled: false                       # Enable for Grok integration
+  api_key: ${XAI_API_KEY}             # Get at https://x.ai/api
+  base_url: "https://api.x.ai/v1/chat/completions"
+  model: "grok-beta"                  # or "grok-3" for free tier
+
+# Multi-LLM Router (v4)
+llm_router:
+  intelligence: "grok"                # Use Grok for intelligence gathering
+  tools: "claude"                     # Use Claude for tool execution
+  reasoning: "claude"                 # Use Claude for structured reasoning
+  search: "grok"                      # Use Grok for web/X searches
+  hybrid: "auto"                      # Auto-select based on performance
+
 # Database
 database:
   path: "mindsync_memory.db"
+  graph_path: "mindsync_graph.pkl"   # v3: Memory graph storage
   backup_enabled: true
   backup_interval_hours: 24
 
@@ -51,6 +67,19 @@ scheduler:
     - name: "memory_cleanup"
       interval_days: 7
       enabled: true
+
+# Live Threat Feed (v4)
+threat_feed:
+  enabled: false                       # Enable for proactive threat monitoring
+  check_interval: 3600                # Check every hour (seconds)
+  auto_create_goals: false            # Auto-create goals for high-priority threats
+  priority_threshold: "high"          # Minimum priority to act on (low/medium/high/critical/urgent)
+
+  sources:
+    - x_security                      # X/Twitter security community
+    - cve_new                         # New CVEs
+    - exploit_db                      # Exploit database
+    - threat_intel                    # General threat intelligence
 
 # Notifications
 notifications:
