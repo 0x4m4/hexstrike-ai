@@ -206,6 +206,78 @@ unified_threat_hub:
   auto_goal_min_sources: 2            # Min sources for cross-validation
   auto_goal_cooldown: 3600            # Cooldown between similar goals (1 hour)
 
+# XBOW-Inspired Vulnerability Research (v8)
+xbow_mode:
+  enabled: false                      # Enable XBOW-inspired vulnerability research
+  ethical_only: true                  # REQUIRED - must be true to run
+
+  # ⚠️  ETHICAL USE ONLY - AUTHORIZED ENVIRONMENTS ONLY ⚠️
+  # This feature is STRICTLY for:
+  # - Authorized CTF competitions (HackTheBox, TryHackMe, CTFTime)
+  # - Personal lab environments (owned infrastructure)
+  # - Authorized red team engagements (written permission)
+  # - Bug bounty research (manual submission only)
+  # - Educational security research
+  #
+  # NOT for production systems, unauthorized targets, or malicious purposes
+
+  # Human-in-the-Loop Control
+  human_in_loop:
+    enabled: true                     # REQUIRED - mandatory approval for all actions
+    approval_timeout: 300             # Approval timeout in seconds (5 minutes)
+    audit_log: "v8_audit.log"         # Audit log for all actions
+    require_all_approvals: true       # Every action requires approval (no exceptions)
+
+  # Scope Validation
+  scope_validator:
+    enabled: true                     # REQUIRED - hard scope enforcement
+    scope_file: "authorized_scope.yaml"  # Path to scope configuration
+    audit_log: "scope_validation_audit.log"  # Scope validation audit log
+    reject_out_of_scope: true         # Hard reject for out-of-scope targets
+
+  # Sandbox Execution
+  sandbox:
+    enabled: true                     # REQUIRED - all tools run in containers
+    default_mode: true                # Use sandbox by default (no host execution)
+    image: "kalilinux/kali-rolling"   # Docker image for security tools
+    network_mode: "bridge"            # Network mode (none/bridge/host)
+    memory_limit: "1g"                # Memory limit per container
+    cpu_limit: 2.0                    # CPU limit (number of CPUs)
+    timeout: 300                      # Default execution timeout (5 minutes)
+
+  # Vulnerability Research Assistant
+  vuln_research:
+    min_confidence: 0.6               # Minimum confidence for chain suggestions
+    patterns_enabled: true            # Use predefined vulnerability patterns
+    cross_source_boost: 0.15          # Confidence boost for cross-source validation
+    cve_boost: 0.1                    # Confidence boost for CVE mentions
+
+  # Chain Predictor
+  chain_predictor:
+    min_confidence: 0.6               # Minimum confidence for predictions
+    temporal_grouping: 3600           # Group threats within 1 hour window
+    eta_prediction: true              # Predict time to public exploit
+
+  # CTF Lab Agent
+  ctf_agent:
+    enabled: false                    # Enable CTF-solving agent
+    max_concurrent_challenges: 1      # Max challenges to work on simultaneously
+    auto_writeup: true                # Generate writeups automatically
+    flag_regex: "CTF\\{[^}]+\\}"      # Regex to detect flags
+
+  # Integration
+  integration:
+    hexstrike_enabled: true           # Use HexStrike tools when available
+    v7_threat_hub: true               # Use v7 unified threat hub
+    v5_deep_x: false                  # Use v5 researcher graphs (optional)
+
+  # Reporting
+  reporting:
+    generate_writeups: true           # Generate challenge writeups
+    writeup_path: "v8_writeups/"      # Path for writeup storage
+    include_methodology: true         # Include detailed methodology
+    include_ethical_notes: true       # Include ethical considerations
+
 # Notifications
 notifications:
   enabled: true

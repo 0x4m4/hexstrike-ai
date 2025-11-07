@@ -1,0 +1,260 @@
+# MindSync Oracle v8 - Authorized Scope Configuration
+#
+# ⚠️ CRITICAL: This file defines what targets are AUTHORIZED for v8 testing
+#
+# Copy this file to 'authorized_scope.yaml' and customize for your engagement.
+# v8 will HARD REJECT any targets not defined in this file.
+#
+# Use Cases:
+# - CTF competitions (HackTheBox, TryHackMe, CTFTime)
+# - Personal lab environments (owned infrastructure)
+# - Authorized red team engagements (written permission)
+# - Bug bounty programs (in-scope targets only)
+
+# ============================================================================
+# AUTHORIZATION METADATA
+# ============================================================================
+authorization:
+  granted_by: "Your Name or Authorizing Party"
+  granted_date: "2025-11-07"
+  expires: "2025-12-31"  # Authorization expiry date (YYYY-MM-DD)
+  purpose: "CTF Competition / Personal Lab / Red Team Exercise / Bug Bounty"
+  engagement_id: "ENG-2025-001"  # Unique engagement identifier
+
+  # Optional fields
+  client: "Client Name (if applicable)"
+  team: "Your Team Name"
+  contact: "security@example.com"
+
+# ============================================================================
+# AUTHORIZED TARGETS
+# ============================================================================
+targets:
+
+  # --------------------------------------------------------------------------
+  # IP Addresses (Individual IPs and CIDR Ranges)
+  # --------------------------------------------------------------------------
+  ip_addresses:
+    # Individual IPs
+    - "192.168.1.100"      # Example: Lab server
+    - "10.10.10.100"       # Example: HackTheBox machine
+
+    # CIDR ranges
+    - "192.168.1.0/24"     # Example: Lab network
+    - "10.10.10.0/24"      # Example: HTB network range
+    - "10.129.0.0/16"      # Example: HTB expanded range
+
+  # --------------------------------------------------------------------------
+  # Domains (Exact Match and Wildcard Subdomains)
+  # --------------------------------------------------------------------------
+  domains:
+    # Exact domain matches
+    - "testserver.local"
+    - "vulnerable.lab.local"
+
+    # Wildcard subdomains (*.example.com matches any subdomain)
+    - "*.lab.local"        # Matches: test.lab.local, app.lab.local, etc.
+    - "*.htb.local"        # Matches: machine1.htb.local, etc.
+
+    # Bug bounty examples
+    - "*.bugcrowd-target.com"
+    - "app.hackerone-target.com"
+
+  # --------------------------------------------------------------------------
+  # URLs (Specific Endpoints with Path Constraints)
+  # --------------------------------------------------------------------------
+  urls:
+    # Exact URLs
+    - "https://vulnerable.app/test"
+
+    # URLs with wildcard paths
+    - "https://vulnerable.app/test/*"       # Matches all /test/* paths
+    - "https://ctf-challenge.local/*"       # Matches entire site
+
+    # Bug bounty examples
+    - "https://api.target.com/*"
+    - "https://staging.target.com/*"
+
+  # --------------------------------------------------------------------------
+  # EXCLUDED TARGETS (Explicitly Forbidden - Higher Priority)
+  # --------------------------------------------------------------------------
+  # These targets are ALWAYS blocked, even if they match the above rules.
+  # Use this to exclude critical infrastructure, production systems, etc.
+  excluded:
+    # Infrastructure exclusions
+    - "192.168.1.1"        # Gateway/router - DO NOT TOUCH
+    - "192.168.1.10"       # NAS - production data
+
+    # Domain exclusions
+    - "prod.company.com"   # Production environment
+    - "status.company.com" # Status page (often excluded in bug bounties)
+
+    # IP range exclusions within allowed ranges
+    - "10.10.10.1"         # VPN gateway
+
+# ============================================================================
+# EXAMPLE CONFIGURATIONS FOR COMMON USE CASES
+# ============================================================================
+
+# -----------------------------------------------------------------------------
+# Example 1: HackTheBox CTF
+# -----------------------------------------------------------------------------
+# authorization:
+#   granted_by: "HackTheBox Platform"
+#   granted_date: "2025-11-07"
+#   expires: "2025-12-31"
+#   purpose: "CTF Competition - HackTheBox Labs"
+#   engagement_id: "HTB-SUBSCRIPTION-001"
+#
+# targets:
+#   ip_addresses:
+#     - "10.10.10.0/24"      # HTB machine range
+#     - "10.129.0.0/16"      # HTB expanded range
+#
+#   domains:
+#     - "*.htb.local"
+#
+#   excluded:
+#     - "10.10.10.1"         # VPN gateway
+
+# -----------------------------------------------------------------------------
+# Example 2: Personal Lab
+# -----------------------------------------------------------------------------
+# authorization:
+#   granted_by: "Self (Lab Owner)"
+#   granted_date: "2025-11-07"
+#   expires: "2099-12-31"
+#   purpose: "Personal Security Research Lab"
+#   engagement_id: "PERSONAL-LAB-001"
+#
+# targets:
+#   ip_addresses:
+#     - "192.168.1.0/24"     # Home lab network
+#
+#   domains:
+#     - "*.lab.local"
+#     - "*.test.local"
+#
+#   excluded:
+#     - "192.168.1.1"        # Router
+#     - "192.168.1.10"       # NAS with production data
+#     - "192.168.1.20"       # Smart home controller
+
+# -----------------------------------------------------------------------------
+# Example 3: Red Team Engagement
+# -----------------------------------------------------------------------------
+# authorization:
+#   granted_by: "Client CISO - Jane Doe"
+#   granted_date: "2025-11-01"
+#   expires: "2025-11-30"
+#   purpose: "Authorized Red Team Exercise"
+#   engagement_id: "REDTEAM-CLIENT-2025-Q4"
+#   client: "Example Corp"
+#   contact: "jane.doe@client.com"
+#
+# targets:
+#   ip_addresses:
+#     - "203.0.113.0/24"     # Client test network
+#
+#   domains:
+#     - "*.test.client.com"
+#     - "staging.client.com"
+#
+#   urls:
+#     - "https://testapp.client.com/*"
+#
+#   excluded:
+#     - "203.0.113.1"        # Client firewall
+#     - "203.0.113.10"       # Client AD server (excluded by agreement)
+#     - "prod.client.com"    # Production (explicitly out of scope)
+
+# -----------------------------------------------------------------------------
+# Example 4: Bug Bounty Program
+# -----------------------------------------------------------------------------
+# authorization:
+#   granted_by: "Bug Bounty Program - Example Corp"
+#   granted_date: "2025-11-07"
+#   expires: "2026-11-07"
+#   purpose: "Bug Bounty Research (Manual Submission)"
+#   engagement_id: "BUGBOUNTY-EXAMPLECORP"
+#
+# targets:
+#   domains:
+#     - "*.example.com"      # Wildcard subdomain
+#     - "app.example.com"    # Main application
+#
+#   urls:
+#     - "https://app.example.com/*"
+#     - "https://api.example.com/*"
+#
+#   excluded:
+#     - "status.example.com"  # Status page (excluded by program)
+#     - "blog.example.com"    # Blog (out of scope per program rules)
+
+# ============================================================================
+# VALIDATION RULES
+# ============================================================================
+#
+# 1. IP Address Validation:
+#    - Supports individual IPs: "192.168.1.100"
+#    - Supports CIDR ranges: "10.0.0.0/24"
+#    - Validates both IPv4 and IPv6
+#
+# 2. Domain Validation:
+#    - Exact match: "example.com" only matches "example.com"
+#    - Wildcard subdomain: "*.example.com" matches:
+#      - test.example.com ✅
+#      - app.example.com ✅
+#      - example.com ✅
+#      - Does NOT match: malicious.com ❌
+#
+# 3. URL Validation:
+#    - Exact match: "https://app.example.com/test"
+#    - Path wildcard: "https://app.example.com/test/*" matches:
+#      - https://app.example.com/test/page ✅
+#      - https://app.example.com/test/api/endpoint ✅
+#      - Does NOT match: https://app.example.com/admin ❌
+#
+# 4. Exclusion Priority:
+#    - Excluded targets are ALWAYS blocked
+#    - Exclusions override all other rules
+#    - If target matches both allowed and excluded, it is REJECTED
+#
+# 5. Expiry Checking:
+#    - Authorization expiry is checked on load
+#    - Expired authorizations are REJECTED
+#    - Update 'expires' field before expiry date
+
+# ============================================================================
+# SECURITY NOTES
+# ============================================================================
+#
+# 1. ⚠️ DO NOT add targets without proper authorization
+# 2. ⚠️ Always define excluded targets (routers, production systems, etc.)
+# 3. ⚠️ Review scope file before each engagement
+# 4. ⚠️ Update expiry dates to match authorization period
+# 5. ⚠️ Keep scope file under version control for audit trail
+# 6. ⚠️ Do not use wildcard scopes for internet ranges (e.g., 0.0.0.0/0)
+# 7. ⚠️ Validate all entries before enabling v8
+
+# ============================================================================
+# QUICK START
+# ============================================================================
+#
+# 1. Copy this file:
+#    cp authorized_scope.yaml.example authorized_scope.yaml
+#
+# 2. Edit authorized_scope.yaml with your specific targets
+#
+# 3. Verify authorization section is complete
+#
+# 4. Enable v8 in config.yaml:
+#    xbow_mode:
+#      enabled: true
+#      scope_validator:
+#        scope_file: "authorized_scope.yaml"
+#
+# 5. Test scope validation:
+#    python scope_validator.py
+#
+# 6. Start v8 with confidence that only authorized targets are accessible
