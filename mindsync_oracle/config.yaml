@@ -1,0 +1,107 @@
+# MindSync Oracle Configuration
+
+# API Keys
+api:
+  anthropic_key: ${ANTHROPIC_API_KEY}  # Required for Claude
+  openai_key: ${OPENAI_API_KEY}        # Optional for Whisper voice
+
+# Database
+database:
+  path: "mindsync_memory.db"
+  backup_enabled: true
+  backup_interval_hours: 24
+
+# Agent Settings
+agent:
+  model: "claude-sonnet-4-5-20250929"
+  max_tokens: 8000
+  temperature: 0.7
+  system_prompt_prefix: "You are MindSync Oracle, a persistent AI agent with autonomous capabilities."
+
+# Goal Engine
+goals:
+  check_interval_seconds: 60        # Check for active goals every minute
+  max_concurrent_goals: 3
+  auto_decompose: true              # Automatically break goals into sub-tasks
+  proactive_reporting: true         # Report completed goals proactively
+
+# HexStrike Integration
+hexstrike:
+  enabled: true
+  server_url: "http://localhost:8888"
+  timeout_seconds: 300
+  auto_load_tools: true
+
+# Background Scheduler
+scheduler:
+  enabled: true
+  jobs:
+    - name: "goal_processor"
+      interval_minutes: 1
+      enabled: true
+
+    - name: "pattern_analyzer"
+      interval_minutes: 30
+      enabled: true
+
+    - name: "cve_monitor"
+      interval_hours: 6
+      enabled: false  # Enable manually for CVE monitoring
+
+    - name: "memory_cleanup"
+      interval_days: 7
+      enabled: true
+
+# Notifications
+notifications:
+  enabled: true
+  methods:
+    - desktop      # Desktop notifications
+    - log          # Log file
+    - terminal     # Terminal output
+
+  levels:
+    goal_completed: true
+    goal_failed: true
+    critical_finding: true
+    pattern_detected: false
+    info: false
+
+# Memory Management
+memory:
+  max_conversations: 1000
+  max_patterns: 500
+  retention_days: 365
+  auto_cleanup: true
+
+  # What to remember
+  store_conversations: true
+  store_patterns: true
+  store_decisions: true
+  store_tool_usage: true
+
+# Logging
+logging:
+  level: "INFO"  # DEBUG, INFO, WARNING, ERROR
+  file: "mindsync.log"
+  max_size_mb: 100
+  backup_count: 5
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+
+# Security
+security:
+  encrypt_database: false  # Set to true for encryption at rest
+  encryption_key: ${MINDSYNC_ENCRYPTION_KEY}
+  require_api_key_validation: true
+
+# Performance
+performance:
+  max_memory_mb: 1000
+  cache_enabled: true
+  cache_ttl_seconds: 3600
+
+# Development
+development:
+  debug_mode: false
+  verbose_logging: false
+  mock_api_calls: false  # Set to true for testing without API keys

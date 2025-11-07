@@ -1,23 +1,27 @@
-# MindSync Oracle - Requirements
+# MindSync Oracle - Production Requirements
 
 # Core AI
 anthropic>=0.40.0          # Claude Agent SDK
 openai>=1.54.0             # Whisper for voice transcription
 
-# MCP Integration
-mcp>=1.0.0                 # Model Context Protocol
-fastmcp>=0.1.0             # FastMCP for tool integration
+# Configuration & Data
+PyYAML>=6.0.1              # YAML configuration
+python-dotenv>=1.0.0       # Environment variable management
 
-# Data & Storage
-sqlite3                    # Built-in, persistent memory
+# Networking & HTTP
+requests>=2.31.0           # HTTP client for HexStrike integration
+httpx>=0.25.0              # Async HTTP client
 
-# Async & Scheduling
-asyncio                    # Built-in, async operations
+# Background Processing
 APScheduler>=3.10.0        # Background task scheduling
 
+# Notifications
+plyer>=2.1.0               # Cross-platform notifications
+win10toast>=0.9; sys_platform == 'win32'  # Windows notifications
+
 # Utilities
-python-dotenv>=1.0.0       # Environment variable management
 typing-extensions>=4.9.0   # Type hints
+colorama>=0.4.6            # Terminal colors
 
 # Optional: Audio processing
 pyaudio>=0.2.14           # Audio recording (optional for voice)
