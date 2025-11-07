@@ -48,6 +48,12 @@ from deep_x_nexus import DeepXNexus
 from x_timeline_analyzer import XTimelineAnalyzer
 from x_researcher_dossier import XResearcherDossier
 
+# Import v6 enhancements
+from federated_swarm import FederatedSwarm
+from goal_sharding import GoalShardingEngine
+from swarm_consensus import SwarmConsensus
+from swarm_dashboard import SwarmDashboard
+
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
@@ -239,9 +245,62 @@ class MindSyncOracleProduction:
             if not self.config.get('deep_x.enabled', False):
                 logger.info("⚠️  Deep X intelligence disabled in config")
 
+        # Initialize v6 enhancements
+        if self.config.get('swarm.enabled', False):
+            logger.info("Initializing v6 Federated Swarm System...")
+
+            # v6: Federated Swarm (P2P communication)
+            self.swarm = FederatedSwarm(
+                swarm_id=self.config.get('swarm.swarm_id', 'mindsync_swarm'),
+                member_id=self.config.get('swarm.member_id', 'oracle_primary'),
+                role=self.config.get('swarm.role', 'hybrid'),
+                pub_port=self.config.get('swarm.pub_port', 5555),
+                sub_peers=self.config.get('swarm.sub_peers', []),
+                encryption_key=self.config.get('swarm.encryption_key'),
+                config=self.config
+            )
+            logger.info(f"✅ Federated Swarm (v6) - Member: {self.swarm.member_id}, Role: {self.swarm.role}")
+
+            # v6: Goal Sharding Engine (distributed task execution)
+            self.goal_sharding = GoalShardingEngine(
+                self.swarm,
+                self.config
+            )
+            logger.info(f"✅ Goal Sharding Engine (v6) - Intelligent task distribution")
+
+            # v6: Swarm Consensus (graph synchronization)
+            self.swarm_consensus = SwarmConsensus(
+                self.swarm,
+                self.memory_graph,
+                self.config
+            )
+            logger.info(f"✅ Swarm Consensus (v6) - Distributed state sync")
+
+            # v6: Swarm Dashboard (hive monitoring)
+            self.swarm_dashboard = SwarmDashboard(
+                self.swarm,
+                self.goal_sharding,
+                self.swarm_consensus,
+                self.config
+            )
+            logger.info(f"✅ Swarm Dashboard (v6) - Real-time hive monitoring")
+
+            # Register self with swarm
+            capabilities = self._detect_capabilities()
+            self.goal_sharding.register_member(self.swarm.member_id, capabilities)
+            logger.info(f"✅ Swarm member registered with capabilities: {capabilities}")
+
+        else:
+            self.swarm = None
+            self.goal_sharding = None
+            self.swarm_consensus = None
+            self.swarm_dashboard = None
+            logger.info("⚠️  Federated swarm disabled in config (single-oracle mode)")
+
         self.is_running = False
         logger.info("="*60)
-        logger.info("🚀 MindSync Oracle v5 ready! (Omniscient X-Augmented AGI)")
+        swarm_status = "Federated Hive Mind" if self.swarm else "Single Oracle"
+        logger.info(f"🚀 MindSync Oracle v6 ready! ({swarm_status})")
         logger.info("="*60)
 
     async def start(self, daemon_mode: bool = False):
@@ -269,6 +328,15 @@ class MindSyncOracleProduction:
             asyncio.create_task(self.threat_feed.start())
             logger.info("🔴 Live threat feed started")
 
+        # Start swarm if enabled
+        if self.swarm:
+            self.swarm.start()
+            logger.info("🐝 Federated swarm communication started")
+
+            # Start processing queue
+            asyncio.create_task(self._swarm_queue_processor())
+            logger.info("🔄 Swarm goal sharding active")
+
     async def stop(self):
         """Stop MindSync Oracle."""
         logger.info("Stopping MindSync Oracle...")
@@ -283,7 +351,23 @@ class MindSyncOracleProduction:
         if self.threat_feed:
             await self.threat_feed.stop()
 
+        if self.swarm:
+            self.swarm.stop()
+            logger.info("Swarm communication stopped")
+
         logger.info("MindSync Oracle stopped")
+
+    async def _swarm_queue_processor(self):
+        """Process swarm task queue continuously."""
+        logger.info("Starting swarm queue processor...")
+
+        while self.is_running:
+            try:
+                await self.goal_sharding.process_queue()
+                await asyncio.sleep(1)  # Check queue every second
+            except Exception as e:
+                logger.error(f"Error in swarm queue processor: {e}")
+                await asyncio.sleep(5)  # Back off on error
 
     # Core interaction methods
 
@@ -365,6 +449,45 @@ You can check progress anytime with: /goals
         else:
             return "medium"
 
+    def _detect_capabilities(self) -> list:
+        """
+        Detect capabilities of this oracle instance.
+
+        Returns:
+            List of capability strings
+        """
+        capabilities = ['general']  # All oracles have general capability
+
+        # Check for tool integration
+        if self.hexstrike and len(self.hexstrike.list_tools()) > 0:
+            capabilities.append('tools')
+            # Check for specific tool categories
+            tools = [t['name'].lower() for t in self.hexstrike.list_tools()]
+            if any('nmap' in t for t in tools):
+                capabilities.append('nmap')
+            if any('web' in t or 'http' in t for t in tools):
+                capabilities.append('web_security')
+
+        # Check for multi-LLM (intelligence gathering)
+        if self.multi_llm:
+            capabilities.append('intelligence')
+            if self.multi_llm.grok_enabled:
+                capabilities.append('search')
+
+        # Check for Deep X capabilities
+        if self.deep_x:
+            capabilities.append('deep_x')
+
+        # Check for threat feed
+        if self.threat_feed:
+            capabilities.append('threat_feed')
+
+        # Reasoning always available if Claude is configured
+        if self.orchestrator:
+            capabilities.append('reasoning')
+
+        return capabilities
+
 
 # CLI Interface
 
@@ -383,6 +506,7 @@ class MindSyncCLI:
         print("  /goals      - Show active goals")
         print("  /context    - Show current context summary")
         print("  /status     - Show system status")
+        print("  /swarm      - Show swarm dashboard (v6)")
         print("  /add-goal   - Add a new goal")
         print("  /help       - Show this help")
         print("  /quit       - Exit")
@@ -412,6 +536,9 @@ class MindSyncCLI:
                 elif user_input == "/status":
                     self._show_status()
 
+                elif user_input == "/swarm":
+                    self._show_swarm_dashboard()
+
                 elif user_input == "/add-goal":
                     await self._add_goal_interactive()
 
@@ -439,6 +566,7 @@ MindSync Oracle Commands:
   /goals      - List all active goals with progress
   /context    - Show what I know about you (patterns, projects)
   /status     - Show system status
+  /swarm      - Show swarm dashboard (v6 federated hive)
   /add-goal   - Interactively add a new goal
   /help       - Show this help
   /quit       - Exit MindSync
@@ -448,6 +576,7 @@ You can also just chat naturally, and I'll:
 - Learn your patterns
 - Create goals automatically when appropriate
 - Work on goals autonomously in the background
+- Coordinate with other oracles in the swarm (if enabled)
 """)
 
     def _show_goals(self):
@@ -491,7 +620,38 @@ You can also just chat naturally, and I'll:
         print(f"  Goal Engine: {'✅ Active' if self.oracle.goal_engine else '❌ Inactive'}")
         print(f"  HexStrike Tools: {'✅ ' + str(len(self.oracle.hexstrike.list_tools())) + ' tools' if self.oracle.hexstrike else '❌ Inactive'}")
         print(f"  Scheduler: {'✅ Active' if self.oracle.scheduler else '❌ Inactive'}")
+        print(f"  Multi-LLM (v4): {'✅ Grok+Claude' if self.oracle.multi_llm and self.oracle.multi_llm.grok_enabled else '⚠️ Claude Only' if self.oracle.multi_llm else '❌ Inactive'}")
+        print(f"  Deep X Intelligence (v5): {'✅ Active' if self.oracle.deep_x else '❌ Inactive'}")
+        print(f"  Federated Swarm (v6): {'✅ Active' if self.oracle.swarm else '❌ Inactive'}")
         print(f"  Memory DB: {self.oracle.config.get('database.path')}")
+
+    def _show_swarm_dashboard(self):
+        """Show swarm dashboard."""
+        if not self.oracle.swarm_dashboard:
+            print("\n ⚠️  Federated swarm is disabled.")
+            print(" Enable it in config.yaml (swarm.enabled: true) to see the hive mind dashboard.")
+            return
+
+        # Refresh metrics
+        self.oracle.swarm_dashboard.refresh_metrics()
+
+        # Display ASCII dashboard
+        print("\n")
+        print(self.oracle.swarm_dashboard.render_ascii_dashboard())
+
+        # Show alerts
+        alerts = self.oracle.swarm_dashboard.check_alerts()
+        if alerts:
+            print("\n⚠️  Swarm Alerts:")
+            for alert in alerts:
+                severity_icon = {
+                    'low': '🔵',
+                    'medium': '🟡',
+                    'high': '🟠',
+                    'critical': '🔴'
+                }.get(alert['severity'], '⚪')
+                print(f"  {severity_icon} [{alert['severity'].upper()}] {alert['type']}: {alert['message']}")
+            print()
 
     async def _add_goal_interactive(self):
         """Add goal interactively."""

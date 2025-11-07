@@ -107,6 +107,35 @@ deep_x:
     - malware_analysis
     - osint
 
+# Federated Swarm (v6)
+swarm:
+  enabled: false                       # Enable for federated multi-oracle deployment
+  swarm_id: "mindsync_swarm"          # Swarm identifier
+  member_id: "oracle_primary"         # This oracle's ID (must be unique)
+  role: "hybrid"                      # coordinator, worker, monitor, or hybrid
+
+  # Communication
+  pub_port: 5555                      # Port for publishing messages
+  sub_peers: []                       # List of peer URLs to subscribe to
+                                      # Example: ["tcp://192.168.1.10:5555", "tcp://192.168.1.11:5555"]
+
+  # Security
+  encryption_key: ${SWARM_ENCRYPTION_KEY}  # 32-byte Fernet key for encrypted comms
+                                           # Generate with: python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+
+  # Goal sharding
+  max_tasks_per_member: 5             # Max concurrent tasks per oracle
+  task_timeout: 600                   # Task timeout in seconds (10 minutes)
+
+  # Consensus
+  consensus_threshold: 0.6            # 60% approval for conflicting changes
+  vote_timeout: 30                    # Voting timeout in seconds
+  min_voters: 2                       # Minimum voters for consensus
+
+  # Dashboard
+  refresh_interval: 5                 # Dashboard refresh interval (seconds)
+  history_retention: 3600             # Metric history retention (seconds, 1 hour)
+
 # Notifications
 notifications:
   enabled: true
