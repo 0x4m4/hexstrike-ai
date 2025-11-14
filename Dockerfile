@@ -3,7 +3,7 @@
 FROM kalilinux/kali-last-release
 
 # Section 1: OS Upgrade & Core Utilities
-RUN apt-get update && \
+RUN apt-get update && apt full-upgrade -y &&\
     apt-get -y upgrade && \
     apt-get -y install apt-utils curl wget gnupg2 lsb-release software-properties-common build-essential wordlists
 
@@ -36,11 +36,20 @@ RUN go install github.com/evilsocket/x8/cmd/x8@latest || true
 RUN go install github.com/projectdiscovery/katana/cmd/katana@latest || true
 RUN go install github.com/projectdiscovery/httpx/cmd/httpx@latest || true
 RUN go install github.com/hahwul/dalfox@latest || true
+
 RUN go install github.com/jaeles-project/jaeles@latest || true
 RUN go install github.com/lc/gau@latest || true
 RUN go install github.com/tomnomnom/waybackurls@latest || true
 RUN go install github.com/tomnomnom/anew@latest || true
 RUN go install github.com/tomnomnom/qsreplace@latest || true
+
+ENV GOPATH=/root/go \
+    PATH="/opt/venv/bin:/root/go/bin:/root/.cargo/bin:${PATH}"
+
+ENV GOBIN=/usr/local/bin
+RUN go env -w GOBIN=$GOBIN
+
+RUN jaeles config init
 
 
 # zsteg

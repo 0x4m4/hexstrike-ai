@@ -1,1 +1,4 @@
 .venv/**
+n8n.py
+workflow.json
+docker-compose.yml
