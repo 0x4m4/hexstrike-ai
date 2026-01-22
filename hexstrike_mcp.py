@@ -148,7 +148,7 @@ MAX_RETRIES = 3  # Maximum number of retries for connection attempts
 class HexStrikeClient:
     """Enhanced client for communicating with the HexStrike AI API Server"""
 
-    def __init__(self, server_url: str, timeout: int = DEFAULT_REQUEST_TIMEOUT, auth_basic: str = ""):
+    def __init__(self, server_url: str, timeout: int = DEFAULT_REQUEST_TIMEOUT, auth_basic: str = "", verify_ssl: bool = True):
         """
         Initialize the HexStrike AI Client
 
@@ -156,10 +156,14 @@ class HexStrikeClient:
             server_url: URL of the HexStrike AI API Server
             timeout: Request timeout in seconds
             auth_basic: Basic authentication credentials in "username:password" format
+            verify_ssl: Whether to verify SSL certificates
         """
         self.server_url = server_url.rstrip("/")
         self.timeout = timeout
         self.session = requests.Session()
+
+        if not verify_ssl:
+            self.session.verify = False  # Disable SSL verification for self-signed certs
 
         if auth_basic:
             encoded_credentials = base64.b64encode(auth_basic.encode()).decode()
@@ -5431,6 +5435,7 @@ def parse_args():
     parser.add_argument("--debug", action="store_true", help="Enable debug logging")
     parser.add_argument("--auth-basic", type=str, default="",
                       help="Username:password for authentication with HexStrike AI server in front of reverse proxies")
+    parser.add_argument("--disable-ssl-verify", action="store_true", help="Disable SSL certificate verification when connecting to the HexStrike AI server in front of reverse proxies")
     return parser.parse_args()
 
 def main():
@@ -5448,7 +5453,11 @@ def main():
 
     try:
         # Initialize the HexStrike AI client
-        hexstrike_client = HexStrikeClient(args.server, args.timeout, auth_basic=args.auth_basic)
+        verify_ssl = True
+        if args.disable_ssl_verify:
+            verify_ssl = False
+
+        hexstrike_client = HexStrikeClient(args.server, args.timeout, auth_basic=args.auth_basic, verify_ssl=verify_ssl)
 
         # Check server health and log the result
         health = hexstrike_client.check_health()
