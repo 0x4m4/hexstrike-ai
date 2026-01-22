@@ -24,6 +24,7 @@ import logging
 from typing import Dict, Any, Optional
 import requests
 import time
+import base64
 from datetime import datetime
 
 from mcp.server.fastmcp import FastMCP
@@ -147,17 +148,24 @@ MAX_RETRIES = 3  # Maximum number of retries for connection attempts
 class HexStrikeClient:
     """Enhanced client for communicating with the HexStrike AI API Server"""
 
-    def __init__(self, server_url: str, timeout: int = DEFAULT_REQUEST_TIMEOUT):
+    def __init__(self, server_url: str, timeout: int = DEFAULT_REQUEST_TIMEOUT, auth_basic: str = ""):
         """
         Initialize the HexStrike AI Client
 
         Args:
             server_url: URL of the HexStrike AI API Server
             timeout: Request timeout in seconds
+            auth_basic: Basic authentication credentials in "username:password" format
         """
         self.server_url = server_url.rstrip("/")
         self.timeout = timeout
         self.session = requests.Session()
+
+        if auth_basic:
+            encoded_credentials = base64.b64encode(auth_basic.encode()).decode()
+            self.session.headers.update({
+                "Authorization": f"Basic {encoded_credentials}"
+            })
 
         # Try to connect to server with retries
         connected = False
@@ -5421,6 +5429,8 @@ def parse_args():
     parser.add_argument("--timeout", type=int, default=DEFAULT_REQUEST_TIMEOUT,
                       help=f"Request timeout in seconds (default: {DEFAULT_REQUEST_TIMEOUT})")
     parser.add_argument("--debug", action="store_true", help="Enable debug logging")
+    parser.add_argument("--auth-basic", type=str, default="",
+                      help="Username:password for authentication with HexStrike AI server in front of reverse proxies")
     return parser.parse_args()
 
 def main():
@@ -5438,7 +5448,7 @@ def main():
 
     try:
         # Initialize the HexStrike AI client
-        hexstrike_client = HexStrikeClient(args.server, args.timeout)
+        hexstrike_client = HexStrikeClient(args.server, args.timeout, auth_basic=args.auth_basic)
 
         # Check server health and log the result
         health = hexstrike_client.check_health()
