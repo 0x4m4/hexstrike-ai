@@ -148,7 +148,7 @@ MAX_RETRIES = 3  # Maximum number of retries for connection attempts
 class HexStrikeClient:
     """Enhanced client for communicating with the HexStrike AI API Server"""
 
-    def __init__(self, server_url: str, timeout: int = DEFAULT_REQUEST_TIMEOUT, auth_basic: str = "", verify_ssl: bool = True):
+    def __init__(self, server_url: str, timeout: int = DEFAULT_REQUEST_TIMEOUT, auth_basic: str = "", auth_token: str = "", verify_ssl: bool = True):
         """
         Initialize the HexStrike AI Client
 
@@ -156,6 +156,7 @@ class HexStrikeClient:
             server_url: URL of the HexStrike AI API Server
             timeout: Request timeout in seconds
             auth_basic: Basic authentication credentials in "username:password" format
+            auth_token: Bearer token for authentication
             verify_ssl: Whether to verify SSL certificates
         """
         self.server_url = server_url.rstrip("/")
@@ -164,6 +165,11 @@ class HexStrikeClient:
 
         if not verify_ssl:
             self.session.verify = False  # Disable SSL verification for self-signed certs
+
+        if auth_token:
+            self.session.headers.update({
+                "Authorization": f"Bearer {auth_token}"
+            })
 
         if auth_basic:
             encoded_credentials = base64.b64encode(auth_basic.encode()).decode()
@@ -5435,6 +5441,8 @@ def parse_args():
     parser.add_argument("--debug", action="store_true", help="Enable debug logging")
     parser.add_argument("--auth-basic", type=str, default="",
                       help="Username:password for authentication with HexStrike AI server in front of reverse proxies")
+    parser.add_argument("--auth-token", type=str, default="",
+                      help="Bearer token for authentication with HexStrike AI server")
     parser.add_argument("--disable-ssl-verify", action="store_true", help="Disable SSL certificate verification when connecting to the HexStrike AI server in front of reverse proxies")
     return parser.parse_args()
 
@@ -5451,13 +5459,20 @@ def main():
     logger.info(f"🚀 Starting HexStrike AI MCP Client v6.0")
     logger.info(f"🔗 Connecting to: {args.server}")
 
+    auth_basic = args.auth_basic if args.auth_basic else ""
+    auth_token = args.auth_token if args.auth_token else ""
+
+    if args.auth_basic and args.auth_token:
+        logger.warning("⚠️  Both basic auth and token auth provided - token auth will take precedence")
+        auth_basic = ""
+
     try:
         # Initialize the HexStrike AI client
         verify_ssl = True
         if args.disable_ssl_verify:
             verify_ssl = False
 
-        hexstrike_client = HexStrikeClient(args.server, args.timeout, auth_basic=args.auth_basic, verify_ssl=verify_ssl)
+        hexstrike_client = HexStrikeClient(args.server, args.timeout, auth_basic=auth_basic, auth_token=auth_token, verify_ssl=verify_ssl)
 
         # Check server health and log the result
         health = hexstrike_client.check_health()

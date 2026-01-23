@@ -39,7 +39,7 @@ import shutil
 import venv
 import zipfile
 from pathlib import Path
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, abort
 import psutil
 import signal
 import requests
@@ -97,6 +97,7 @@ app.config['JSON_SORT_KEYS'] = False
 # API Configuration
 API_PORT = int(os.environ.get('HEXSTRIKE_PORT', 8888))
 API_HOST = os.environ.get('HEXSTRIKE_HOST', '127.0.0.1')
+API_TOKEN = os.environ.get("HEXSTRIKE_API_TOKEN", None)  # e.g. export API_TOKEN=secret-token
 
 # ============================================================================
 # MODERN VISUAL ENGINE (v2.0 ENHANCEMENT)
@@ -9019,6 +9020,22 @@ class FileOperationsManager:
 file_manager = FileOperationsManager()
 
 # API Routes
+
+@app.before_request
+def optional_bearer_auth():
+    # If no token is configured, allow all requests
+    if not API_TOKEN:
+        return
+
+    auth_header = request.headers.get("Authorization", "")
+    prefix = "Bearer "
+
+    if not auth_header.startswith(prefix):
+        abort(401, description="Unexpected authorization header format")
+
+    token = auth_header[len(prefix):]
+    if token != API_TOKEN:
+        abort(401, description="Unauthorized!")
 
 @app.route("/health", methods=["GET"])
 def health_check():
