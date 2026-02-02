@@ -2,6 +2,9 @@ services:
   hexstrike:
     build: .
     container_name: hexstrike-ai
+    ports:
+      - "8888:8888"
+      - "8080:8080"
     restart: unless-stopped
     env_file:
       - .env

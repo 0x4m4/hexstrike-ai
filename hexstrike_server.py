@@ -17286,4 +17286,4 @@ if __name__ == "__main__":
         if line.strip():
             logger.info(line)
 
-    app.run(host="0.0.0.0", port=API_PORT, debug=DEBUG_MODE)
+    app.run(host="0.0.0.0", port=8888, debug=True)
