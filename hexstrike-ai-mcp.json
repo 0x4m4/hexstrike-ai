@@ -1,16 +1,49 @@
-{
-  "mcpServers": {
-    "hexstrike-ai": {
-      "command": "docker",
-      "args": [
-        "exec",
-        "-i",
-        "hexstrike-ai",
-        "python3",
-        "hexstrike_mcp.py",
-        "--server",
-        "http://localhost:8888"
-      ]
-    }
-  }
-}
+# Basis-Image: Kali Linux (Rolling)
+FROM kalilinux/kali-rolling
+
+# System-Umgebungsvariablen
+ENV DEBIAN_FRONTEND=noninteractive
+
+# 1. System-Updates & Core-Abhängigkeiten
+RUN apt-get update && apt-get install -y \
+    python3 python3-pip python3-venv python3-dev \
+    libffi-dev libssl-dev git curl wget \
+    && apt-get clean
+
+# 2. PENTESTING TOOLSUITE (Die Top-Tools für HexStrike)
+RUN apt-get update && apt-get install -y \
+    # --- Recon & DNS ---
+    nmap nuclei amass subfinder \
+    # --- Web Security ---
+    gobuster ffuf nikto sqlmap dirsearch feroxbuster \
+    # --- OSINT & Scraper ---
+    whois dnsrecon httpx-toolkit \
+    # --- Exploitation & Misc ---
+    metasploit-framework hashcat john \
+    && apt-get clean
+
+# 3. Browser-Agent Support (für Selenium/Katana)
+RUN apt-get update && apt-get install -y \
+    chromium chromium-driver \
+    && apt-get clean
+
+# Arbeitsverzeichnis
+WORKDIR /app
+
+# 4. Python-Module (Core-Libs für HexStrike)
+# Wir nutzen --break-system-packages, da Kali eine gemanagte Umgebung ist
+RUN pip3 install --no-cache-dir --break-system-packages \
+    flask requests psutil beautifulsoup4 \
+    selenium aiohttp mcp fastmcp mitmproxy \
+    pyyaml colorama
+
+# 5. Skripte kopieren
+COPY hexstrike_server.py .
+COPY hexstrike_mcp.py .
+COPY hexstrike-ai-mcp.json .
+
+# API & Proxy Ports
+EXPOSE 8888 8080
+
+# Startbefehl
+CMD ["python3", "hexstrike_server.py"]

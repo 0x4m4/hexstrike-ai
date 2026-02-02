@@ -15,6 +15,7 @@ RUN apt-get update && apt-get install -y \
     sqlmap \
     curl \
     git \
+    nuclei \
     && apt-get clean
 
 # Arbeitsverzeichnis im Container
