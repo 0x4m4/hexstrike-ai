@@ -1,15 +1,16 @@
 {
   "mcpServers": {
     "hexstrike-ai": {
-      "command": "python3",
+      "command": "docker",
       "args": [
-        "/path/hexstrike_mcp.py",
+        "exec",
+        "-i",
+        "hexstrike-ai",
+        "python3",
+        "hexstrike_mcp.py",
         "--server",
-        "http://IPADDRESS:8888"
-      ],
-      "description": "HexStrike AI v6.0 - Advanced Cybersecurity Automation Platform. Turn off alwaysAllow if you dont want autonomous execution!",
-      "timeout": 300,
-      "alwaysAllow": []
+        "http://localhost:8888"
+      ]
     }
   }
 }
