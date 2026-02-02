@@ -1,0 +1,13 @@
+services:
+  hexstrike:
+    build: .
+    container_name: hexstrike-ai
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - ./logs:/app/logs
+      - ./reports:/app/reports
+    # Dieser Befehl hält den Container aktiv, damit er als MCP-Server dienen kann
+    tty: true
+    stdin_open: true
