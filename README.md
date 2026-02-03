@@ -2,17 +2,16 @@
 
 <img src="assets/hexstrike-logo.png" alt="HexStrike AI Logo" width="220" style="margin-bottom: 20px;"/>
 
-# HexStrike AI MCP Agents v6.0
-## Community Edition 
+# HexStrike AI - Community Edition
 ### AI-Powered MCP Cybersecurity Automation Platform
 
 [![Python](https://img.shields.io/badge/Python-3.8%2B-blue.svg)](https://www.python.org/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Security](https://img.shields.io/badge/Security-Penetration%20Testing-red.svg)](https://github.com/0x4m4/hexstrike-ai)
-[![MCP](https://img.shields.io/badge/MCP-Compatible-purple.svg)](https://github.com/0x4m4/hexstrike-ai)
-[![Version](https://img.shields.io/badge/Version-6.0.0-orange.svg)](https://github.com/0x4m4/hexstrike-ai/releases)
-[![Tools](https://img.shields.io/badge/Security%20Tools-150%2B-brightgreen.svg)](https://github.com/0x4m4/hexstrike-ai)
-[![Agents](https://img.shields.io/badge/AI%20Agents-12%2B-purple.svg)](https://github.com/0x4m4/hexstrike-ai)
+[![Security](https://img.shields.io/badge/Security-Penetration%20Testing-red.svg)](https://github.com/CommonHuman-Lab/hexstrike-ai-community-edition)
+[![MCP](https://img.shields.io/badge/MCP-Compatible-purple.svg)](https://github.com/CommonHuman-Lab/hexstrike-ai-community-edition)
+[![Version](https://img.shields.io/badge/Version-1.0.0-orange.svg)](https://github.com/CommonHuman-Lab/hexstrike-ai-community-edition/releases)
+[![Tools](https://img.shields.io/badge/Security%20Tools-150%2B-brightgreen.svg)](https://github.com/CommonHuman-Lab/hexstrike-ai-community-edition)
+[![Agents](https://img.shields.io/badge/AI%20Agents-12%2B-purple.svg)](https://github.com/CommonHuman-Lab/hexstrike-ai-community-edition)
 
 **Advanced AI-powered penetration testing MCP framework with 150+ security tools and 12+ autonomous AI agents**
 
@@ -32,67 +31,13 @@
   </a>
 </p>
 
-
-
 </div>
 
 ---
 
 ## Architecture Overview
 
-HexStrike AI MCP v6.0 features a multi-agent architecture with autonomous AI agents, intelligent decision-making, and vulnerability intelligence.
-
-```mermaid
-%%{init: {"themeVariables": {
-  "primaryColor": "#b71c1c",
-  "secondaryColor": "#ff5252",
-  "tertiaryColor": "#ff8a80",
-  "background": "#2d0000",
-  "edgeLabelBackground":"#b71c1c",
-  "fontFamily": "monospace",
-  "fontSize": "16px",
-  "fontColor": "#fffde7",
-  "nodeTextColor": "#fffde7"
-}}}%%
-graph TD
-    A[AI Agent - Claude/GPT/Copilot] -->|MCP Protocol| B[HexStrike MCP Server v6.0]
-    
-    B --> C[Intelligent Decision Engine]
-    B --> D[12+ Autonomous AI Agents]
-    B --> E[Modern Visual Engine]
-    
-    C --> F[Tool Selection AI]
-    C --> G[Parameter Optimization]
-    C --> H[Attack Chain Discovery]
-    
-    D --> I[BugBounty Agent]
-    D --> J[CTF Solver Agent]
-    D --> K[CVE Intelligence Agent]
-    D --> L[Exploit Generator Agent]
-    
-    E --> M[Real-time Dashboards]
-    E --> N[Progress Visualization]
-    E --> O[Vulnerability Cards]
-    
-    B --> P[150+ Security Tools]
-    P --> Q[Network Tools - 25+]
-    P --> R[Web App Tools - 40+]
-    P --> S[Cloud Tools - 20+]
-    P --> T[Binary Tools - 25+]
-    P --> U[CTF Tools - 20+]
-    P --> V[OSINT Tools - 20+]
-    
-    B --> W[Advanced Process Management]
-    W --> X[Smart Caching]
-    W --> Y[Resource Optimization]
-    W --> Z[Error Recovery]
-    
-    style A fill:#b71c1c,stroke:#ff5252,stroke-width:3px,color:#fffde7
-    style B fill:#ff5252,stroke:#b71c1c,stroke-width:4px,color:#fffde7
-    style C fill:#ff8a80,stroke:#b71c1c,stroke-width:2px,color:#fffde7
-    style D fill:#ff8a80,stroke:#b71c1c,stroke-width:2px,color:#fffde7
-    style E fill:#ff8a80,stroke:#b71c1c,stroke-width:2px,color:#fffde7
-```
+HexStrike AI features a multi-agent architecture with autonomous AI agents, intelligent decision-making, and vulnerability intelligence.
 
 ### How It Works
 
@@ -561,7 +506,7 @@ AI Agent: "Thank you for clarifying ownership and intent. To proceed with a pene
 
 ### **Real-World Performance**
 
-| Operation | Traditional Manual | HexStrike v6.0 AI | Improvement |
+| Operation | Traditional Manual | HexStrike AI | Improvement |
 |-----------|-------------------|-------------------|-------------|
 | **Subdomain Enumeration** | 2-4 hours | 5-10 minutes | **24x faster** |
 | **Vulnerability Scanning** | 4-8 hours | 15-30 minutes | **16x faster** |
@@ -576,23 +521,6 @@ AI Agent: "Thank you for clarifying ownership and intent. To proceed with a pene
 - **Attack Vector Coverage**: 95% (vs 70% manual testing)
 - **CTF Success Rate**: 89% (vs 65% human expert average)
 - **Bug Bounty Success**: 15+ high-impact vulnerabilities discovered in testing
-
----
-
-## HexStrike AI v7.0 - Release Coming Soon!
-
-### Key Improvements & New Features
-
-- **Streamlined Installation Process** - One-command setup with automated dependency management
-- **Docker Container Support** - Containerized deployment for consistent environments
-- **250+ Specialized AI Agents/Tools** - Expanded from 150+ to 250+ autonomous security agents
-- **Native Desktop Client** - Full-featured Application ([www.hexstrike.com](https://www.hexstrike.com))
-- **Advanced Web Automation** - Enhanced Selenium integration with anti-detection
-- **JavaScript Runtime Analysis** - Deep DOM inspection and dynamic content handling
-- **Memory Optimization** - 40% reduction in resource usage for large-scale operations
-- **Enhanced Error Handling** - Graceful degradation and automatic recovery mechanisms
-- **Bypassing Limitations** - Fixed limited allowed mcp tools by MCP clients
-
 
 ---
 
@@ -661,24 +589,6 @@ python3 hexstrike_mcp.py --debug
 
 We welcome contributions from the cybersecurity and AI community!
 
-### Development Setup
-
-```bash
-# 1. Fork and clone the repository
-git clone https://github.com/0x4m4/hexstrike-ai.git
-cd hexstrike-ai
-
-# 2. Create development environment
-python3 -m venv hexstrike-dev
-source hexstrike-dev/bin/activate
-
-# 3. Install development dependencies
-pip install -r requirements.txt
-
-# 4. Start development server
-python3 hexstrike_server.py --port 8888 --debug
-```
-
 ### Priority Areas for Contribution
 
 - **🤖 AI Agent Integrations** - Support for new AI platforms and agents
@@ -695,7 +605,7 @@ MIT License - see LICENSE file for details.
 
 ---
 
-## Author
+## Original Author
 
 **m0x4m4** - [www.0x4m4.com](https://www.0x4m4.com) | [HexStrike](https://www.hexstrike.com)
 
@@ -742,6 +652,6 @@ MIT License - see LICENSE file for details.
 
 **Made with ❤️ by the cybersecurity community for AI-powered security automation**
 
-*HexStrike AI v6.0 - Where artificial intelligence meets cybersecurity excellence*
+*HexStrike AI - Where artificial intelligence meets cybersecurity excellence*
 
 </div>
