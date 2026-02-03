@@ -413,8 +413,8 @@ Configure VS Code settings in `.vscode/settings.json`:
 
 ### AI Agents
 
-**12+ Specialized AI Agents:**
-
+<details>
+<summary><b>12+ Specialized AI Agents:</b></summary>
 - **IntelligentDecisionEngine** - Tool selection and parameter optimization
 - **BugBountyWorkflowManager** - Bug bounty hunting workflows
 - **CTFWorkflowManager** - CTF challenge solving
@@ -427,16 +427,16 @@ Configure VS Code settings in `.vscode/settings.json`:
 - **PerformanceMonitor** - System optimization
 - **ParameterOptimizer** - Context-aware optimization
 - **GracefulDegradation** - Fault-tolerant operation
-
-### Advanced Features
-
+</details>
+<details>
+<summary><b>Advanced Features</b></summary>
 - **Smart Caching System** - Intelligent result caching with LRU eviction
 - **Real-time Process Management** - Live command control and monitoring
 - **Vulnerability Intelligence** - CVE monitoring and exploit analysis
 - **Browser Agent** - Headless Chrome automation for web testing
 - **API Security Testing** - GraphQL, JWT, REST API security assessment
 - **Modern Visual Engine** - Real-time dashboards and progress tracking
-
+</details>
 ---
 
 ## Wiki
