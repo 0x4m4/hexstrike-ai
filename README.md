@@ -115,7 +115,7 @@ graph TD
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/0x4m4/hexstrike-ai.git
+git clone https://github.com/CommonHuman-Lab/hexstrike-ai-community-edition.git
 cd hexstrike-ai
 
 # 2. Create virtual environment
