@@ -439,59 +439,8 @@ Configure VS Code settings in `.vscode/settings.json`:
 
 ---
 
-## API Reference
-
-### Core System Endpoints
-
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/health` | GET | Server health check with tool availability |
-| `/api/command` | POST | Execute arbitrary commands with caching |
-| `/api/telemetry` | GET | System performance metrics |
-| `/api/cache/stats` | GET | Cache performance statistics |
-| `/api/intelligence/analyze-target` | POST | AI-powered target analysis |
-| `/api/intelligence/select-tools` | POST | Intelligent tool selection |
-| `/api/intelligence/optimize-parameters` | POST | Parameter optimization |
-
-### Common MCP Tools
-
-**Network Security Tools:**
-- `nmap_scan()` - Advanced Nmap scanning with optimization
-- `rustscan_scan()` - Ultra-fast port scanning
-- `masscan_scan()` - High-speed port scanning
-- `autorecon_scan()` - Comprehensive reconnaissance
-- `amass_enum()` - Subdomain enumeration and OSINT
-
-**Web Application Tools:**
-- `gobuster_scan()` - Directory and file enumeration
-- `feroxbuster_scan()` - Recursive content discovery
-- `ffuf_scan()` - Fast web fuzzing
-- `nuclei_scan()` - Vulnerability scanning with templates
-- `sqlmap_scan()` - SQL injection testing
-- `wpscan_scan()` - WordPress security assessment
-
-**Binary Analysis Tools:**
-- `ghidra_analyze()` - Software reverse engineering
-- `radare2_analyze()` - Advanced reverse engineering
-- `gdb_debug()` - GNU debugger with exploit development
-- `pwntools_exploit()` - CTF framework and exploit development
-- `angr_analyze()` - Binary analysis with symbolic execution
-
-**Cloud Security Tools:**
-- `prowler_assess()` - AWS/Azure/GCP security assessment
-- `scout_suite_audit()` - Multi-cloud security auditing
-- `trivy_scan()` - Container vulnerability scanning
-- `kube_hunter_scan()` - Kubernetes penetration testing
-- `kube_bench_check()` - CIS Kubernetes benchmark assessment
-
-### Process Management
-
-| Action | Endpoint | Description |
-|--------|----------|-------------|
-| **List Processes** | `GET /api/processes/list` | List all active processes |
-| **Process Status** | `GET /api/processes/status/<pid>` | Get detailed process information |
-| **Terminate** | `POST /api/processes/terminate/<pid>` | Stop specific process |
-| **Dashboard** | `GET /api/processes/dashboard` | Live monitoring dashboard |
+## Wiki
+[API Reference](https://github.com/CommonHuman-Lab/hexstrike-ai-community-edition/wiki/API-Reference)
 
 ---
 
