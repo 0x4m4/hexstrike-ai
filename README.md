@@ -30,10 +30,6 @@
   <a href="https://discord.gg/BWnmrrSHbA">
     <img src="https://img.shields.io/badge/Discord-Join-7289DA?logo=discord&logoColor=white&style=for-the-badge" alt="Join our Discord" />
   </a>
-  &nbsp;&nbsp;
-  <a href="https://www.linkedin.com/company/hexstrike-ai">
-    <img src="https://img.shields.io/badge/LinkedIn-Follow%20us-0A66C2?logo=linkedin&logoColor=white&style=for-the-badge" alt="Follow us on LinkedIn" />
-  </a>
 </p>
 
 
@@ -731,10 +727,6 @@ MIT License - see LICENSE file for details.
 
 <div align="center">
 
-## 🌟 **Star History**
-
-[![Star History Chart](https://api.star-history.com/svg?repos=0x4m4/hexstrike-ai&type=Date)](https://star-history.com/#0x4m4/hexstrike-ai&Date)
-
 ### **📊 Project Statistics**
 
 - **150+ Security Tools** - Comprehensive security testing arsenal
@@ -745,8 +737,6 @@ MIT License - see LICENSE file for details.
 - **99.9% Uptime** - Fault-tolerant architecture with graceful degradation
 
 ### **🚀 Ready to Transform Your AI Agents?**
-
-**[⭐ Star this repository](https://github.com/0x4m4/hexstrike-ai)** • **[🍴 Fork and contribute](https://github.com/0x4m4/hexstrike-ai/fork)** • **[📖 Read the docs](docs/)**
 
 ---
 
