@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SPECTRE MOBI | SINGULARITY</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #050000;
+            --primary: #ff0000;
+            --secondary: #440000;
+            --accent: #ff4d4d;
+            --glass: rgba(20, 0, 0, 0.8);
+            --border: rgba(255, 0, 0, 0.4);
+            --text: #ffffff;
+            --shadow: 0 0 20px rgba(255, 0, 0, 0.2);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Outfit', sans-serif;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Glitch Effect Background */
+        .glitch-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(rgba(10, 0, 0, 0.9), rgba(20, 0, 0, 0.9)), url('https://www.transparenttextures.com/patterns/carbon-fibre.png');
+            z-index: -1;
+            opacity: 0.5;
+        }
+
+        header {
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--primary);
+            background: var(--glass);
+            backdrop-filter: blur(15px);
+            z-index: 100;
+        }
+
+        .logo {
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: 3px;
+            color: var(--primary);
+            text-shadow: 0 0 15px var(--primary);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .dashboard {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .card {
+            background: var(--glass);
+            border: 1px solid var(--border);
+            padding: 15px;
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--primary);
+        }
+
+        .label {
+            font-size: 10px;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.6);
+            letter-spacing: 1.5px;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .value {
+            font-size: 20px;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--accent);
+        }
+
+        .action-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .btn {
+            background: var(--secondary);
+            border: 1px solid var(--primary);
+            color: var(--text);
+            padding: 18px 10px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: 0.2s;
+            text-align: center;
+        }
+
+        .btn:active {
+            background: var(--primary);
+            transform: scale(0.95);
+        }
+
+        .btn i { font-size: 20px; }
+
+        .btn-full { grid-column: span 2; padding: 25px; font-size: 16px; background: rgba(255, 0, 0, 0.1); }
+
+        .telemetry-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            min-height: 250px;
+        }
+
+        .terminal {
+            background: #000;
+            border: 1px solid var(--secondary);
+            border-radius: 4px;
+            padding: 10px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: var(--primary);
+            flex: 1;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .terminal::after {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(transparent 50%, rgba(0,0,0,0.1) 50%);
+            background-size: 100% 4px;
+            pointer-events: none;
+        }
+
+        .entry { margin-bottom: 5px; line-height: 1.4; }
+        .entry .t { color: rgba(255,255,255,0.4); margin-right: 5px; }
+
+        /* Progress Bar */
+        .progress-container {
+            height: 4px;
+            background: var(--secondary);
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+        .progress-bar {
+            height: 100%;
+            background: var(--primary);
+            width: 0%;
+            transition: width 0.3s;
+            box-shadow: 0 0 10px var(--primary);
+        }
+
+        #toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--primary);
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 700;
+            z-index: 1000;
+            display: none;
+            box-shadow: 0 0 20px rgba(255,0,0,0.5);
+            text-align: center;
+        }
+
+        .pulsing { animation: pulse 1.5s infinite; }
+        @keyframes pulse {
+            0% { text-shadow: 0 0 5px var(--primary); }
+            50% { text-shadow: 0 0 20px var(--primary); }
+            100% { text-shadow: 0 0 5px var(--primary); }
+        }
+
+    </style>
+</head>
+<body>
+    <div class="glitch-bg"></div>
+    <div id="toast">SYSTEM INITIALIZED</div>
+
+    <header>
+        <div class="logo pulsing">SPECTRE MOBI</div>
+        <div style="text-align: right;">
+            <div style="font-size: 10px; opacity: 0.6; letter-spacing: 1px;">LINK: SECURE</div>
+            <div style="font-size: 12px; font-weight: 700; color: var(--primary);">V6.5 SINGULARITY</div>
+        </div>
+    </header>
+
+    <div class="dashboard">
+        <div class="stat-grid">
+            <div class="card">
+                <span class="label">Targets Found</span>
+                <span class="value" id="count">0</span>
+            </div>
+            <div class="card">
+                <span class="label">Wealth Yield</span>
+                <span class="value" id="wealth">$0.00</span>
+            </div>
+        </div>
+
+        <div class="action-grid">
+            <button class="btn" onclick="execute('/blitz')">
+                <span>⚡ BLITZ</span>
+                <span style="font-size: 9px; opacity: 0.7;">PROXIMITY WIPE</span>
+            </button>
+            <button class="btn" onclick="execute('/scorched_earth')">
+                <span>🔥 SCORCHED</span>
+                <span style="font-size: 9px; opacity: 0.7;">WIFI LOCKOUT</span>
+            </button>
+            <button class="btn" onclick="execute('/neural_link')">
+                <span>🧠 NEURAL</span>
+                <span style="font-size: 9px; opacity: 0.7;">EGREGORE SYNC</span>
+            </button>
+            <button class="btn" onclick="execute('/status')">
+                <span>👑 STATUS</span>
+                <span style="font-size: 9px; opacity: 0.7;">SYSTEM CHECK</span>
+            </button>
+            <button class="btn btn-full" id="auto-btn" onclick="toggleAuto()">
+                <span>🤖 ACTIVATE AUTONOMY</span>
+                <div class="progress-container"><div class="progress-bar" id="auto-pbar"></div></div>
+            </button>
+        </div>
+
+        <div class="telemetry-container">
+            <span class="label">Neural Telemetry Stream</span>
+            <div class="terminal" id="term">
+                <div class="entry"><span class="t">[12:08:17]</span><span>[INFO] SPECTRE MOBI link established. Mobile dominance active.</span></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const term = document.getElementById('term');
+        const autoPbar = document.getElementById('auto-pbar');
+        let autoActive = false;
+
+        function log(msg, type = 'INFO') {
+            const entry = document.createElement('div');
+            entry.className = 'entry';
+            const t = new Date().toLocaleTimeString();
+            entry.innerHTML = `<span class="t">[${t}]</span><span style="color: ${type === 'ERR' ? '#ff4d4d' : type === 'CMD' ? '#fff' : 'inherit'}">[${type}] ${msg}</span>`;
+            term.prepend(entry);
+        }
+
+        function toast(msg) {
+            const t = document.getElementById('toast');
+            t.innerText = msg;
+            t.style.display = 'block';
+            setTimeout(() => t.style.display = 'none', 3000);
+            if (navigator.vibrate) navigator.vibrate([50, 20, 50]);
+        }
+
+        async function execute(cmd) {
+            log(`Issuing Directive: ${cmd}`, 'CMD');
+            try {
+                const res = await fetch('http://localhost:8888/api/apex/mobile/command', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ command: cmd })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    toast(data.response);
+                    log(data.response, 'SUCCESS');
+                    if (data.targets) document.getElementById('count').innerText = data.targets.length;
+                    if (cmd === '/blitz') simulateWealth();
+                }
+            } catch (e) {
+                log(`Transmission Failure: ${e}`, 'ERR');
+            }
+        }
+
+        function toggleAuto() {
+            autoActive = !autoActive;
+            const btn = document.getElementById('auto-btn');
+            if (autoActive) {
+                btn.style.boxShadow = '0 0 20px var(--primary)';
+                btn.querySelector('span').innerText = '🤖 AUTONOMY: ACTIVE';
+                autoPbar.style.width = '100%';
+                execute('/automate');
+            } else {
+                btn.style.boxShadow = 'none';
+                btn.querySelector('span').innerText = '🤖 ACTIVATE AUTONOMY';
+                autoPbar.style.width = '0%';
+                log('Autonomous posture deactivated.', 'INFO');
+            }
+        }
+
+        function simulateWealth() {
+            const w = document.getElementById('wealth');
+            let current = parseFloat(w.innerText.replace('$', ''));
+            const gain = Math.random() * 500 + 100;
+            w.innerText = `$${(current + gain).toFixed(2)}`;
+            log(`Shadow Arbitrage Yield: +$${gain.toFixed(2)}`, 'WEALTH');
+        }
+
+        // Mock background scans
+        setInterval(() => {
+            if (autoActive && Math.random() > 0.8) {
+                log('Neural Reflex: Probing attempt detected. Counter-offensive launched.', 'REFLEX');
+                simulateWealth();
+            }
+        }, 5000);
+
+    </script>
+</body>
+</html>

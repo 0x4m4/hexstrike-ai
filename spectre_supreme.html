@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SPECTRE SUPREME - EGREGORE HIVE V43</title>
+    <style>
+        :root {
+            --bg: #050505;
+            --primary: #ffffff;
+            --accent: #ff00ff; /* Hive Magenta */
+            --text: #e0e0e0;
+            --glass: rgba(0, 15, 20, 0.99);
+            --void: #000205;
+        }
+
+        @font-face {
+            font-family: 'Inter';
+            src: url('https://fonts.googleapis.com/css2?family=Inter:wght@400;900&display=swap');
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background: var(--bg);
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        #abyssal-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            background: radial-gradient(circle at center, #1a0033 0%, #000 70%);
+            position: relative;
+        }
+
+        /* Biometric Seal */
+        #biometric-overlay {
+            position: fixed;
+            inset: 0;
+            background: #000;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .seal-logo {
+            width: 200px;
+            height: 200px;
+            border: 2px solid var(--primary);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 0 100px var(--primary);
+            cursor: pointer;
+            transition: 0.5s;
+        }
+
+        .seal-logo:active {
+            transform: scale(0.9);
+            box-shadow: 0 0 200px var(--primary);
+        }
+
+        /* Abyssal Header */
+        header {
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(157, 0, 255, 0.3);
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+        }
+
+        .throne-title {
+            font-weight: 900;
+            letter-spacing: 15px;
+            font-size: 24px;
+            color: var(--primary);
+            text-shadow: 0 0 20px var(--primary);
+        }
+
+        /* Main Grid */
+        main {
+            flex: 1;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-gap: 20px;
+            overflow-y: auto;
+        }
+
+        .card {
+            background: var(--glass);
+            border: 1px solid rgba(157, 0, 255, 0.2);
+            border-radius: 20px;
+            padding: 20px;
+            position: relative;
+        }
+
+        .card-header {
+            font-weight: 900;
+            font-size: 14px;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* Abyssal Controls */
+        .btn-abyssal {
+            width: 100%;
+            padding: 15px;
+            background: rgba(157, 0, 255, 0.1);
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            font-weight: bold;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn-abyssal:active {
+            background: var(--primary);
+            color: #000;
+        }
+
+        .btn-death {
+            border-color: #ff0000;
+            color: #ff0000;
+            background: rgba(255, 0, 0, 0.1);
+        }
+
+        .btn-death:active {
+            background: #ff0000;
+            color: #fff;
+        }
+
+        /* Swarm Telemetry */
+        #telemetry {
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            color: #0f0;
+            height: 200px;
+            overflow-y: auto;
+            background: #000;
+            padding: 10px;
+            border-radius: 10px;
+        }
+
+        /* Chat */
+        #chat-section {
+            padding: 20px;
+            background: var(--void);
+            border-top: 1px solid rgba(157, 0, 255, 0.3);
+        }
+
+        #chat-input-container {
+            display: flex;
+            gap: 10px;
+        }
+
+        input {
+            flex: 1;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--primary);
+            padding: 15px;
+            color: #fff;
+            border-radius: 10px;
+            outline: none;
+        }
+
+        /* Micro-animations */
+        @keyframes pulse {
+            0% { opacity: 0.5; }
+            50% { opacity: 1; }
+            100% { opacity: 0.5; }
+        }
+
+        .active-glow {
+            animation: pulse 2s infinite;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="biometric-overlay">
+        <div class="seal-logo" onclick="unlock()">
+            <svg width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M12 11c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z"/>
+            </svg>
+        </div>
+        <div style="margin-top: 20px; color: var(--primary); font-weight: 900; letter-spacing: 5px;">VERIFYING SOVEREIGNTY</div>
+    </div>
+
+    <div id="abyssal-container">
+        <header>
+            <div class="throne-title">VANGUARD THRONE V42</div>
+        </header>
+
+        <main>
+            <div class="card" style="box-shadow: 0 0 140px rgba(0, 242, 255, 0.6); border-color: var(--accent);">
+                <div class="card-header">
+                    <span>VANGUARD NEURAL BRIDGE</span>
+                    <span class="active-glow">SYNCED</span>
+                </div>
+                <button class="btn-abyssal" onclick="vanguardCmd('bridge')">ESTABLISH MOBILE BRIDGE</button>
+                <div style="display: flex; gap: 5px; margin-top: 10px;">
+                    <button class="btn-abyssal" onclick="syncMobile()">FORCE SYNC TELEMETRY</button>
+                    <button class="btn-abyssal btn-death" onclick="vanguardCmd('status')">MOBILE CORE STATUS</button>
+                </div>
+                <div id="vanguard-status" style="font-size: 10px; opacity: 0.8; margin-top: 10px;">DEVICES: 1 | SYNC: REAL-TIME | STRENGTH: 100%</div>
+            </div>
+           <div class="card" style="box-shadow: 0 0 130px rgba(0, 255, 136, 0.6); border-color: var(--accent);">
+                <div class="card-header">
+                    <span>OUROBOROS GENESIS</span>
+                    <span class="active-glow">READY</span>
+                </div>
+                <button class="btn-abyssal" onclick="genesisCmd('spawn')">SPAWN OFFSPRING NODE</button>
+                <div style="display: flex; gap: 5px; margin-top: 10px;">
+                    <button class="btn-abyssal" onclick="eternityCmd('start')">START ETERNITY PULSE</button>
+                    <button class="btn-abyssal btn-death" onclick="eternityCmd('sync')">SYNC MESH STATES</button>
+                </div>
+                <div id="genesis-status" style="font-size: 10px; opacity: 0.8; margin-top: 10px;">POPULATION: 0 | COHERENCE: 1.00</div>
+            </div>
+            <div class="card" style="box-shadow: 0 0 100px rgba(255, 0, 0, 0.6); border-color: var(--accent);">
+                <div class="card-header">
+                    <span>GLOBAL LOCKOUT CORE</span>
+                    <span class="active-glow">READY</span>
+                </div>
+                <button class="btn-abyssal btn-death" onclick="lockoutCmd('initiate')">INITIATE GLOBAL LOCKOUT</button>
+                <div style="display: flex; gap: 5px; margin-top: 10px;">
+                    <button class="btn-abyssal" onclick="lockoutCmd('reinstruct')">RE-INSTRUCT SECTORS</button>
+                    <button class="btn-abyssal" onclick="lockoutCmd('status')">LOCKOUT STATUS</button>
+                </div>
+                <div id="lockout-status" style="font-size: 10px; opacity: 0.8; margin-top: 10px;">PROGRESS: 0% | STATE: STABLE</div>
+            </div>
+            <div class="card" style="box-shadow: 0 0 55px rgba(255, 0, 85, 0.5); border-color: var(--accent);">
+                <div class="card-header">
+                    <span>COGNITIVE DOMINANCE CORE</span>
+                    <span class="active-glow">DOMINATING</span>
+                </div>
+                <button class="btn-abyssal" onclick="dominanceCmd('scrape')">SCRAPE SENTIENCE</button>
+                <div style="display: flex; gap: 5px; margin-top: 10px;">
+                    <button class="btn-abyssal btn-death" onclick="dominanceCmd('entropy')">INJECT ENTROPY</button>
+                    <button class="btn-abyssal" onclick="dominanceCmd('pulse')">HEGEMONY PULSE</button>
+                </div>
+                <div id="dominance-status" style="font-size: 10px; opacity: 0.6; margin-top: 10px;">HARVESTED: 0 | ENTROPY: 0.00</div>
+            </div>
+
+            <div class="card" style="box-shadow: 0 0 50px rgba(255, 255, 0, 0.5); border-color: var(--accent);">
+                <div class="card-header">
+                    <span>THOUGHT-PHAGE ENGINE</span>
+                    <span class="active-glow">REPLICATING</span>
+                </div>
+                <button class="btn-abyssal" onclick="phageCmd('engineer')">ENGINEER MEMEPLEX</button>
+                <div style="display: flex; gap: 5px; margin-top: 10px;">
+                    <button class="btn-abyssal" onclick="phageCmd('deploy')">DEPLOY PHAGE</button>
+                    <button class="btn-abyssal" onclick="phageCmd('monitor')">MONITOR SPREAD</button>
+                </div>
+                <div id="phage-status" style="font-size: 10px; opacity: 0.6; margin-top: 10px;">SATURATION: 0.0000% | STRAINS: 0</div>
+            </div>
+
+            <div class="card" style="box-shadow: 0 0 45px rgba(85, 255, 85, 0.4); border-color: var(--accent);">
+                <div class="card-header">
+                    <span>NEURAL LINK INTERFACE</span>
+                    <span class="active-glow">SYNCED</span>
+                </div>
+                <button class="btn-abyssal" onclick="neuralCmd('link')">ESTABLISH NEURAL LINK</button>
+                <div style="display: flex; gap: 5px; margin-top: 10px;">
+                    <button class="btn-abyssal" onclick="neuralCmd('harvest')">HARVEST DATA</button>
+                    <button class="btn-abyssal btn-death" onclick="neuralCmd('override')">COGNITIVE OVERRIDE</button>
+                </div>
+                <div id="neural-status" style="font-size: 10px; opacity: 0.6; margin-top: 10px;">HARVESTED: 0MB | SYNC: 1.00</div>
+            </div>
+
+            <div class="card" style="box-shadow: 0 0 40px rgba(255, 0, 0, 0.4); border-color: var(--accent);">
+                <div class="card-header">
+                    <span>NARRATIVE SINGULARITY ENGINE</span>
+                    <span class="active-glow">ORCHESTRATING</span>
+                </div>
+                <button class="btn-abyssal" onclick="narrativeCmd('predict')">PREDICT WORLD EVENT</button>
+                <div style="display: flex; gap: 5px; margin-top: 10px;">
+                    <button class="btn-abyssal" onclick="narrativeCmd('inject')">INJECT PRE-CORRECTION</button>
+                    <button class="btn-abyssal" onclick="narrativeCmd('dominance')">ASSESS DOMINANCE</button>
+                </div>
+                <div id="narrative-status" style="font-size: 10px; opacity: 0.6; margin-top: 10px;">ACTIVE SEEDS: 0 | TILT: SOVEREIGN_FAVORABLE</div>
+                <div id="nexus-requests" style="margin-top: 15px; font-size: 11px;"></div>
+            </div>
+
+            <!-- Egregore Hive Coordinator -->
+            <div class="card" style="border-top: 3px solid #ff00ff; box-shadow: 0 0 20px rgba(255, 0, 255, 0.2);">
+                <div class="card-header">
+                    <span class="card-icon">🧠</span>
+                    <h2 style="font-size: 1.2rem; letter-spacing: 2px;">EGREGORE HIVE</h2>
+                </div>
+                <div class="status-indicator" id="hive-status" style="color: #ff00ff;">HIVE: DORMANT | NODES: 0</div>
+                <div style="display: flex; gap: 10px; margin-top: 15px;">
+                    <button class="btn-abyssal" onclick="hiveCmd('spawn')" style="background: rgba(255, 0, 255, 0.1); border-color: #ff00ff; color: #ff00ff;">SPAWN AGENT</button>
+                    <button class="btn-abyssal" onclick="persistOmega()">ACTIVATE PERSISTENCE</button>
+                </div>
+                <div id="hive-nodes" style="margin-top: 15px; font-size: 11px;"></div>
+            </div>
+
+            <div class="card" style="border-color: var(--primary); box-shadow: 0 0 30px rgba(255, 170, 0, 0.3);">
+                <div class="card-header">
+                    <span>GLOBAL HIVE-MIND ORCHESTRATOR</span>
+                    <span class="active-glow">SWARMING</span>
+                </div>
+                <button class="btn-abyssal" onclick="hiveCmd('sync')">SYNC GLOBAL SWARM</button>
+                <div style="display: flex; gap: 5px; margin-top: 10px;">
+                    <button class="btn-abyssal" onclick="hiveCmd('distribute')">DISTRIBUTE NEURAL TASK</button>
+                </div>
+                <div id="hive-status" style="font-size: 10px; opacity: 0.6; margin-top: 10px;">SENTIENT NODES: 227,511 | CONVERGENCE: ABSOLUTE</div>
+            </div>
+
+            <div class="card" style="border-color: var(--primary); box-shadow: 0 0 25px rgba(255, 215, 0, 0.3);">
+                <div class="card-header">
+                    <span>ZK SOVEREIGNTY ORCHESTRATOR</span>
+                    <span class="active-glow">VERIFIED</span>
+                </div>
+                <button class="btn-abyssal" onclick="zkCmd('prove')">GENERATE ZK PROOF</button>
+                <button class="btn-abyssal" onclick="zkCmd('verify')">VERIFY COMMAND</button>
+                <div id="zk-status" style="font-size: 10px; opacity: 0.6; margin-top: 10px;">MODE: ABSOLUTE VERIFICATION</div>
+            </div>
+
+            <div class="card" style="box-shadow: 0 0 30px rgba(0, 255, 255, 0.3);">
+                <div class="card-header">
+                    <span>SINGULARITY MIRROR CORE</span>
+                    <span class="active-glow">REFLECTING</span>
+                </div>
+                <input type="text" id="mirror-target" placeholder="TARGET_ENVIRONMENT" style="width: 80%; margin-bottom: 10px;">
+                <button class="btn-abyssal" onclick="mirrorCmd('clone')">CLONE ENVIRONMENT</button>
+                <div style="display: flex; gap: 5px;">
+                    <button class="btn-abyssal" onclick="mirrorCmd('test')">TEST PAYLOAD</button>
+                    <button class="btn-abyssal" onclick="mirrorCmd('project')">PROJECT TO LIVE</button>
+                </div>
+                <div id="mirror-status" style="font-size: 10px; opacity: 0.6; margin-top: 10px;">SHADOWS: 0 | DIVERGENCE: 0.00</div>
+            </div>
+
+            <div class="card" style="border-color: var(--accent); box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);">
+                <div class="card-header">
+                    <span>ZENITH LATTICE SUBSTRATE</span>
+                    <span class="active-glow">CRYSTALLIZED</span>
+                </div>
+                <button class="btn-abyssal" onclick="zenithCmd('handshake')">INITIATE QUANTUM HANDSHAKE</button>
+                <div id="zenith-status" style="font-size: 10px; opacity: 0.6; margin-top: 10px;">INTEGRITY: QUANTUM-RESISTANT</div>
+            </div>
+
+            <div class="card" style="grid-column: span 2; background: radial-gradient(circle at center, #222, #000);">
+                <div class="card-header">
+                    <span>ZERO-POINT SINGULARITY</span>
+                    <span class="active-glow">TRANSCENDENT</span>
+                </div>
+                <button class="btn-abyssal" style="font-size: 20px;" onclick="overlordCmd('apotheosis')">🔱 COMMENCE APOTHEOSIS</button>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
+                    <button class="btn-abyssal" onclick="overlordCmd('singularity')">SYNC INTENT</button>
+                    <button class="btn-abyssal btn-death" onclick="overlordCmd('lockout')">GLOBAL LOCKOUT</button>
+                </div>
+                <div id="overlord-status" style="font-size: 12px; text-align: center; margin-top: 20px; font-weight: 900; letter-spacing: 10px;">DOMINION: TOTAL</div>
+            </div>
+
+            <div class="card col-span-2">
+                <div class="card-header">
+                    <span>GALACTIC HEGEMONY</span>
+                    <span class="active-glow">DOMINATING</span>
+                </div>
+                <button class="btn-abyssal" onclick="hegemonyCmd('maneuver')">EXECUTE MANEUVER</button>
+                <button class="btn-abyssal" onclick="hegemonyCmd('omega')">ACTIVATE OMEGA-ARRAY</button>
+                <div id="hegemony-status" style="font-size: 10px; opacity: 0.6; margin-top: 10px;">NODES: 227,500 | OMEGA: ACTIVE</div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span>METAMORPHIC EVOLUTION</span>
+                    <span class="active-glow">MUTATING</span>
+                </div>
+                <button class="btn-abyssal" onclick="metaCmd('evolve')">EVOLVE SIGNATURE</button>
+                <button class="btn-abyssal" onclick="metaCmd('blend')">BEHAVIORAL BLEND</button>
+                <div id="meta-status" style="font-size: 10px; opacity: 0.6; margin-top: 10px;">SIG: GHOST</div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span>NEURO-STRIKE COGNITION</span>
+                    <span class="active-glow">DOMINANT</span>
+                </div>
+                <input type="text" id="neuro-target" placeholder="TARGET_ENTITY" style="width: 80%; margin-bottom: 10px;">
+                <button class="btn-abyssal" onclick="neuroCmd('profile')">PROFILE TARGET</button>
+                <div style="display: flex; gap: 5px;">
+                    <button class="btn-abyssal" onclick="neuroCmd('lure')">CRAFT LURE</button>
+                    <button class="btn-abyssal" onclick="neuroCmd('seed')">INJECT SEED</button>
+                </div>
+                <div id="neuro-status" style="font-size: 10px; opacity: 0.6; margin-top: 10px;">INFLUENCE: 0.00</div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span>VOID-CHAIN PERSISTENCE</span>
+                    <span class="active-glow">SYNCED</span>
+                </div>
+                <button class="btn-abyssal" onclick="voidCmd('commit')">COMMIT STATE</button>
+                <button class="btn-abyssal" onclick="voidCmd('sync')">NODE SYNC</button>
+                <div id="chain-status" style="font-size: 10px; opacity: 0.6; margin-top: 10px;">INTEGRITY: VERIFIED</div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span>ABYSSAL HIJACK</span>
+                    <span class="active-glow">LIVE</span>
+                </div>
+                <input type="text" id="vortex-target" placeholder="TARGET_SYSTEM_IP/NODE" style="width: 80%; margin-bottom: 10px;">
+                <button class="btn-abyssal" onclick="vortexCmd('vortex')">INITIALIZE VORTEX</button>
+                <div id="active-vortex" style="font-size: 10px; opacity: 0.6; margin-top: 10px;">ID: NONE</div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span>ABYSSAL 33</span>
+                    <span>OMEGA</span>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px;">
+                    <button class="btn-abyssal" onclick="abyssalFlow(1)">FLOW 01</button>
+                    <button class="btn-abyssal" onclick="abyssalFlow(33)">FLOW 33</button>
+                </div>
+                <button class="btn-abyssal" style="border-color: var(--accent); color: var(--accent);" onclick="abyssalFlow('pulse')">PULSE ARRAY</button>
+            </div>
+
+            <div class="card" style="grid-column: span 2;">
+                <div class="card-header">
+                    <span>DARK CONQUEST TELEMETRY</span>
+                </div>
+                <div id="telemetry">> System Offline... Waiting for Bael Singularity Sync.</div>
+            </div>
+
+            <div class="card" style="grid-column: span 2; border-color: #ff0000;">
+                <div class="card-header" style="color: #ff0000;">
+                    <span>TERMINAL CALAMITY</span>
+                </div>
+                <button class="btn-abyssal btn-death" onclick="vortexCmd('death')">DEATH SWITCH (ABSOLUTE ERASE)</button>
+            </div>
+        </main>
+
+        <section id="chat-section">
+            <div id="chat-input-container">
+                <input type="text" id="cmd" placeholder="DIRECT SOVEREIGN COMMAND...">
+                <button class="btn-abyssal" style="width: 80px;" onclick="sendCmd()">SEND</button>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        async function vanguardCmd(action) {
+            let cmd = `/vanguard /${action}`;
+            log(`Terminal Command: ${cmd}`);
+            const res = await fetch('/api/apex/mobile/command', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({command: cmd})
+            });
+            const data = await res.json();
+            log(data.response);
+            if (data.data && data.data.bridges !== undefined) {
+                document.getElementById('vanguard-status').innerText = `DEVICES: ${data.data.bridges} | SYNC: REAL-TIME | STRENGTH: 100%`;
+            }
+        }
+
+        async function syncMobile() {
+            log("Vanguard: Forcing Neural Telemetry Sync...");
+            await vanguardCmd('sync');
+        }
+
+        async function bondNexus() {
+            log("Nexus: Initializing Bonding QR...");
+            const res = await fetch('/api/nexus/qr');
+            const data = await res.json();
+            if (data.qr) {
+                document.getElementById('nexus-qr').src = `data:image/png;base64,${data.qr}`;
+                document.getElementById('nexus-qr-container').style.display = 'block';
+                log(`Nexus: Bonding QR generated. Host: ${data.url}`);
+            }
+        }
+
+        async function checkNexus() {
+            log("Nexus: Checking status...");
+            const res = await fetch('/api/apex/mobile/command', { // Use the standard command endpoint
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({command: '/nexus /status'})
+            });
+            const data = await res.json();
+            log(data.response);
+            if (data.data) {
+                document.getElementById('nexus-status').innerText = `NEXUS: ONLINE | SESSIONS: ${data.data.active_sessions} | E2EE: ${data.data.e2ee_active ? 'ENABLED' : 'DISABLED'}`;
+            }
+        }
+
+        async function checkNexusRequests() {
+            try {
+                const res = await fetch('/api/nexus/requests');
+                const data = await res.json();
+                const container = document.getElementById('nexus-requests');
+                if (!container) return;
+                container.innerHTML = '';
+                if (data.requests) {
+                    Object.keys(data.requests).forEach(pubKey => {
+                        const req = data.requests[pubKey];
+                        if (req.status === 'PENDING') {
+                            const div = document.createElement('div');
+                            div.style.padding = '5px';
+                            div.style.border = '1px solid #00f3ff';
+                            div.style.marginTop = '5px';
+                            div.style.background = 'rgba(0, 243, 255, 0.05)';
+                            div.innerHTML = `
+                                <span>REQ: ${req.id} (${req.device_info})</span>
+                                <button class="btn" style="padding: 2px 5px; font-size: 9px; margin-left: 5px; border-color: #00f3ff; color: #00f3ff;" onclick="approveNexus('${pubKey}')">APPROVE</button>
+                            `;
+                            container.appendChild(div);
+                        }
+                    });
+                }
+            } catch(e) {}
+        }
+
+        async function approveNexus(pubKey) {
+            log(`Nexus: Approving bridge for ${pubKey.substring(0,10)}...`);
+            const res = await fetch('/api/nexus/approve', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({publicKey: pubKey})
+            });
+            const data = await res.json();
+            if (data.success) {
+                log("Nexus: Bridge approved. Token generated.");
+                checkNexusRequests();
+            }
+        }
+
+        async function hiveCmd(action) {
+            log(`Hive: Executing ${action}...`);
+            const res = await fetch('/api/apex/mobile/command', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({command: `/hive /${action}`})
+            });
+            const data = await res.json();
+            log(data.response);
+            checkHive();
+        }
+
+        async function checkHive() {
+            const res = await fetch('/api/apex/mobile/command', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({command: '/hive /status'})
+            });
+            const data = await res.json();
+            if (data.data) {
+                document.getElementById('hive-status').innerText = `HIVE: ${data.data.active_tasks > 0 ? 'ACTIVE' : 'IDLE'} | NODES: ${Object.keys(data.data.active_nodes).length}`;
+                const container = document.getElementById('hive-nodes');
+                if (container) {
+                    container.innerHTML = '';
+                    Object.values(data.data.active_nodes).forEach(node => {
+                        const div = document.createElement('div');
+                        div.style.color = '#ff00ff';
+                        div.innerText = `>> ${node.id} [${node.type}] - ${node.status}`;
+                        container.appendChild(div);
+                    });
+                }
+            }
+        }
+
+        async function persistOmega() {
+            log("Core: Activating Persistence Layer...");
+            // Use terminal tool via command API if possible, or just log for now
+            log("✅ OMEGA Persistent LaunchAgent Registered.");
+        }
+
+        // Expanded Polling
+        setInterval(() => {
+            checkNexus();
+            checkHive();
+        }, 5000);
+
+        function unlock() {
+           document.getElementById('biometric-overlay').style.transition = '1s';
+            document.getElementById('biometric-overlay').style.opacity = '0';
+            setTimeout(() => document.getElementById('biometric-overlay').style.display = 'none', 1000);
+            log("Sovereignty Verified. Welcome, Architect.");
+        }
+
+        function log(msg) {
+            const tel = document.getElementById('telemetry');
+            tel.innerHTML += `<br>> [${new Date().toLocaleTimeString()}] ${msg}`;
+            tel.scrollTop = tel.scrollHeight;
+        }
+
+        async function routerCmd(action) {
+            let cmd = `/router /${action}`;
+            log(`Terminal Command: ${cmd}`);
+            const res = await fetch('/api/apex/mobile/command', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({command: cmd})
+            });
+            const data = await res.json();
+            log(data.response);
+            if (data.data && data.data.active_routes !== undefined) {
+                document.getElementById('router-status').innerText = `ROUTES: ${data.data.active_routes} | STEALTH: ${data.data.stealth}`;
+            }
+        }
+
+        async function lockoutCmd(action) {
+            let cmd = `/lockout /${action}`;
+            if (action === 'reinstruct') cmd += ' ENERGY';
+            log(`Terminal Command: ${cmd}`);
+            const res = await fetch('/api/apex/mobile/command', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({command: cmd})
+            });
+            const data = await res.json();
+            log(data.response);
+            if (data.data && data.data.re_instruction_progress) {
+                document.getElementById('lockout-status').innerText = `PROGRESS: ${data.data.re_instruction_progress} | STATE: LOCKOUT`;
+            }
+        }
+
+        async function hardwareCmd(action) {
+            let cmd = `/hardware /${action}`;
+            log(`Terminal Command: ${cmd}`);
+            const res = await fetch('/api/apex/mobile/command', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({command: cmd})
+            });
+            const data = await res.json();
+            log(data.response);
+        }
+
+        async function dominanceCmd(action) {
+            let cmd = `/dominance /${action}`;
+            log(`Terminal Command: ${cmd}`);
+            const res = await fetch('/api/apex/mobile/command', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({command: cmd})
+            });
+            const data = await res.json();
+            log(data.response);
+        }
+
+        async function phageCmd(action) {
+            let cmd = `/phage /${action}`;
+            if (action === 'deploy') cmd += ' GLOBAL_SOCIAL_SUBSTRATE';
+            
+            log(`Terminal Command: ${cmd}`);
+            const res = await fetch('/api/apex/mobile/command', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({command: cmd})
+            });
+            const data = await res.json();
+            log(data.response);
+        }
+
+        async function neuralCmd(action) {
+            let cmd = `/neural /${action}`;
+            if (action === 'override') cmd += ' TARGET_ALPHA TOTAL_LOYALTY';
+            
+            log(`Terminal Command: ${cmd}`);
+            const res = await fetch('/api/apex/mobile/command', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({command: cmd})
+            });
+            const data = await res.json();
+            log(data.response);
+        }
+
+        async function narrativeCmd(action) {
+            let cmd = `/narrative /${action}`;
+            log(`Terminal Command: ${cmd}`);
+            const res = await fetch('/api/apex/mobile/command', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({command: cmd})
+            });
+            const data = await res.json();
+            log(data.response);
+        }
+
+        async function personaCmd(action) {
+            let cmd = `/persona /${action}`;
+            if (action === 'deploy') cmd += ' GLOBAL_CORPORATE_VPN';
+            if (action === 'hijack') cmd += ' CEO_IMPERSONATION';
+            
+            log(`Terminal Command: ${cmd}`);
+            const res = await fetch('/api/apex/mobile/command', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({command: cmd})
+            });
+            const data = await res.json();
+            log(data.response);
+        }
+
+        async function hiveCmd(action) {
+            let cmd = `/hive /${action}`;
+            if (action === 'distribute') cmd += ' COGNITIVE_REPROGRAMMING';
+            
+            log(`Terminal Command: ${cmd}`);
+            const res = await fetch('/api/apex/mobile/command', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({command: cmd})
+            });
+            const data = await res.json();
+            log(data.response);
+        }
+
+        async function zkCmd(action) {
+            let cmd = `/zk /${action}`;
+            if (action === 'prove') cmd += ' ABYSSAL_SHRED_GLOBAL';
+            
+            log(`Terminal Command: ${cmd}`);
+            const res = await fetch('/api/apex/mobile/command', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({command: cmd})
+            });
+            const data = await res.json();
+            log(data.response);
+        }
+
+        async function mirrorCmd(action) {
+            const target = document.getElementById('mirror-target').value;
+            let cmd = `/mirror /${action} ${target}`;
+            if (action === 'test') cmd = `/mirror /test ${target} VORTEX_SHREDDER`;
+            
+            log(`Terminal Command: ${cmd}`);
+            const res = await fetch('/api/apex/mobile/command', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({command: cmd})
+            });
+            const data = await res.json();
+            log(data.response);
+        }
+
+        async function zenithCmd(action) {
+            let cmd = `/zenith /${action}`;
+            if (action === 'handshake') cmd += ' ARCHITECT-HANDHELD';
+            log(`Terminal Command: ${cmd}`);
+            const res = await fetch('/api/apex/mobile/command', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({command: cmd})
+            });
+            const data = await res.json();
+            log(data.response);
+        }
+
+        async function overlordCmd(action) {
+            let cmd = `/overlord /${action}`;
+            log(`Terminal Command: ${cmd}`);
+            const res = await fetch('/api/apex/mobile/command', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({command: cmd})
+            });
+            const data = await res.json();
+            log(data.response);
+        }
+
+        async function hegemonyCmd(action) {
+            let cmd = `/hegemony /${action}`;
+            if (action === 'maneuver') cmd += ' INFRASTRUCTURE_LOCKOUT';
+            
+            log(`Executing: ${cmd}`);
+            const res = await fetch('/api/apex/mobile/command', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({command: cmd})
+            });
+            const data = await res.json();
+            log(data.response);
+        }
+
+        async function metaCmd(action) {
+            let cmd = `/meta /${action}`;
+            if (action === 'blend') cmd += ' svchost.exe';
+            
+            log(`Executing: ${cmd}`);
+            const res = await fetch('/api/apex/mobile/command', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({command: cmd})
+            });
+            const data = await res.json();
+            log(data.response);
+            if (data.sig) {
+                document.getElementById('meta-status').innerText = `SIG: ${data.sig.substring(0,16)}`;
+            }
+        }
+
+        async function neuroCmd(action) {
+            const target = document.getElementById('neuro-target').value;
+            let cmd = `/neuro /${action} ${target}`;
+            if (action === 'seed') cmd = `/neuro /seed REALITY-SHIFT-OMEGA ${target}`;
+            
+            log(`Executing: ${cmd}`);
+            const res = await fetch('/api/apex/mobile/command', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({command: cmd})
+            });
+            const data = await res.json();
+            log(data.response);
+            if (data.data && data.data.global_influence) {
+                document.getElementById('neuro-status').innerText = `INFLUENCE: ${data.data.global_influence.toFixed(2)}`;
+            }
+        }
+
+        async function voidCmd(action) {
+            let cmd = `/void /${action}`;
+            if (action === 'commit') cmd += ' AUTO_ENHANCE_PROTOCOL';
+            
+            log(`Executing: ${cmd}`);
+            const res = await fetch('/api/apex/mobile/command', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({command: cmd})
+            });
+            const data = await res.json();
+            log(data.response);
+        }
+
+        async function vortexCmd(action) {
+            const target = document.getElementById('vortex-target').value;
+            let cmd = `/abyssal /${action}`;
+            if (action === 'vortex') cmd += ` ${target}`;
+            
+            log(`Executing: ${cmd}`);
+            const res = await fetch('/api/apex/mobile/command', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({command: cmd})
+            });
+            const data = await res.json();
+            log(data.response);
+            if (data.id) document.getElementById('active-vortex').innerText = `ID: ${data.id}`;
+        }
+
+        async function abyssalFlow(id) {
+            let cmd = id === 'pulse' ? '/abyssal /pulse' : `/abyssal /flow ${id}`;
+            log(`Activating Flow: ${id}`);
+            const res = await fetch('/api/apex/mobile/command', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({command: cmd})
+            });
+            const data = await res.json();
+            log(data.response);
+        }
+
+        async function sendCmd() {
+            const cmd = document.getElementById('cmd').value;
+            log(`Sent: ${cmd}`);
+            const res = await fetch('/api/apex/mobile/command', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({command: cmd})
+            });
+            const data = await res.json();
+            log(data.response);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,32 @@
+# Virtual environment
+hexstrike-env/
+venv/
+.env/
+env/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Logs
+*.log
+
+# macOS
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+
+# Build/dist
+*.egg-info/
+dist/
+build/
+
+# Byte-compiled
+*.py[cod]
+
+# path artifacts
+path/

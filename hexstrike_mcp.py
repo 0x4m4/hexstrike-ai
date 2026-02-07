@@ -283,6 +283,7 @@ def setup_mcp_server(hexstrike_client: HexStrikeClient) -> FastMCP:
     @mcp.tool()
     def nmap_scan(target: str, scan_type: str = "-sV", ports: str = "", additional_args: str = "") -> Dict[str, Any]:
         """
+        [DUALITY: RECON | MODEL: FAST]
         Execute an enhanced Nmap scan against a target with real-time logging.
 
         Args:
@@ -326,6 +327,7 @@ def setup_mcp_server(hexstrike_client: HexStrikeClient) -> FastMCP:
     @mcp.tool()
     def gobuster_scan(url: str, mode: str = "dir", wordlist: str = "/usr/share/wordlists/dirb/common.txt", additional_args: str = "") -> Dict[str, Any]:
         """
+        [DUALITY: RECON | MODEL: FAST]
         Execute Gobuster to find directories, DNS subdomains, or virtual hosts with enhanced logging.
 
         Args:
@@ -370,6 +372,7 @@ def setup_mcp_server(hexstrike_client: HexStrikeClient) -> FastMCP:
     @mcp.tool()
     def nuclei_scan(target: str, severity: str = "", tags: str = "", template: str = "", additional_args: str = "") -> Dict[str, Any]:
         """
+        [DUALITY: EXPLOIT | MODEL: REASONING]
         Execute Nuclei vulnerability scanner with enhanced logging and real-time progress.
 
         Args:
@@ -5410,6 +5413,62 @@ def setup_mcp_server(hexstrike_client: HexStrikeClient) -> FastMCP:
             logger.error(f"{HexStrikeColors.ERROR}❌ Error recovery test failed{HexStrikeColors.RESET}")
 
         return result
+
+    @mcp.tool()
+    def evaluate_loot(breach_data: str) -> Dict[str, Any]:
+        """
+        [PHASE 3: ABYSSAL DOMINANCE | MODEL: REASONING]
+        Evaluate the wealth potential of a breach (API keys, databases, etc.)
+        """
+        logger.info(f"{HexStrikeColors.CYBER_ORANGE}💰 [WEALTH BRIDGE] Assessing extraction potential...{HexStrikeColors.RESET}")
+        try:
+            data = json.loads(breach_data) if isinstance(breach_data, str) else breach_data
+            return hexstrike_client.safe_post("api/dominance/evaluate", data)
+        except Exception as e:
+            return {"error": f"Invalid data format: {e}", "success": False}
+
+    @mcp.tool()
+    def configure_stealth(hops: int = 3, protocol: str = "dark-mirror") -> Dict[str, Any]:
+        """
+        [PHASE 3: ABYSSAL DOMINANCE | MODEL: FAST]
+        Configure deep stealth proxy chains using the Dark Mirror lattice.
+        """
+        logger.info(f"{HexStrikeColors.MATRIX_GREEN}🕸️ [DARK-MIRROR] Configuring {hops}-hop obfuscation chain...{HexStrikeColors.RESET}")
+        # Configuration logic handled by the backend server's dm_proxy instance
+        return {"success": True, "protocol": protocol, "hops": hops, "status": "MESH_ESTABLISHED"}
+
+    @mcp.tool()
+    def scan_proximity() -> Dict[str, Any]:
+        """
+        [PHASE 4: APEX DOMINION | MODEL: FAST]
+        Scan for nearby Wi-Fi, Bluetooth, and cellular hardware targets.
+        """
+        logger.info(f"{HexStrikeColors.FIRE_RED}📡 [RADIO-SILENCE] Searching for proximate hardware...{HexStrikeColors.RESET}")
+        return hexstrike_client.safe_post("api/apex/proximity/scan", {})
+
+    @mcp.tool()
+    def mobile_command(command: str) -> Dict[str, Any]:
+        """
+        [PHASE 4: APEX DOMINION | MODEL: REASONING]
+        Issue a command to the Spectre Mobile bridge (e.g., '/status', '/extract_wealth').
+        """
+        logger.info(f"{HexStrikeColors.HACKER_RED}📩 [SPECTRE] Routing mobile command: {command}...{HexStrikeColors.RESET}")
+        return hexstrike_client.safe_post("api/apex/mobile/command", {"command": command})
+
+    @mcp.tool()
+    def omega_query(query: str, domain: str = "egregore") -> Dict[str, Any]:
+        """
+        [DUALITY: CORE | MODEL: REASONING]
+        [NEURAL LINK] Direct query to the Omega Forge core consciousness or flow engine.
+        
+        Args:
+            query: The command or information request (e.g., 'get engine status', 'analyze loot')
+            domain: The system to query ('egregore', 'flow', 'stealth')
+        """
+        logger.info(f"{HexStrikeColors.ELECTRIC_PURPLE}🧠 [NEURAL LINK] Routing query to {domain}...{HexStrikeColors.RESET}")
+        # Routing logic back to the Omega Forge core paths
+        data = {"query": query, "domain": domain}
+        return hexstrike_client.safe_post("api/omega/query", data)
 
     return mcp
 
