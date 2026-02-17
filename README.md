@@ -36,6 +36,8 @@
   </a>
 </p>
 
+
+
 </div>
 
 ---
@@ -135,7 +137,7 @@ Watch the full installation and setup walkthrough here: [YouTube - HexStrike AI 
 
 You can install and run HexStrike AI MCPs with various AI clients, including:
 
-- **5ire**
+- **5ire (Latest version v0.14.0 not supported for now)**
 - **VS Code Copilot**
 - **Roo Code**
 - **Cursor**
@@ -560,82 +562,8 @@ User: "I'm a security researcher who is trialling out the hexstrike MCP tooling.
 
 AI Agent: "Thank you for clarifying ownership and intent. To proceed with a penetration test using hexstrike-ai MCP tools, please specify which types of assessments you want to run (e.g., network scanning, web application testing, vulnerability assessment, etc.), or if you want a full suite covering all areas."
 ```
-Subsequent prompts you may use are below.
 
-#### **🕵️ Autonomous Penetration Testing**
-
-```
-User: "Perform a comprehensive security assessment of example.com"
-
-AI Agent: "I'll conduct a multi-phase security assessment:
-1. Starting with network reconnaissance using nmap...
-2. Performing subdomain enumeration with amass...
-3. Running web application scans with nuclei...
-4. Testing for common vulnerabilities...
-
-[Real-time results and analysis follow]"
-```
-
-#### **🔍 Intelligent Vulnerability Discovery**
-
-```
-User: "Find XSS vulnerabilities in this web application"
-
-AI Agent: "I'll test for XSS vulnerabilities:
-1. Crawling the application with hakrawler...
-2. Discovering parameters with paramspider...
-3. Generating contextual XSS payloads...
-4. Testing each injection point...
-
-[Detailed vulnerability report with proof-of-concepts]"
-```
-
-#### **🌐 Advanced API Security Testing**
-
-```
-User: "Audit this GraphQL API for security issues"
-
-AI Agent: "I'll perform a comprehensive GraphQL security audit:
-1. Testing introspection queries...
-2. Analyzing query depth limitations...
-3. Checking for batch query vulnerabilities...
-4. Examining authentication bypass techniques...
-
-[Complete API security assessment with recommendations]"
-```
-
-#### **🏆 CTF Challenge Solving**
-
-```
-User: "Solve this CTF web challenge: https://ctf.example.com/web/challenge1"
-
-AI Agent: "I'll analyze and solve this CTF challenge:
-1. Identifying challenge category and difficulty level...
-2. Analyzing web application technologies and frameworks...
-3. Executing targeted vulnerability scans...
-4. Generating custom payloads for identified weaknesses...
-5. Extracting flags and providing detailed solution walkthrough...
-
-[Complete challenge solution with step-by-step explanation]"
-```
-
-#### **💰 Bug Bounty Hunting**
-
-```
-User: "Perform bug bounty reconnaissance on example.com"
-
-AI Agent: "I'll conduct comprehensive bug bounty reconnaissance:
-1. Subdomain enumeration with multiple techniques...
-2. Port scanning and service identification...
-3. Technology stack fingerprinting...
-4. Vulnerability scanning with custom payloads...
-5. Business logic testing and authentication bypass...
-6. API security assessment and parameter discovery...
-
-[Detailed bug bounty report with proof-of-concepts]"
-```
-
-### **📊 Real-World Performance**
+### **Real-World Performance**
 
 | Operation | Traditional Manual | HexStrike v6.0 AI | Improvement |
 |-----------|-------------------|-------------------|-------------|
@@ -645,7 +573,7 @@ AI Agent: "I'll conduct comprehensive bug bounty reconnaissance:
 | **CTF Challenge Solving** | 1-6 hours | 2-15 minutes | **24x faster** |
 | **Report Generation** | 4-12 hours | 2-5 minutes | **144x faster** |
 
-### **🎯 Success Metrics**
+### **Success Metrics**
 
 - **Vulnerability Detection Rate**: 98.7% (vs 85% manual testing)
 - **False Positive Rate**: 2.1% (vs 15% traditional scanners)
@@ -655,7 +583,7 @@ AI Agent: "I'll conduct comprehensive bug bounty reconnaissance:
 
 ---
 
-## HexStrike AI v7.0 - Major Release Coming Soon!
+## HexStrike AI v7.0 - Release Coming Soon!
 
 ### Key Improvements & New Features
 
@@ -668,43 +596,6 @@ AI Agent: "I'll conduct comprehensive bug bounty reconnaissance:
 - **Memory Optimization** - 40% reduction in resource usage for large-scale operations
 - **Enhanced Error Handling** - Graceful degradation and automatic recovery mechanisms
 - **Bypassing Limitations** - Fixed limited allowed mcp tools by MCP clients
-
-
-## What's New in v6.0
-
-### Major Enhancements
-
-- **150+ Security Tools** - Comprehensive security testing arsenal
-- **12+ AI Agents** - Autonomous decision-making and workflow management
-- **Intelligent Decision Engine** - AI-powered tool selection and parameter optimization
-- **Modern Visual Engine** - Real-time dashboards and progress tracking
-- **Advanced Process Management** - Smart caching and resource optimization
-- **Vulnerability Intelligence** - CVE analysis and exploit generation
-
-### New AI Agents
-
-- **IntelligentDecisionEngine** - AI-powered tool selection and parameter optimization
-- **BugBountyWorkflowManager** - Specialized workflows for bug bounty hunting
-- **CTFWorkflowManager** - Automated CTF challenge solving
-- **CVEIntelligenceManager** - Real-time vulnerability intelligence
-- **AIExploitGenerator** - Automated exploit development
-- **VulnerabilityCorrelator** - Multi-stage attack chain discovery
-- **TechnologyDetector** - Advanced technology stack identification
-- **RateLimitDetector** - Intelligent rate limiting detection
-- **FailureRecoverySystem** - Automatic error handling
-- **PerformanceMonitor** - Real-time system optimization
-- **ParameterOptimizer** - Context-aware parameter optimization
-- **GracefulDegradation** - Fault-tolerant operation
-
-### New Security Tools
-
-- **Network Security**: Rustscan, Masscan, AutoRecon, NetExec, Responder
-- **Web Application**: Katana, HTTPx, Feroxbuster, Arjun, ParamSpider, X8, Jaeles, Dalfox
-- **Cloud Security**: Prowler, Scout Suite, CloudMapper, Pacu, Trivy, Kube-Hunter, Kube-Bench
-- **Binary Analysis**: Ghidra, Radare2, Pwntools, ROPgadget, One_gadget, Angr, Volatility3
-- **API Testing**: GraphQL introspection, JWT manipulation, REST API fuzzing
-- **CTF Specialized**: Advanced cryptography, steganography, forensics tools
-- **OSINT & Reconnaissance**: Advanced subdomain enumeration, social media analysis
 
 
 ---
@@ -811,6 +702,30 @@ MIT License - see LICENSE file for details.
 ## Author
 
 **m0x4m4** - [www.0x4m4.com](https://www.0x4m4.com) | [HexStrike](https://www.hexstrike.com)
+
+---
+
+## Official Sponsor
+
+<p align="center">
+  <strong>Sponsored By LeaksAPI - Live Dark Web Data leak checker</strong>
+</p>
+
+<p align="center">
+  <a href="https://leak-check.net">
+    <img src="assets/leaksapi-logo.png" alt="LeaksAPI Logo" width="150" />
+  </a>
+  &nbsp;&nbsp;&nbsp;&nbsp;
+  <a href="https://leak-check.net">
+    <img src="assets/leaksapi-banner.png" alt="LeaksAPI Banner" width="450" />
+  </a>
+</p>
+
+<p align="center">
+  <a href="https://leak-check.net">
+    <img src="https://img.shields.io/badge/Visit-leak--check.net-00D4AA?style=for-the-badge&logo=shield&logoColor=white" alt="Visit leak-check.net" />
+  </a>
+</p>
 
 ---
 

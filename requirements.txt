@@ -1,4 +1,4 @@
-# HexStrike AI MCP Agents v6.0 
+# HexStrike AI MCP Agents v6.0
 #
 # INSTALLATION COMMANDS:
 # python3 -m venv hexstrike_env
@@ -36,48 +36,49 @@ mitmproxy>=9.0.0,<11.0.0        # HTTP proxy (mitmproxy imports)
 # ============================================================================
 pwntools>=4.10.0,<5.0.0         # Binary exploitation (from pwn import *)
 angr>=9.2.0,<10.0.0             # Binary analysis (import angr)
+bcrypt==4.0.1                   # Pin bcrypt version for passlib compatibility (fixes pwntools dependency issue)
 
 # ============================================================================
 # EXTERNAL SECURITY TOOLS (150+ Tools - Install separately)
 # ============================================================================
-# 
+#
 # HexStrike v6.0 integrates with 150+ external security tools that must be
 # installed separately from their official sources:
-# 
+#
 # 🔍 Network & Reconnaissance (25+ tools):
 # - nmap, masscan, rustscan, autorecon, amass, subfinder, fierce
 # - dnsenum, theharvester, responder, netexec, enum4linux-ng
-# 
+#
 # 🌐 Web Application Security (40+ tools):
 # - gobuster, feroxbuster, ffuf, dirb, dirsearch, nuclei, nikto
 # - sqlmap, wpscan, arjun, paramspider, x8, katana, httpx
 # - dalfox, jaeles, hakrawler, gau, waybackurls, wafw00f
-# 
+#
 # 🔐 Authentication & Password (12+ tools):
 # - hydra, john, hashcat, medusa, patator, netexec
 # - evil-winrm, hash-identifier, ophcrack
-# 
+#
 # 🔬 Binary Analysis & Reverse Engineering (25+ tools):
 # - ghidra, radare2, gdb, binwalk, ropgadget, checksec, strings
 # - volatility3, foremost, steghide, exiftool, angr, pwntools
-# 
+#
 # ☁️ Cloud & Container Security (20+ tools):
 # - prowler, scout-suite, trivy, kube-hunter, kube-bench
 # - docker-bench-security, checkov, terrascan, falco
-# 
+#
 # 🏆 CTF & Forensics (20+ tools):
 # - volatility3, autopsy, sleuthkit, stegsolve, zsteg, outguess
 # - photorec, testdisk, scalpel, bulk-extractor
-# 
+#
 # 🕵️ OSINT & Intelligence (20+ tools):
 # - sherlock, social-analyzer, recon-ng, maltego, spiderfoot
 # - shodan-cli, censys-cli, have-i-been-pwned
-# 
+#
 # Installation Notes:
 # 1. Kali Linux 2024.1+ includes most tools by default
 # 2. Ubuntu/Debian users should install tools from official repositories
 # 3. Some tools require compilation from source or additional setup
 # 4. Cloud tools require API keys and authentication configuration
 # 5. Browser Agent requires Chrome/Chromium and ChromeDriver installation
-# 
+#
 # For complete installation instructions and setup guides, see README.md
