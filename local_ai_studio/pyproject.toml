@@ -1,0 +1,70 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.backends._legacy:_Backend"
+
+[project]
+name = "local-ai-studio"
+version = "1.0.0"
+description = "Fully-featured local AI development environment optimized for NVIDIA RTX + ARM hardware"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+
+dependencies = [
+    "psutil>=5.9.0",
+    "requests>=2.31.0",
+]
+
+[project.optional-dependencies]
+# Core inference (GGUF models via llama.cpp)
+inference = [
+    "llama-cpp-python>=0.2.0",
+]
+
+# GPU-accelerated inference (requires CUDA toolkit)
+cuda = [
+    "llama-cpp-python>=0.2.0",
+]
+
+# Web GUI
+gui = [
+    "gradio>=4.0.0",
+]
+
+# MCP protocol support
+mcp = [
+    "fastmcp>=0.2.0",
+]
+
+# HuggingFace model downloads
+huggingface = [
+    "huggingface-hub>=0.20.0",
+]
+
+# Fine-tuning / LoRA support
+training = [
+    "torch>=2.0.0",
+    "transformers>=4.36.0",
+    "peft>=0.7.0",
+    "bitsandbytes>=0.41.0",
+    "datasets>=2.14.0",
+    "accelerate>=0.25.0",
+]
+
+# Web scraping
+scraping = [
+    "beautifulsoup4>=4.12.0",
+    "aiohttp>=3.8.0",
+]
+
+# All optional dependencies (except CUDA which needs special build flags)
+all = [
+    "local-ai-studio[inference,gui,mcp,huggingface,scraping]",
+]
+
+[project.scripts]
+local-ai-studio = "local_ai_studio.__main__:main"
+ai-studio = "local_ai_studio.__main__:main"
+
+[tool.setuptools.packages.find]
+include = ["local_ai_studio*"]

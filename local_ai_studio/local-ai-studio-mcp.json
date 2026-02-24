@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "local-ai-studio": {
+      "command": "python3",
+      "args": [
+        "-m",
+        "local_ai_studio",
+        "mcp"
+      ],
+      "description": "Local AI Studio v1.0 - Local AI development environment with chat, tools, and model management",
+      "timeout": 300,
+      "alwaysAllow": []
+    }
+  }
+}
