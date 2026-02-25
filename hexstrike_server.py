@@ -536,17 +536,20 @@ class AttackChain:
         self.estimated_time += step.execution_time_estimate
 
     def calculate_success_probability(self):
-        """Calculate overall success probability of the attack chain"""
+        """Calculate probability that at least one step finds something.
+
+        Uses: P(at_least_one) = 1 - product(1 - p_i)
+        """
         if not self.steps:
             self.success_probability = 0.0
             return
 
-        # Use compound probability for sequential steps
-        prob = 1.0
+        prob_none = 1.0
         for step in self.steps:
-            prob *= step.success_probability
+            clamped = max(0.0, min(1.0, step.success_probability))
+            prob_none *= (1.0 - clamped)
 
-        self.success_probability = prob
+        self.success_probability = 1.0 - prob_none
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert AttackChain to dictionary"""
@@ -699,12 +702,12 @@ class IntelligentDecisionEngine:
         """Initialize common attack patterns for different scenarios"""
         return {
             "web_reconnaissance": [
-                {"tool": "nmap", "priority": 1, "params": {"scan_type": "-sV -sC", "ports": "80,443,8080,8443"}},
-                {"tool": "httpx", "priority": 2, "params": {"probe": True, "tech_detect": True}},
-                {"tool": "katana", "priority": 3, "params": {"depth": 3, "js_crawl": True}},
-                {"tool": "gau", "priority": 4, "params": {"include_subs": True}},
-                {"tool": "waybackurls", "priority": 5, "params": {"get_versions": False}},
-                {"tool": "nuclei", "priority": 6, "params": {"severity": "critical,high", "tags": "tech"}},
+                {"tool": "subfinder", "priority": 1, "params": {"silent": True}},
+                {"tool": "nmap", "priority": 2, "params": {"scan_type": "-sV -sC", "ports": "80,443,8080,8443"}},
+                {"tool": "httpx", "priority": 3, "params": {"probe": True, "tech_detect": True}},
+                {"tool": "katana", "priority": 4, "params": {"depth": 3, "js_crawl": True}},
+                {"tool": "gau", "priority": 5, "params": {"include_subs": True}},
+                {"tool": "waybackurls", "priority": 6, "params": {"get_versions": False}},
                 {"tool": "dirsearch", "priority": 7, "params": {"extensions": "php,html,js,txt", "threads": 30}},
                 {"tool": "gobuster", "priority": 8, "params": {"mode": "dir", "extensions": "php,html,js,txt"}}
             ],
@@ -910,34 +913,48 @@ class IntelligentDecisionEngine:
         return None
 
     def _calculate_attack_surface(self, profile: TargetProfile) -> float:
-        """Calculate attack surface score based on profile"""
+        """Calculate attack surface score based on target profile.
+
+        Score range 0.0-10.0 built from weighted factors rather than
+        a high base that dominates the result.
+        """
         score = 0.0
 
-        # Base score by target type
+        # Base score by target type (lower base, room to grow)
         type_scores = {
-            TargetType.WEB_APPLICATION: 7.0,
-            TargetType.API_ENDPOINT: 6.0,
-            TargetType.NETWORK_HOST: 8.0,
-            TargetType.CLOUD_SERVICE: 5.0,
-            TargetType.BINARY_FILE: 4.0
+            TargetType.WEB_APPLICATION: 3.0,
+            TargetType.API_ENDPOINT: 2.5,
+            TargetType.NETWORK_HOST: 3.5,
+            TargetType.CLOUD_SERVICE: 2.0,
+            TargetType.BINARY_FILE: 1.5,
         }
+        score += type_scores.get(profile.target_type, 1.0)
 
-        score += type_scores.get(profile.target_type, 3.0)
+        # Technology stack complexity (0-2.0) — filter out UNKNOWN
+        real_techs = [t for t in profile.technologies if t != TechnologyStack.UNKNOWN]
+        score += min(len(real_techs) * 0.5, 2.0)
 
-        # Add points for technologies
-        score += len(profile.technologies) * 0.5
-
-        # Add points for open ports
-        score += len(profile.open_ports) * 0.3
-
-        # Add points for subdomains
-        score += len(profile.subdomains) * 0.2
-
-        # CMS adds attack surface
+        # CMS adds significant surface (known CVE-rich targets)
         if profile.cms_type:
             score += 1.5
 
-        return min(score, 10.0)  # Cap at 10.0
+        # Open ports (0-1.5)
+        score += min(len(profile.open_ports) * 0.15, 1.5)
+
+        # Subdomains (0-1.5)
+        score += min(len(profile.subdomains) * 0.1, 1.5)
+
+        # Endpoints (0-1.0)
+        score += min(len(profile.endpoints) * 0.05, 1.0)
+
+        # Security headers reduce score (better posture)
+        score -= min(len(profile.security_headers) * 0.2, 1.0)
+
+        # Valid SSL is a mild positive for security posture
+        if profile.ssl_info and profile.ssl_info.get("valid"):
+            score -= 0.3
+
+        return max(0.0, min(score, 10.0))
 
     def _determine_risk_level(self, profile: TargetProfile) -> str:
         """Determine risk level based on attack surface"""
@@ -6661,7 +6678,7 @@ def setup_logging():
 
 # Configuration (using existing API_PORT from top of file)
 DEBUG_MODE = os.environ.get("DEBUG_MODE", "0").lower() in ("1", "true", "yes", "y")
-COMMAND_TIMEOUT = 300  # 5 minutes default timeout
+COMMAND_TIMEOUT = 600  # 10 minutes default timeout
 CACHE_SIZE = 1000
 CACHE_TTL = 3600  # 1 hour
 
@@ -10444,7 +10461,17 @@ def nuclei():
                 "error": "Target parameter is required"
             }), 400
 
-        command = f"nuclei -u {target}"
+        # Handle multi-line targets (piped from upstream tools)
+        if "\n" in target:
+            import tempfile as _tf
+            _nuclei_tmp = _tf.NamedTemporaryFile(
+                mode="w", suffix=".txt", delete=False, dir="/tmp"
+            )
+            _nuclei_tmp.write(target)
+            _nuclei_tmp.close()
+            command = f"nuclei -l {_nuclei_tmp.name}"
+        else:
+            command = f"nuclei -u {target}"
 
         if severity:
             command += f" -severity {severity}"
@@ -10473,11 +10500,18 @@ def nuclei():
         else:
             result = execute_command(command)
 
-        logger.info(f"📊 Nuclei scan completed for {target}")
+        # Clean up temp file if we created one
+        if "\n" in target:
+            try:
+                os.unlink(_nuclei_tmp.name)
+            except OSError:
+                pass
+
+        logger.info(f"Nuclei scan completed for {target[:80]}")
         return jsonify(result)
 
     except Exception as e:
-        logger.error(f"💥 Error in nuclei endpoint: {str(e)}")
+        logger.error(f"Error in nuclei endpoint: {str(e)}")
         return jsonify({
             "error": f"Server error: {str(e)}"
         }), 500
@@ -12852,7 +12886,17 @@ def katana():
             logger.warning("🌐 Katana called without URL parameter")
             return jsonify({"error": "URL parameter is required"}), 400
 
-        command = f"katana -u {url} -d {depth}"
+        # Handle multi-line targets (piped from upstream tools)
+        if "\n" in url:
+            import tempfile as _tf
+            _katana_tmp = _tf.NamedTemporaryFile(
+                mode="w", suffix=".txt", delete=False, dir="/tmp"
+            )
+            _katana_tmp.write(url)
+            _katana_tmp.close()
+            command = f"katana -list {_katana_tmp.name} -d {depth}"
+        else:
+            command = f"katana -u {url} -d {depth}"
 
         if js_crawl:
             command += " -jc"
@@ -12866,9 +12910,17 @@ def katana():
         if additional_args:
             command += f" {additional_args}"
 
-        logger.info(f"⚔️  Starting Katana crawl: {url}")
+        logger.info(f"Starting Katana crawl: {url[:80]}")
         result = execute_command(command)
-        logger.info(f"📊 Katana crawl completed for {url}")
+
+        # Clean up temp file if we created one
+        if "\n" in url:
+            try:
+                os.unlink(_katana_tmp.name)
+            except OSError:
+                pass
+
+        logger.info(f"Katana crawl completed for {url[:80]}")
         return jsonify(result)
     except Exception as e:
         logger.error(f"💥 Error in katana endpoint: {str(e)}")
@@ -13148,10 +13200,23 @@ def httpx():
         additional_args = params.get("additional_args", "")
 
         if not target:
-            logger.warning("🌐 httpx called without target parameter")
+            logger.warning("httpx called without target parameter")
             return jsonify({"error": "Target parameter is required"}), 400
 
-        command = f"httpx -l {target} -t {threads}"
+        # Determine input method: multi-line targets go to a temp file,
+        # single targets get piped via echo so we don't need a file.
+        if "\n" in target:
+            import tempfile
+            tmp = tempfile.NamedTemporaryFile(
+                mode="w", suffix=".txt", delete=False, dir="/tmp"
+            )
+            tmp.write(target)
+            tmp.close()
+            command = f"httpx -l {tmp.name} -t {threads}"
+        elif os.path.isfile(target):
+            command = f"httpx -l {target} -t {threads}"
+        else:
+            command = f"echo {target} | httpx -t {threads}"
 
         if probe:
             command += " -probe"
@@ -13174,12 +13239,20 @@ def httpx():
         if additional_args:
             command += f" {additional_args}"
 
-        logger.info(f"🌍 Starting httpx probe: {target}")
+        logger.info(f"Starting httpx probe: {target[:80]}")
         result = execute_command(command)
-        logger.info(f"📊 httpx probe completed for {target}")
+
+        # Clean up temp file if we created one
+        if "\n" in target:
+            try:
+                os.unlink(tmp.name)
+            except OSError:
+                pass
+
+        logger.info(f"httpx probe completed for {target[:80]}")
         return jsonify(result)
     except Exception as e:
-        logger.error(f"💥 Error in httpx endpoint: {str(e)}")
+        logger.error(f"Error in httpx endpoint: {str(e)}")
         return jsonify({"error": f"Server error: {str(e)}"}), 500
 
 @app.route("/api/tools/anew", methods=["POST"])
