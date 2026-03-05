@@ -5,7 +5,10 @@ import { LogoIcon } from './icons/LogoIcon';
 const NAV_ITEMS = [
   { path: '/dashboard', label: 'Dashboard' },
   { path: '/projects', label: 'Projects' },
+  { path: '/clips', label: 'All Clips' },
   { path: '/quick-analyze', label: 'Quick Analyze' },
+  { path: '/trim', label: 'Trim' },
+  { path: '/analytics', label: 'Analytics' },
   { path: '/history', label: 'History' },
 ];
 

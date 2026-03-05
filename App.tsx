@@ -17,6 +17,10 @@ const ProjectDetailPage = React.lazy(() => import('./pages/ProjectDetailPage').t
 const QuickAnalyzePage = React.lazy(() => import('./pages/QuickAnalyzePage').then((m) => ({ default: m.QuickAnalyzePage })));
 const SettingsPage = React.lazy(() => import('./pages/SettingsPage').then((m) => ({ default: m.SettingsPage })));
 const HistoryPage = React.lazy(() => import('./pages/HistoryPage').then((m) => ({ default: m.HistoryPage })));
+const AllClipsPage = React.lazy(() => import('./pages/AllClipsPage').then((m) => ({ default: m.AllClipsPage })));
+const TrimClipsPage = React.lazy(() => import('./pages/TrimClipsPage').then((m) => ({ default: m.TrimClipsPage })));
+const ExportPage = React.lazy(() => import('./pages/ExportPage').then((m) => ({ default: m.ExportPage })));
+const AnalyticsPage = React.lazy(() => import('./pages/AnalyticsPage').then((m) => ({ default: m.AnalyticsPage })));
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, loading } = useAuth();
@@ -55,6 +59,10 @@ export default function App() {
                 <Route path="/quick-analyze" element={<ProtectedRoute><QuickAnalyzePage /></ProtectedRoute>} />
                 <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
                 <Route path="/history" element={<ProtectedRoute><HistoryPage /></ProtectedRoute>} />
+                <Route path="/clips" element={<ProtectedRoute><AllClipsPage /></ProtectedRoute>} />
+                <Route path="/trim" element={<ProtectedRoute><TrimClipsPage /></ProtectedRoute>} />
+                <Route path="/export" element={<ProtectedRoute><ExportPage /></ProtectedRoute>} />
+                <Route path="/analytics" element={<ProtectedRoute><AnalyticsPage /></ProtectedRoute>} />
 
                 {/* Catch-all */}
                 <Route path="*" element={<Navigate to="/" replace />} />
