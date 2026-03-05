@@ -1,0 +1,18 @@
+{
+  "name": "OpenClipPro",
+  "version": "1.0.0",
+  "description": "AI-powered video analysis platform for content creators",
+  "author": "zaghl0ul",
+  "license": "MIT",
+  "repository": "https://github.com/zaghl0ul/OpenClipPro",
+  "features": [
+    "multi-ai-analysis",
+    "viral-score-engine",
+    "smart-auto-crop",
+    "browser-video-processing",
+    "platform-optimization",
+    "project-management"
+  ],
+  "aiProviders": ["gemini", "openai", "anthropic", "lmstudio"],
+  "platforms": ["tiktok", "youtube-shorts", "instagram-reels", "youtube", "twitter"]
+}
