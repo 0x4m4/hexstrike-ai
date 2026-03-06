@@ -60,7 +60,7 @@ export async function extractKeyFrames(
 
     try {
       const data = await ffmpeg.readFile(outputName);
-      const blob = new Blob([data], { type: 'image/jpeg' });
+      const blob = new Blob([new Uint8Array(data as Uint8Array)], { type: 'image/jpeg' });
       const dataUrl = await blobToDataUrl(blob);
 
       frames.push({ timestamp, dataUrl, blob });
@@ -93,7 +93,7 @@ export async function extractSingleFrame(
   ]);
 
   const data = await ffmpeg.readFile('frame.jpg');
-  const blob = new Blob([data], { type: 'image/jpeg' });
+  const blob = new Blob([new Uint8Array(data as Uint8Array)], { type: 'image/jpeg' });
   const dataUrl = await blobToDataUrl(blob);
 
   await ffmpeg.deleteFile('input.mp4');

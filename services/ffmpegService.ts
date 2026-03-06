@@ -72,7 +72,7 @@ export async function trimVideo(options: TrimOptions): Promise<Blob> {
   ]);
 
   const data = await ffmpeg.readFile(outputName);
-  const blob = new Blob([data], { type: `video/${outputFormat}` });
+  const blob = new Blob([new Uint8Array(data as Uint8Array)], { type: `video/${outputFormat}` });
 
   // Cleanup
   await ffmpeg.deleteFile(inputName);
@@ -115,7 +115,7 @@ export async function cropVideo(options: CropOptions): Promise<Blob> {
   await ffmpeg.exec(args);
 
   const data = await ffmpeg.readFile(outputName);
-  const blob = new Blob([data], { type: `video/${outputFormat}` });
+  const blob = new Blob([new Uint8Array(data as Uint8Array)], { type: `video/${outputFormat}` });
 
   await ffmpeg.deleteFile(inputName);
   await ffmpeg.deleteFile(outputName);
@@ -160,7 +160,7 @@ export async function extractThumbnail(
   ]);
 
   const data = await ffmpeg.readFile('thumbnail.jpg');
-  const blob = new Blob([data], { type: 'image/jpeg' });
+  const blob = new Blob([new Uint8Array(data as Uint8Array)], { type: 'image/jpeg' });
 
   await ffmpeg.deleteFile('input.mp4');
   await ffmpeg.deleteFile('thumbnail.jpg');

@@ -18,6 +18,7 @@
     "@ffmpeg/ffmpeg": "^0.12.10",
     "@ffmpeg/util": "^0.12.1",
     "@google/genai": "^0.7.0",
+    "@tailwindcss/postcss": "^4.2.1",
     "firebase": "^10.14.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
@@ -32,6 +33,7 @@
     "eslint": "^9.13.0",
     "postcss": "^8.4.47",
     "tailwindcss": "^4.0.0",
+    "terser": "^5.46.0",
     "typescript": "^5.6.0",
     "vite": "^6.0.0"
   }

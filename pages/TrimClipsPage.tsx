@@ -2,7 +2,7 @@ import { useState, useRef, useCallback } from 'react';
 import { ClipPreview } from '@/components/ClipPreview';
 import { trimVideo, cropVideo, getAspectRatioForPlatform } from '@/services/ffmpegService';
 import { formatTimestamp, formatFileSize } from '@/utils/performance';
-import type { Clip, Platform, AspectRatio } from '@/types';
+import type { Platform, AspectRatio } from '@/types';
 import { PLATFORM_CONFIGS } from '@/types';
 
 export function TrimClipsPage() {
