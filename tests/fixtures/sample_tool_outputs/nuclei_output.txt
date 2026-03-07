@@ -1,0 +1,6 @@
+[2024-01-01 12:00:00] [CVE-2021-41773] [http] [critical] http://testsite.com/cgi-bin/.%2e/.%2e/.%2e/.%2e/etc/passwd
+[2024-01-01 12:00:01] [CVE-2021-44228] [http] [critical] http://testsite.com/vulnerable-endpoint
+[2024-01-01 12:00:02] [CVE-2022-22965] [http] [high] http://testsite.com/spring-framework
+[2024-01-01 12:00:03] [exposed-panel] [http] [medium] http://testsite.com/admin-panel
+[2024-01-01 12:00:04] [ssl-weak-cipher] [network] [low] https://testsite.com:443
+[2024-01-01 12:00:05] [wordpress-version] [http] [info] http://testsite.com/wp-content/

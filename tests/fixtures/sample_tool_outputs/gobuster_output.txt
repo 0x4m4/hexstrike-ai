@@ -1,0 +1,26 @@
+===============================================================
+Gobuster v3.6
+by OJ Reeves (@TheColonial) & Christian Mehlmauer (@firefart)
+===============================================================
+[+] Url:                     http://testphp.vulnweb.com
+[+] Method:                  GET
+[+] Threads:                 10
+[+] Wordlist:                /usr/share/wordlists/dirb/common.txt
+[+] Negative Status codes:   404
+[+] User Agent:              gobuster/3.6
+[+] Timeout:                 10s
+===============================================================
+Starting gobuster in directory enumeration mode
+===============================================================
+/.hta                 (Status: 403) [Size: 291]
+/.htaccess            (Status: 403) [Size: 296]
+/.htpasswd            (Status: 403) [Size: 296]
+/admin                (Status: 301) [Size: 234] [--> http://testphp.vulnweb.com/admin/]
+/cgi-bin/             (Status: 403) [Size: 295]
+/images               (Status: 301) [Size: 235] [--> http://testphp.vulnweb.com/images/]
+/index                (Status: 200) [Size: 4589]
+/secured              (Status: 301) [Size: 236] [--> http://testphp.vulnweb.com/secured/]
+Progress: 4614 / 4615 (99.98%)
+===============================================================
+Finished
+===============================================================
