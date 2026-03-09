@@ -64,7 +64,15 @@ import mitmproxy
 from mitmproxy import http as mitmhttp
 from mitmproxy.tools.dump import DumpMaster
 from mitmproxy.options import Options as MitmOptions
-
+from monitoring.metrics import (
+    get_metrics, 
+    commands_executed, 
+    command_duration,
+    active_processes,
+    cache_hits,
+    cache_misses,
+    success_rate
+)
 # ============================================================================
 # LOGGING CONFIGURATION (MUST BE FIRST)
 # ============================================================================
@@ -17249,6 +17257,11 @@ def get_alternative_tools():
     except Exception as e:
         logger.error(f"Error getting alternative tools: {str(e)}")
         return jsonify({"error": f"Server error: {str(e)}"}), 500
+
+@app.route('/metrics')
+def metrics():
+    """Prometheus metrics endpoint"""
+    return get_metrics(), 200, {'Content-Type': 'text/plain; charset=utf-8'}
 
 # Create the banner after all classes are defined
 BANNER = ModernVisualEngine.create_banner()
