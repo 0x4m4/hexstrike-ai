@@ -1,0 +1,52 @@
+# Local AI Studio - Requirements
+#
+# INSTALLATION:
+#   pip install -r local_ai_studio/requirements.txt
+#
+# For GPU acceleration (NVIDIA CUDA):
+#   CMAKE_ARGS="-DGGML_CUDA=on" pip install llama-cpp-python
+#
+# For CPU-only:
+#   pip install llama-cpp-python
+
+# ============================================================================
+# Core (required)
+# ============================================================================
+psutil>=5.9.0                  # System/hardware monitoring
+requests>=2.31.0               # HTTP client for API tools
+
+# ============================================================================
+# Inference Engine (install one)
+# ============================================================================
+llama-cpp-python>=0.2.0        # GGUF model inference via llama.cpp
+
+# ============================================================================
+# Web GUI
+# ============================================================================
+gradio>=4.0.0                  # Browser-based interface
+
+# ============================================================================
+# MCP Protocol
+# ============================================================================
+fastmcp>=0.2.0                 # Model Context Protocol server
+
+# ============================================================================
+# Model Downloads
+# ============================================================================
+huggingface-hub>=0.20.0        # Download models from HuggingFace Hub
+
+# ============================================================================
+# Web Scraping (optional, for web tools)
+# ============================================================================
+beautifulsoup4>=4.12.0         # HTML parsing for web fetch tool
+
+# ============================================================================
+# Fine-tuning / LoRA (optional, heavy dependencies)
+# ============================================================================
+# Uncomment below for fine-tuning support:
+# torch>=2.0.0
+# transformers>=4.36.0
+# peft>=0.7.0
+# bitsandbytes>=0.41.0
+# datasets>=2.14.0
+# accelerate>=0.25.0
