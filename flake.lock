@@ -1,0 +1,152 @@
+{
+  "nodes": {
+    "autorecon-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1748368588,
+        "narHash": "sha256-4yerINhRHINL8oDjF0ES72QrO0DLK6C5Y0wJ913Nozg=",
+        "owner": "Tib3rius",
+        "repo": "AutoRecon",
+        "rev": "fd87c99abc5ef8534f6caba2f3b2309308f5e962",
+        "type": "github"
+      },
+      "original": {
+        "owner": "Tib3rius",
+        "repo": "AutoRecon",
+        "type": "github"
+      }
+    },
+    "docker-bench-security-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1729495566,
+        "narHash": "sha256-ZXPUckcwsq0DT7smgwSHMFqrmRZhTqxRrQtn88QVNgM=",
+        "owner": "docker",
+        "repo": "docker-bench-security",
+        "rev": "ff26d67f25be60fc2d82a01710ee14570b2cb9db",
+        "type": "github"
+      },
+      "original": {
+        "owner": "docker",
+        "repo": "docker-bench-security",
+        "type": "github"
+      }
+    },
+    "flake-utils": {
+      "inputs": {
+        "systems": "systems"
+      },
+      "locked": {
+        "lastModified": 1731533236,
+        "narHash": "sha256-l0KFg5HjrsfsO/JpG+r7fRrqm12kzFHyUHqHCVpMMbI=",
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "rev": "11707dc2f618dd54ca8739b309ec4fc024de578b",
+        "type": "github"
+      },
+      "original": {
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "type": "github"
+      }
+    },
+    "nixpkgs": {
+      "locked": {
+        "lastModified": 1757034884,
+        "narHash": "sha256-PgLSZDBEWUHpfTRfFyklmiiLBE1i1aGCtz4eRA3POao=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "ca77296380960cd497a765102eeb1356eb80fed0",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "nixpkgs-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "paramspider-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1693983277,
+        "narHash": "sha256-lCkzd07IiS8XhnJdXrrqPAw7wfrvXqFDH7l5447ns4w=",
+        "owner": "devanshbatham",
+        "repo": "ParamSpider",
+        "rev": "790eb91213419e9c4ddec2c91201d4be5399cb77",
+        "type": "github"
+      },
+      "original": {
+        "owner": "devanshbatham",
+        "repo": "ParamSpider",
+        "rev": "790eb91213419e9c4ddec2c91201d4be5399cb77",
+        "type": "github"
+      }
+    },
+    "pyproject-nix": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1757246327,
+        "narHash": "sha256-6pNlGhwOIMfhe/RLjHdpXveKS4FyLHvlGe+KtjDild4=",
+        "owner": "nix-community",
+        "repo": "pyproject.nix",
+        "rev": "8d77f342d66ad1601cdb9d97e9388b69f64d4c8e",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-community",
+        "repo": "pyproject.nix",
+        "type": "github"
+      }
+    },
+    "root": {
+      "inputs": {
+        "autorecon-src": "autorecon-src",
+        "docker-bench-security-src": "docker-bench-security-src",
+        "flake-utils": "flake-utils",
+        "nixpkgs": "nixpkgs",
+        "paramspider-src": "paramspider-src",
+        "pyproject-nix": "pyproject-nix",
+        "scout-suite-src": "scout-suite-src"
+      }
+    },
+    "scout-suite-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1715333097,
+        "narHash": "sha256-bSnmb1grm8aoRjvvuc30QKBjcKz8wxnDXMdzFMDkiDE=",
+        "owner": "nccgroup",
+        "repo": "ScoutSuite",
+        "rev": "7909f2fc6186063e5c9e7ddef8c4d7d1072c8f3d",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nccgroup",
+        "repo": "ScoutSuite",
+        "rev": "7909f2fc6186063e5c9e7ddef8c4d7d1072c8f3d",
+        "type": "github"
+      }
+    },
+    "systems": {
+      "locked": {
+        "lastModified": 1681028828,
+        "narHash": "sha256-Vy1rq5AaRuLzOxct8nz4T6wlgyUR7zLU309k9mBC768=",
+        "owner": "nix-systems",
+        "repo": "default",
+        "rev": "da67096a3b9bf56a91d16901293e51ba5b49a27e",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-systems",
+        "repo": "default",
+        "type": "github"
+      }
+    }
+  },
+  "root": "root",
+  "version": 7
+}
