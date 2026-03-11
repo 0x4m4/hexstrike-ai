@@ -276,6 +276,356 @@ def setup_mcp_server(hexstrike_client: HexStrikeClient) -> FastMCP:
     """
     mcp = FastMCP("hexstrike-ai-mcp")
 
+    @mcp.tool()
+    def run_system_tool(tool: str, args: list, metadata: dict = None) -> Dict[str, Any]:
+        """
+        Execute any generic system tool asynchronously. Returns a task ID.
+
+        Args:
+            tool: The command or tool name (e.g., 'nmap', 'ls')
+            args: A list of arguments to pass to the tool
+            metadata: Optional dictionary describing task intent (e.g., {'target': 'example.com', 'category': 'recon'})
+        """
+        logger.info(f"🚀 Starting async task: {tool} {' '.join(args)}")
+        result = hexstrike_client.safe_post("api/task/run", {
+            "tool": tool,
+            "args": args,
+            "metadata": metadata or {}
+        })
+        return result
+
+    @mcp.tool()
+    def run_shell_command(command: str, metadata: dict = None) -> Dict[str, Any]:
+        """
+        Execute a full shell command string (pipes, redirections, etc.) asynchronously.
+        Returns a task ID. Use this when you need shell features.
+
+        Args:
+            command: The full shell command string (e.g., 'nmap 10.0.0.1 | grep open')
+            metadata: Optional dictionary describing task intent (e.g., {'target': 'example.com', 'category': 'recon'})
+        """
+        logger.info(f"🐚 Starting async shell task: {command}")
+        result = hexstrike_client.safe_post("api/task/run", {
+            "tool": "/bin/bash",
+            "args": ["-c", command],
+            "metadata": metadata or {}
+        })
+        return result
+
+    @mcp.tool()
+    def check_tool_availability(tool: str) -> Dict[str, Any]:
+        """
+        Check if a specific tool is installed and available in the system PATH.
+
+        Args:
+            tool: The name of the tool to check (e.g., 'nmap')
+        """
+        logger.info(f"🔍 Checking availability of: {tool}")
+        # Run 'which <tool>' synchronously
+        result = hexstrike_client.safe_post("api/command", {
+            "command": f"which {tool}",
+            "use_cache": True
+        })
+        
+        available = result.get("success", False) and len(result.get("stdout", "")) > 0
+        return {
+            "tool": tool,
+            "available": available,
+            "path": result.get("stdout", "").strip() if available else None,
+            "success": True
+        }
+
+    @mcp.tool()
+    def poll_task_status(task_id: str) -> Dict[str, Any]:
+        """
+        Poll the status of an asynchronous task by ID.
+
+        Args:
+            task_id: The ID of the task returned by run_system_tool
+        """
+        logger.info(f"📋 Polling task status: {task_id}")
+        result = hexstrike_client.safe_get(f"api/task/status/{task_id}")
+        return result
+
+    @mcp.tool()
+    def list_tasks(status: str = None, tool: str = None, target: str = None, category: str = None) -> Dict[str, Any]:
+        """
+        List active and recently completed tasks with optional filtering.
+        Use this to supervise ongoing investigations and avoid duplicate work.
+
+        Args:
+            status: Filter by task status (e.g., 'running', 'completed', 'failed', 'timeout')
+            tool: Filter by tool name (e.g., 'nmap')
+            target: Filter by target metadata (e.g., 'example.com')
+            category: Filter by category metadata (e.g., 'recon')
+        """
+        logger.info("📋 Listing tasks with filters")
+        params = []
+        if status: params.append(f"status={status}")
+        if tool: params.append(f"tool={tool}")
+        if target: params.append(f"target={target}")
+        if category: params.append(f"category={category}")
+        
+        query = "?" + "&".join(params) if params else ""
+        result = hexstrike_client.safe_get(f"api/task/list{query}")
+        return result
+
+    @mcp.tool()
+    def kill_task(task_id: str) -> Dict[str, Any]:
+        """
+        Forcefully terminate a running task and all its child processes.
+
+        Args:
+            task_id: The ID of the task to terminate
+        """
+        logger.info(f"🔪 Killing task: {task_id}")
+        result = hexstrike_client.safe_post(f"api/task/kill/{task_id}", {})
+        return result
+
+    @mcp.tool()
+    def get_system_status() -> Dict[str, Any]:
+        """
+        Get system resource usage (CPU, Memory, Disk) and task statistics.
+        Use this to avoid overloading the system with too many concurrent tasks.
+        """
+        logger.info("🖥️ Checking system status")
+        result = hexstrike_client.safe_get("api/system/status")
+        return result
+
+    @mcp.tool()
+    def discover_tools() -> Dict[str, Any]:
+        """
+        Discover available tools in the system PATH with inferred categories.
+        Returns a dictionary of tool information.
+        """
+        logger.info("🔍 Discovering available system tools")
+        result = hexstrike_client.safe_get("api/tools/discover")
+        return result
+
+    @mcp.tool()
+    def get_task_output(task_id: str, stream: str = "stdout") -> Dict[str, Any]:
+        """
+        Retrieve the full output (stdout or stderr) for a task.
+
+        Args:
+            task_id: The ID of the task
+            stream: The output stream to retrieve ('stdout' or 'stderr')
+        """
+        logger.info(f"📄 Retrieving {stream} for task {task_id}")
+        result = hexstrike_client.safe_get(f"api/task/output/{task_id}?stream={stream}")
+        return result
+
+    @mcp.tool()
+    def store_artifact(artifact_type: str, artifact_location: str, description: str = "", metadata: dict = None, source_task_id: str = None, parent_artifact_id: str = None, investigation_id: str = None, curiosity_score: int = 0) -> Dict[str, Any]:
+        """
+        Persist an interesting finding (artifact) for later investigation.
+        Use this to track domains, IPs, URLs, binaries, or credentials discovered during research.
+
+        Args:
+            artifact_type: Type of artifact (e.g., 'domain', 'subdomain', 'url', 'credential', 'binary')
+            artifact_location: Where the artifact was found (e.g., 'api.example.com', '/tmp/exploit.bin')
+            description: Brief description of the finding
+            metadata: Optional dictionary with additional context
+            source_task_id: Optional ID of the task that discovered this artifact
+            parent_artifact_id: Optional ID of a parent artifact to create an investigative chain
+            investigation_id: Optional ID of the investigation this artifact belongs to
+            curiosity_score: Priority score (0-100) based on how interesting this artifact is
+        """
+        logger.info(f"💎 Storing artifact: {artifact_type} at {artifact_location}")
+        result = hexstrike_client.safe_post("api/artifact/store", {
+            "artifact_type": artifact_type,
+            "artifact_location": artifact_location,
+            "description": description,
+            "metadata": metadata or {},
+            "source_task_id": source_task_id,
+            "parent_artifact_id": parent_artifact_id,
+            "investigation_id": investigation_id,
+            "curiosity_score": curiosity_score
+        })
+        return result
+
+    @mcp.tool()
+    def update_artifact_curiosity(artifact_id: str, curiosity_score: int) -> Dict[str, Any]:
+        """
+        Update the priority/curiosity score of an artifact to guide future autonomous research.
+
+        Args:
+            artifact_id: The ID of the artifact to update
+            curiosity_score: New score (higher means more interesting)
+        """
+        logger.info(f"🎯 Updating curiosity score for artifact {artifact_id} to {curiosity_score}")
+        result = hexstrike_client.safe_post("api/artifact/update_score", {
+            "artifact_id": artifact_id,
+            "curiosity_score": curiosity_score
+        })
+        return result
+
+    @mcp.tool()
+    def get_artifact_graph(investigation_id: str) -> Dict[str, Any]:
+        """
+        Retrieve all artifacts belonging to an investigation, showing their relationships.
+        Use this to visualize the discovery chain and plan deeper analysis.
+
+        Args:
+            investigation_id: The ID of the investigation
+        """
+        logger.info(f"🕸️ Retrieving artifact graph for investigation {investigation_id}")
+        result = hexstrike_client.safe_get(f"api/artifact/graph/{investigation_id}")
+        return result
+
+    @mcp.tool()
+    def list_artifacts() -> Dict[str, Any]:
+        """
+        List all persisted findings (artifacts) across the entire research campaign.
+        Use this to review discoveries and plan next investigative steps.
+        """
+        logger.info("📋 Listing all artifacts")
+        result = hexstrike_client.safe_get("api/artifact/list")
+        return result
+
+    @mcp.tool()
+    def get_artifact_details(artifact_id: str) -> Dict[str, Any]:
+        """
+        Retrieve detailed information about a specific persisted artifact.
+
+        Args:
+            artifact_id: The unique ID of the artifact
+        """
+        logger.info(f"🔍 Getting details for artifact: {artifact_id}")
+        result = hexstrike_client.safe_get(f"api/artifact/get/{artifact_id}")
+        return result
+
+    @mcp.tool()
+    def create_investigation(target: str, goal: str, description: str = "", investigation_id: str = None) -> Dict[str, Any]:
+        """
+        Start a new research investigation to track a specific campaign or target.
+
+        Args:
+            target: The primary target of research (e.g., 'example.com')
+            goal: What you are trying to achieve (e.g., 'find RCE in update mechanism')
+            description: High-level overview of the investigation plan
+            investigation_id: Optional custom ID for the investigation
+        """
+        logger.info(f"🚀 Creating new investigation: {target}")
+        result = hexstrike_client.safe_post("api/investigation/create", {
+            "target": target,
+            "goal": goal,
+            "description": description,
+            "investigation_id": investigation_id
+        })
+        return result
+
+    @mcp.tool()
+    def update_investigation_stage(investigation_id: str, stage: str) -> Dict[str, Any]:
+        """
+        Update the current phase of an investigation.
+        Valid stages: 'recon', 'surface_mapping', 'artifact_collection', 'deep_analysis', 'exploit_development'.
+
+        Args:
+            investigation_id: The ID of the investigation
+            stage: The new research stage
+        """
+        logger.info(f"📈 Updating stage for {investigation_id} to {stage}")
+        result = hexstrike_client.safe_post("api/investigation/update_stage", {
+            "investigation_id": investigation_id,
+            "stage": stage
+        })
+        return result
+
+    @mcp.tool()
+    def add_investigation_note(investigation_id: str, note: str) -> Dict[str, Any]:
+        """
+        Store a reasoning note, discovery summary, or observation within an investigation.
+        Use this to maintain long-term context and explain research decisions.
+
+        Args:
+            investigation_id: The ID of the investigation
+            note: The content of the research note
+        """
+        logger.info(f"📝 Adding note to investigation {investigation_id}")
+        result = hexstrike_client.safe_post("api/investigation/add_note", {
+            "investigation_id": investigation_id,
+            "note": note
+        })
+        return result
+
+    @mcp.tool()
+    def save_investigation_checkpoint(investigation_id: str, stage: str, summary: str, key_findings: list = None, completed_tasks: list = None, pending_tasks: list = None) -> Dict[str, Any]:
+        """
+        Save a comprehensive progress checkpoint.
+        Use this before pausing or when hitting a major milestone to allow context recovery.
+
+        Args:
+            investigation_id: The ID of the investigation
+            stage: Current research stage
+            summary: Detailed summary of progress and findings
+            key_findings: List of critical discoveries
+            completed_tasks: IDs of tasks finished in this stage
+            pending_tasks: Planned next steps or tasks to run
+        """
+        logger.info(f"💾 Saving checkpoint for investigation {investigation_id}")
+        result = hexstrike_client.safe_post("api/investigation/checkpoint/save", {
+            "investigation_id": investigation_id,
+            "stage": stage,
+            "summary": summary,
+            "key_findings": key_findings or [],
+            "completed_tasks": completed_tasks or [],
+            "pending_tasks": pending_tasks or []
+        })
+        return result
+
+    @mcp.tool()
+    def save_investigation_snapshot(investigation_id: str, summary: str) -> Dict[str, Any]:
+        """
+        Save a reasoning snapshot (compressed summary) of the current investigative state.
+        Use this to store complex reasoning chains that might exceed short-term context.
+
+        Args:
+            investigation_id: The ID of the investigation
+            summary: The reasoning summary to store
+        """
+        logger.info(f"📸 Saving snapshot for investigation {investigation_id}")
+        result = hexstrike_client.safe_post("api/investigation/snapshot", {
+            "investigation_id": investigation_id,
+            "summary": summary
+        })
+        return result
+
+    @mcp.tool()
+    def get_investigation_history(investigation_id: str) -> Dict[str, Any]:
+        """
+        Retrieve all notes, checkpoints, and snapshots for an investigation.
+        Use this to reconstruct reasoning state after a session reset.
+
+        Args:
+            investigation_id: The ID of the investigation
+        """
+        logger.info(f"📜 Retrieving history for investigation {investigation_id}")
+        notes = hexstrike_client.safe_get(f"api/investigation/notes/{investigation_id}")
+        checkpoints = hexstrike_client.safe_get(f"api/investigation/checkpoint/list/{investigation_id}")
+        snapshots = hexstrike_client.safe_get(f"api/investigation/snapshots/{investigation_id}")
+        investigation = hexstrike_client.safe_get(f"api/investigation/get/{investigation_id}")
+        
+        return {
+            "investigation": investigation.get("investigation"),
+            "notes": notes.get("notes"),
+            "checkpoints": checkpoints.get("checkpoints"),
+            "snapshots": snapshots.get("snapshots"),
+            "success": True
+        }
+
+    @mcp.tool()
+    def list_investigations() -> Dict[str, Any]:
+        """
+        List all active and completed research investigations.
+        Use this to resume work on previous campaigns.
+        """
+        logger.info("📋 Listing all investigations")
+        result = hexstrike_client.safe_get("api/investigation/list")
+        return result
+
+    # ============================================================================
+    # ORIGINAL TOOLS
     # ============================================================================
     # CORE NETWORK SCANNING TOOLS
     # ============================================================================

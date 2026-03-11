@@ -30,6 +30,8 @@ import time
 import hashlib
 import pickle
 import base64
+import shlex
+import tempfile
 import queue
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta
@@ -5256,27 +5258,41 @@ class EnhancedProcessManager:
 
     def _execute_command_internal(self, command: str, context: Dict[str, Any]) -> Dict[str, Any]:
         """Internal command execution with enhanced monitoring"""
+        import time, subprocess, os, shlex, tempfile, signal
         start_time = time.time()
 
         try:
-            # Resource-aware execution
             resource_usage = self.resource_monitor.get_current_usage()
+            
+            if isinstance(command, str):
+                cmd_list = shlex.split(command)
+                cmd_str = command
+            else:
+                cmd_list = command
+                cmd_str = " ".join(command)
 
-            # Adjust command based on resource availability
             if resource_usage["cpu_percent"] > self.resource_thresholds["cpu_high"]:
-                # Add nice priority for CPU-intensive commands
-                if not command.startswith("nice"):
-                    command = f"nice -n 10 {command}"
+                if cmd_list[0] != "nice":
+                    cmd_list = ["nice", "-n", "10"] + cmd_list
 
-            # Execute command
+            stdout_f = tempfile.NamedTemporaryFile(mode='w+', delete=False)
+            stderr_f = tempfile.NamedTemporaryFile(mode='w+', delete=False)
+
             process = subprocess.Popen(
-                command,
-                shell=True,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
+                cmd_list,
+                shell=False,
+                stdout=stdout_f,
+                stderr=stderr_f,
+                stdin=subprocess.DEVNULL,
                 text=True,
                 preexec_fn=os.setsid if os.name != 'nt' else None
             )
+            
+            # Keep file paths for reading later
+            process.stdout_path = stdout_f.name
+            process.stderr_path = stderr_f.name
+            stdout_f.close()
+            stderr_f.close()
 
             # Register process
             with self.registry_lock:
@@ -5289,8 +5305,26 @@ class EnhancedProcessManager:
                 }
 
             # Monitor process execution
-            stdout, stderr = process.communicate()
+            process.wait()
             execution_time = time.time() - start_time
+            
+            MAX_READ = 2 * 1024 * 1024
+            with open(process.stdout_path, 'r', errors='replace') as f:
+                f.seek(0, 2)
+                sz = f.tell()
+                f.seek(max(0, sz - MAX_READ))
+                stdout = f.read()
+            with open(process.stderr_path, 'r', errors='replace') as f:
+                f.seek(0, 2)
+                sz = f.tell()
+                f.seek(max(0, sz - MAX_READ))
+                stderr = f.read()
+                
+            try:
+                os.unlink(process.stdout_path)
+                os.unlink(process.stderr_path)
+            except:
+                pass
 
             result = {
                 "success": process.returncode == 0,
@@ -5357,8 +5391,14 @@ class EnhancedProcessManager:
                     logger.info(f"✅ Process {pid} terminated gracefully")
                     return True
                 except subprocess.TimeoutExpired:
-                    # Force kill if graceful termination fails
-                    process.kill()
+                    import os, signal
+                    try:
+                        if os.name != 'nt':
+                            os.killpg(os.getpgid(process.pid), signal.SIGKILL)
+                        else:
+                            process.kill()
+                    except Exception:
+                        process.kill()
                     process_info["status"] = "force_killed"
                     logger.warning(f"⚠️ Process {pid} force killed after timeout")
                     return True
@@ -6781,226 +6821,37 @@ class TelemetryCollector:
 telemetry = TelemetryCollector()
 
 class EnhancedCommandExecutor:
-    """Enhanced command executor with caching, progress tracking, and better output handling"""
+    """Enhanced command executor refactored to use the Unified Task Manager"""
 
-    def __init__(self, command: str, timeout: int = COMMAND_TIMEOUT):
-        self.command = command
+    def __init__(self, command, timeout: int = COMMAND_TIMEOUT):
+        if isinstance(command, str):
+            import shlex
+            parts = shlex.split(command)
+            self.tool = parts[0]
+            self.args = parts[1:]
+            self.command_str = command
+        else:
+            self.tool = command[0]
+            self.args = command[1:]
+            self.command_str = " ".join(command)
         self.timeout = timeout
-        self.process = None
-        self.stdout_data = ""
-        self.stderr_data = ""
-        self.stdout_thread = None
-        self.stderr_thread = None
-        self.return_code = None
-        self.timed_out = False
-        self.start_time = None
-        self.end_time = None
-
-    def _read_stdout(self):
-        """Thread function to continuously read and display stdout"""
-        try:
-            for line in iter(self.process.stdout.readline, ''):
-                if line:
-                    self.stdout_data += line
-                    # Real-time output display
-                    logger.info(f"📤 STDOUT: {line.strip()}")
-        except Exception as e:
-            logger.error(f"Error reading stdout: {e}")
-
-    def _read_stderr(self):
-        """Thread function to continuously read and display stderr"""
-        try:
-            for line in iter(self.process.stderr.readline, ''):
-                if line:
-                    self.stderr_data += line
-                    # Real-time error output display
-                    logger.warning(f"📥 STDERR: {line.strip()}")
-        except Exception as e:
-            logger.error(f"Error reading stderr: {e}")
-
-    def _show_progress(self, duration: float):
-        """Show enhanced progress indication for long-running commands"""
-        if duration > 2:  # Show progress for commands taking more than 2 seconds
-            progress_chars = ModernVisualEngine.PROGRESS_STYLES['dots']
-            start = time.time()
-            i = 0
-            while self.process and self.process.poll() is None:
-                elapsed = time.time() - start
-                char = progress_chars[i % len(progress_chars)]
-
-                # Calculate progress percentage (rough estimate)
-                progress_percent = min((elapsed / self.timeout) * 100, 99.9)
-                progress_fraction = progress_percent / 100
-
-                # Calculate ETA
-                eta = 0
-                if progress_percent > 5:  # Only show ETA after 5% progress
-                    eta = ((elapsed / progress_percent) * 100) - elapsed
-
-                # Calculate speed
-                bytes_processed = len(self.stdout_data) + len(self.stderr_data)
-                speed = f"{bytes_processed/elapsed:.0f} B/s" if elapsed > 0 else "0 B/s"
-
-                # Update process manager with progress
-                ProcessManager.update_process_progress(
-                    self.process.pid,
-                    progress_fraction,
-                    f"Running for {elapsed:.1f}s",
-                    bytes_processed
-                )
-
-                # Create beautiful progress bar using ModernVisualEngine
-                progress_bar = ModernVisualEngine.render_progress_bar(
-                    progress_fraction,
-                    width=30,
-                    style='cyber',
-                    label=f"⚡ PROGRESS {char}",
-                    eta=eta,
-                    speed=speed
-                )
-
-                logger.info(f"{progress_bar} | {elapsed:.1f}s | PID: {self.process.pid}")
-                time.sleep(0.8)
-                i += 1
-                if elapsed > self.timeout:
-                    break
 
     def execute(self) -> Dict[str, Any]:
-        """Execute the command with enhanced monitoring and output"""
-        self.start_time = time.time()
+        """Execute the command synchronously using TaskManager"""
+        result = global_task_manager.execute_sync(self.tool, self.args, self.timeout)
+        
+        # Adapt TaskManager output to EnhancedCommandExecutor legacy format
+        return {
+            "stdout": result.get("stdout_tail", ""),
+            "stderr": result.get("stderr_tail", ""),
+            "return_code": result.get("exit_code", -1),
+            "success": result.get("status") == "completed",
+            "timed_out": result.get("status") == "timeout",
+            "partial_results": result.get("status") in ["timeout", "completed"],
+            "execution_time": result.get("execution_time", 0),
+            "timestamp": datetime.now().isoformat()
+        }
 
-        logger.info(f"🚀 EXECUTING: {self.command}")
-        logger.info(f"⏱️  TIMEOUT: {self.timeout}s | PID: Starting...")
-
-        try:
-            self.process = subprocess.Popen(
-                self.command,
-                shell=True,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                text=True,
-                bufsize=1
-            )
-
-            pid = self.process.pid
-            logger.info(f"🆔 PROCESS: PID {pid} started")
-
-            # Register process with ProcessManager (v5.0 enhancement)
-            ProcessManager.register_process(pid, self.command, self.process)
-
-            # Start threads to read output continuously
-            self.stdout_thread = threading.Thread(target=self._read_stdout)
-            self.stderr_thread = threading.Thread(target=self._read_stderr)
-            self.stdout_thread.daemon = True
-            self.stderr_thread.daemon = True
-            self.stdout_thread.start()
-            self.stderr_thread.start()
-
-            # Start progress tracking in a separate thread
-            progress_thread = threading.Thread(target=self._show_progress, args=(self.timeout,))
-            progress_thread.daemon = True
-            progress_thread.start()
-
-            # Wait for the process to complete or timeout
-            try:
-                self.return_code = self.process.wait(timeout=self.timeout)
-                self.end_time = time.time()
-
-                # Process completed, join the threads
-                self.stdout_thread.join(timeout=1)
-                self.stderr_thread.join(timeout=1)
-
-                execution_time = self.end_time - self.start_time
-
-                # Cleanup process from registry (v5.0 enhancement)
-                ProcessManager.cleanup_process(pid)
-
-                if self.return_code == 0:
-                    logger.info(f"✅ SUCCESS: Command completed | Exit Code: {self.return_code} | Duration: {execution_time:.2f}s")
-                    telemetry.record_execution(True, execution_time)
-                else:
-                    logger.warning(f"⚠️  WARNING: Command completed with errors | Exit Code: {self.return_code} | Duration: {execution_time:.2f}s")
-                    telemetry.record_execution(False, execution_time)
-
-            except subprocess.TimeoutExpired:
-                self.end_time = time.time()
-                execution_time = self.end_time - self.start_time
-
-                # Process timed out but we might have partial results
-                self.timed_out = True
-                logger.warning(f"⏰ TIMEOUT: Command timed out after {self.timeout}s | Terminating PID {self.process.pid}")
-
-                # Try to terminate gracefully first
-                self.process.terminate()
-                try:
-                    self.process.wait(timeout=5)
-                except subprocess.TimeoutExpired:
-                    # Force kill if it doesn't terminate
-                    logger.error(f"🔪 FORCE KILL: Process {self.process.pid} not responding to termination")
-                    self.process.kill()
-
-                self.return_code = -1
-                telemetry.record_execution(False, execution_time)
-
-            # Always consider it a success if we have output, even with timeout
-            success = True if self.timed_out and (self.stdout_data or self.stderr_data) else (self.return_code == 0)
-
-            # Log enhanced final results with summary using ModernVisualEngine
-            output_size = len(self.stdout_data) + len(self.stderr_data)
-            execution_time = self.end_time - self.start_time if self.end_time else 0
-
-            # Create status summary
-            status_icon = "✅" if success else "❌"
-            status_color = ModernVisualEngine.COLORS['MATRIX_GREEN'] if success else ModernVisualEngine.COLORS['HACKER_RED']
-            timeout_status = f" {ModernVisualEngine.COLORS['WARNING']}[TIMEOUT]{ModernVisualEngine.COLORS['RESET']}" if self.timed_out else ""
-
-            # Create beautiful results summary
-            results_summary = f"""
-{ModernVisualEngine.COLORS['MATRIX_GREEN']}{ModernVisualEngine.COLORS['BOLD']}╭─────────────────────────────────────────────────────────────────────────────╮{ModernVisualEngine.COLORS['RESET']}
-{ModernVisualEngine.COLORS['BOLD']}│{ModernVisualEngine.COLORS['RESET']} {status_color}📊 FINAL RESULTS {status_icon}{ModernVisualEngine.COLORS['RESET']}
-{ModernVisualEngine.COLORS['BOLD']}├─────────────────────────────────────────────────────────────────────────────┤{ModernVisualEngine.COLORS['RESET']}
-{ModernVisualEngine.COLORS['BOLD']}│{ModernVisualEngine.COLORS['RESET']} {ModernVisualEngine.COLORS['NEON_BLUE']}🚀 Command:{ModernVisualEngine.COLORS['RESET']} {self.command[:55]}{'...' if len(self.command) > 55 else ''}
-{ModernVisualEngine.COLORS['BOLD']}│{ModernVisualEngine.COLORS['RESET']} {ModernVisualEngine.COLORS['CYBER_ORANGE']}⏱️  Duration:{ModernVisualEngine.COLORS['RESET']} {execution_time:.2f}s{timeout_status}
-{ModernVisualEngine.COLORS['BOLD']}│{ModernVisualEngine.COLORS['RESET']} {ModernVisualEngine.COLORS['WARNING']}📊 Output Size:{ModernVisualEngine.COLORS['RESET']} {output_size} bytes
-{ModernVisualEngine.COLORS['BOLD']}│{ModernVisualEngine.COLORS['RESET']} {ModernVisualEngine.COLORS['ELECTRIC_PURPLE']}🔢 Exit Code:{ModernVisualEngine.COLORS['RESET']} {self.return_code}
-{ModernVisualEngine.COLORS['BOLD']}│{ModernVisualEngine.COLORS['RESET']} {status_color}📈 Status:{ModernVisualEngine.COLORS['RESET']} {'SUCCESS' if success else 'FAILED'} | Cached: Yes
-{ModernVisualEngine.COLORS['MATRIX_GREEN']}{ModernVisualEngine.COLORS['BOLD']}╰─────────────────────────────────────────────────────────────────────────────╯{ModernVisualEngine.COLORS['RESET']}
-"""
-
-            # Log the beautiful summary
-            for line in results_summary.strip().split('\n'):
-                if line.strip():
-                    logger.info(line)
-
-            return {
-                "stdout": self.stdout_data,
-                "stderr": self.stderr_data,
-                "return_code": self.return_code,
-                "success": success,
-                "timed_out": self.timed_out,
-                "partial_results": self.timed_out and (self.stdout_data or self.stderr_data),
-                "execution_time": self.end_time - self.start_time if self.end_time else 0,
-                "timestamp": datetime.now().isoformat()
-            }
-
-        except Exception as e:
-            self.end_time = time.time()
-            execution_time = self.end_time - self.start_time if self.start_time else 0
-
-            logger.error(f"💥 ERROR: Command execution failed: {str(e)}")
-            logger.error(f"🔍 TRACEBACK: {traceback.format_exc()}")
-            telemetry.record_execution(False, execution_time)
-
-            return {
-                "stdout": self.stdout_data,
-                "stderr": f"Error executing command: {str(e)}\n{self.stderr_data}",
-                "return_code": -1,
-                "success": False,
-                "timed_out": False,
-                "partial_results": bool(self.stdout_data or self.stderr_data),
-                "execution_time": execution_time,
-                "timestamp": datetime.now().isoformat()
-            }
 
 # ============================================================================
 # DUPLICATE CLASSES REMOVED - Using the first definitions above
@@ -8633,12 +8484,12 @@ cve_intelligence = CVEIntelligenceManager()
 exploit_generator = AIExploitGenerator()
 vulnerability_correlator = VulnerabilityCorrelator()
 
-def execute_command(command: str, use_cache: bool = True) -> Dict[str, Any]:
+def execute_command(command, use_cache: bool = True) -> Dict[str, Any]:
     """
     Execute a shell command with enhanced features
 
     Args:
-        command: The command to execute
+        command: The command to execute (str or list)
         use_cache: Whether to use caching for this command
 
     Returns:
@@ -9157,7 +9008,1016 @@ def generic_command():
             "error": f"Server error: {str(e)}"
         }), 500
 
+
+# ============================================================================
+# GENERIC TOOL EXECUTION API
+# ============================================================================
+
+
+# ============================================================================
+# GENERIC TASK MANAGER FOR ASYNC EXECUTION
+
+# ============================================================================
+# UNIFIED TASK EXECUTION ENGINE (v6.1 Refactor)
+# ============================================================================
+import uuid
+import threading
+import tempfile
+import os
+import signal
+import subprocess
+import time
+import shlex
+import psutil
+
+class TaskManager:
+    """Unified engine for managing all system tool executions"""
+    def __init__(self):
+        self.tasks = {}
+        self.lock = threading.Lock()
+        logger.info("⚙️  HexStrike Task Manager Initialized")
+
+    def submit_task(self, tool: str, args: list, timeout: int = 600, metadata: dict = None) -> str:
+        """Submit an asynchronous task with optional metadata"""
+        task_id = str(uuid.uuid4())
+        
+        # Build command array safely
+        cmd = [tool] + args
+
+        stdout_f = tempfile.NamedTemporaryFile(mode='w+', delete=False, prefix=f"task_{task_id}_out_")
+        stderr_f = tempfile.NamedTemporaryFile(mode='w+', delete=False, prefix=f"task_{task_id}_err_")
+
+        with self.lock:
+            self.tasks[task_id] = {
+                "id": task_id,
+                "tool": tool,
+                "args": args,
+                "cmd": cmd,
+                "status": "started",
+                "stdout_path": stdout_f.name,
+                "stderr_path": stderr_f.name,
+                "process": None,
+                "start_time": time.time(),
+                "timeout": timeout,
+                "exit_code": None,
+                "pid": None,
+                "metadata": metadata or {},
+                "last_output_timestamp": time.time()
+            }
+
+        stdout_f.close()
+        stderr_f.close()
+
+        thread = threading.Thread(target=self._run_task, args=(task_id,))
+        thread.daemon = True
+        thread.start()
+
+        return task_id
+
+    def execute_sync(self, tool: str, args: list, timeout: int = 600) -> dict:
+        """Execute a task synchronously (blocks until finished)"""
+        task_id = self.submit_task(tool, args, timeout)
+        
+        start_wait = time.time()
+        while time.time() - start_wait < timeout + 5:
+            status = self.get_task_status(task_id)
+            if status["status"] in ["completed", "failed", "timeout"]:
+                # Read full results
+                return self._finalize_result(task_id)
+            time.sleep(0.5)
+            
+        return {"status": "error", "error": "Synchronous wait timed out"}
+
+    def _finalize_result(self, task_id: str) -> dict:
+        """Helper to get full results and cleanup if needed"""
+        status = self.get_task_status(task_id)
+        # We can also add more data here
+        return status
+
+    def _cleanup_task_files(self, task_id: str):
+        """Read final tail and delete temp files"""
+        with self.lock:
+            task = self.tasks.get(task_id)
+            if not task: return
+
+            MAX_READ = 2 * 1024 * 1024
+            
+            for key in ["stdout", "stderr"]:
+                path_key = f"{key}_path"
+                final_key = f"final_{key}"
+                
+                if path_key in task and task[path_key] and os.path.exists(task[path_key]):
+                    try:
+                        with open(task[path_key], "r", errors="replace") as f:
+                            f.seek(0, 2)
+                            sz = f.tell()
+                            f.seek(max(0, sz - MAX_READ))
+                            task[final_key] = f.read()
+                        os.unlink(task[path_key])
+                        task[path_key] = None
+                    except Exception as e:
+                        logger.error(f"Failed to cleanup {task[path_key]}: {e}")
+
+    def _run_task(self, task_id: str):
+        with self.lock:
+            task = self.tasks.get(task_id)
+            if not task: return
+
+        try:
+            # Open files for writing
+            with open(task["stdout_path"], "w") as out_f, open(task["stderr_path"], "w") as err_f:
+                # Use os.setsid to create a new process group for process tree isolation
+                process = subprocess.Popen(
+                    task["cmd"],
+                    shell=False,
+                    stdout=out_f,
+                    stderr=err_f,
+                    stdin=subprocess.DEVNULL,
+                    text=True,
+                    preexec_fn=os.setsid if os.name != 'nt' else None
+                )
+                
+                with self.lock:
+                    task["process"] = process
+                    task["pid"] = process.pid
+                    task["status"] = "running"
+                    logger.info(f"🚀 PID {process.pid} started for task {task_id}")
+
+                # Monitor process and output timestamps
+                last_size = 0
+                start_wait = time.time()
+                while process.poll() is None:
+                    # Check for timeout
+                    if time.time() - start_wait > task["timeout"]:
+                        logger.warning(f"⏰ Task {task_id} timed out. Killing process group...")
+                        self._kill_process_group(process.pid)
+                        with self.lock:
+                            task["status"] = "timeout"
+                        break
+                    
+                    # Check for output activity
+                    try:
+                        current_size = os.path.getsize(task["stdout_path"]) + os.path.getsize(task["stderr_path"])
+                        if current_size > last_size:
+                            with self.lock:
+                                task["last_output_timestamp"] = time.time()
+                            last_size = current_size
+                    except:
+                        pass
+                        
+                    time.sleep(0.5)
+
+                with self.lock:
+                    if task["status"] == "running":
+                        task["status"] = "completed"
+                    task["exit_code"] = process.returncode
+                    logger.info(f"✅ Task {task_id} finished with exit code {process.returncode}")
+                    
+        except FileNotFoundError:
+            with self.lock:
+                task["status"] = "failed"
+                with open(task["stderr_path"], "a") as err_f:
+                    err_f.write(f"\\nError: Tool '{task['cmd'][0]}' not found in PATH or absolute location.")
+        except Exception as e:
+            with self.lock:
+                task["status"] = "failed"
+                with open(task["stderr_path"], "a") as err_f:
+                    err_f.write(f"\\nException during execution: {str(e)}")
+        finally:
+            self._cleanup_task_files(task_id)
+
+    def _kill_process_group(self, pid: int):
+        """Kill the entire process group started by setsid"""
+        try:
+            if os.name != 'nt':
+                pgid = os.getpgid(pid)
+                os.killpg(pgid, signal.SIGKILL)
+            else:
+                # Windows fallback (less reliable for process trees)
+                parent = psutil.Process(pid)
+                for child in parent.children(recursive=True):
+                    child.kill()
+                parent.kill()
+        except Exception as e:
+            logger.error(f"Failed to kill process group for PID {pid}: {str(e)}")
+
+    def list_tasks(self) -> list:
+        """List all active and recently completed tasks"""
+        with self.lock:
+            task_list = []
+            for task_id, task in self.tasks.items():
+                task_list.append({
+                    "task_id": task_id,
+                    "tool": task.get("tool"),
+                    "args": task.get("args"),
+                    "status": task.get("status"),
+                    "start_time": task.get("start_time"),
+                    "runtime": time.time() - task.get("start_time") if task.get("start_time") else 0,
+                    "exit_code": task.get("exit_code"),
+                    "pid": task.get("pid"),
+                    "metadata": task.get("metadata", {}),
+                    "last_output_timestamp": task.get("last_output_timestamp")
+                })
+            return sorted(task_list, key=lambda x: x["start_time"], reverse=True)
+
+    def kill_task(self, task_id: str) -> bool:
+        """Forcefully terminate a task and its process group"""
+        with self.lock:
+            task = self.tasks.get(task_id)
+            if not task:
+                return False
+            if task["status"] not in ["running", "started"]:
+                return False
+            pid = task.get("pid")
+            if pid:
+                logger.warning(f"🔪 Manually killing task {task_id} (PID {pid})")
+                self._kill_process_group(pid)
+                task["status"] = "killed"
+                return True
+            return False
+
+    def get_task_output(self, task_id: str, stream_type: str = "stdout") -> str:
+        """Retrieve full output (from memory or final buffer) for a task"""
+        with self.lock:
+            task = self.tasks.get(task_id)
+            if not task:
+                return None
+            if task["status"] in ["completed", "timeout", "failed", "killed"]:
+                return task.get(f"final_{stream_type}", "")
+            path = task.get(f"{stream_type}_path")
+            if path and os.path.exists(path):
+                try:
+                    with open(path, "r", errors="replace") as f:
+                        return f.read()
+                except Exception as e:
+                    logger.error(f"Error reading task output: {e}")
+                    return f"Error reading output: {e}"
+            return ""
+
+    def get_task_status(self, task_id: str) -> dict:
+        with self.lock:
+            task = self.tasks.get(task_id)
+            
+        if not task:
+            return {"status": "not_found"}
+
+        MAX_READ = 2 * 1024 * 1024 # 2MB Tail
+        stdout_tail = ""
+        stderr_tail = ""
+
+        if task["status"] in ["completed", "timeout", "failed"]:
+            stdout_tail = task.get("final_stdout", "")
+            stderr_tail = task.get("final_stderr", "")
+        else:
+            try:
+                if task.get("stdout_path") and os.path.exists(task["stdout_path"]):
+                    with open(task["stdout_path"], "r", errors="replace") as f:
+                        f.seek(0, 2)
+                        sz = f.tell()
+                        f.seek(max(0, sz - MAX_READ))
+                        stdout_tail = f.read()
+            except: pass
+
+            try:
+                if task.get("stderr_path") and os.path.exists(task["stderr_path"]):
+                    with open(task["stderr_path"], "r", errors="replace") as f:
+                        f.seek(0, 2)
+                        sz = f.tell()
+                        f.seek(max(0, sz - MAX_READ))
+                        stderr_tail = f.read()
+            except: pass
+
+        # Calculate telemetry
+        runtime = time.time() - task["start_time"] if task.get("start_time") else 0
+        
+        # Calculate current output size if files still exist
+        output_size = 0
+        try:
+            if task.get("stdout_path") and os.path.exists(task["stdout_path"]):
+                output_size += os.path.getsize(task["stdout_path"])
+            if task.get("stderr_path") and os.path.exists(task["stderr_path"]):
+                output_size += os.path.getsize(task["stderr_path"])
+            # If completed, use final strings length
+            if task["status"] in ["completed", "timeout", "failed", "killed"]:
+                output_size = len(task.get("final_stdout", "")) + len(task.get("final_stderr", ""))
+        except:
+            pass
+
+        result = {
+            "task_id": task_id,
+            "status": task["status"],
+            "stdout_tail": stdout_tail[-10000:] if stdout_tail else "",
+            "stderr_tail": stderr_tail[-10000:] if stderr_tail else "",
+            "pid": task["pid"],
+            "exit_code": task["exit_code"],
+            "execution_time": runtime,
+            "runtime_seconds": runtime,
+            "output_size_bytes": output_size,
+            "metadata": task.get("metadata", {}),
+            "last_output_timestamp": task.get("last_output_timestamp")
+        }
+        return result
+
+
+# ============================================================================
+# ARTIFACT TRACKING SYSTEM
+# ============================================================================
+
+class ArtifactManager:
+    """Lightweight persistent artifact tracking system"""
+    def __init__(self, storage_file="hexstrike_artifacts.json"):
+        self.storage_file = storage_file
+        self.artifacts = {}
+        self.lock = threading.Lock()
+        self._load_artifacts()
+        logger.info(f"💎 Artifact Manager Initialized (Storage: {self.storage_file})")
+
+    def _load_artifacts(self):
+        """Load artifacts from persistent storage"""
+        try:
+            if os.path.exists(self.storage_file):
+                with open(self.storage_file, 'r') as f:
+                    self.artifacts = json.load(f)
+        except Exception as e:
+            logger.error(f"Failed to load artifacts: {e}")
+            self.artifacts = {}
+
+    def _save_artifacts(self):
+        """Save artifacts to persistent storage"""
+        try:
+            with open(self.storage_file, 'w') as f:
+                json.dump(self.artifacts, f, indent=4)
+        except Exception as e:
+            logger.error(f"Failed to save artifacts: {e}")
+
+    def store_artifact(self, artifact_type, location, source_task_id=None, description="", metadata=None, artifact_id=None, parent_artifact_id=None, investigation_id=None, curiosity_score=0):
+        """Store a new artifact findings with investigation context"""
+        with self.lock:
+            a_id = artifact_id or str(uuid.uuid4())
+            self.artifacts[a_id] = {
+                "artifact_id": a_id,
+                "artifact_type": artifact_type,
+                "artifact_location": location,
+                "source_task_id": source_task_id,
+                "parent_artifact_id": parent_artifact_id,
+                "investigation_id": investigation_id,
+                "curiosity_score": curiosity_score,
+                "description": description,
+                "metadata": metadata or {},
+                "timestamp": time.time()
+            }
+            self._save_artifacts()
+            return a_id
+
+    def update_score(self, artifact_id, curiosity_score):
+        """Update the curiosity score for an artifact"""
+        with self.lock:
+            if artifact_id in self.artifacts:
+                self.artifacts[artifact_id]["curiosity_score"] = curiosity_score
+                self._save_artifacts()
+                return True
+            return False
+
+    def list_artifacts(self) -> list:
+        """List all stored artifacts"""
+        with self.lock:
+            return sorted(list(self.artifacts.values()), key=lambda x: x['timestamp'], reverse=True)
+
+    def get_artifact(self, artifact_id) -> dict:
+        """Retrieve details for a specific artifact"""
+        with self.lock:
+            return self.artifacts.get(artifact_id)
+
+artifact_manager = ArtifactManager()
+
+# ============================================================================
+# INVESTIGATION MEMORY SYSTEM
+# ============================================================================
+
+class InvestigationManager:
+    """Persistent research memory for autonomous investigations"""
+    def __init__(self, storage_file="hexstrike_investigations.json"):
+        self.storage_file = storage_file
+        self.investigations = {}
+        self.notes = {}        # investigation_id -> [notes]
+        self.checkpoints = {}  # investigation_id -> [checkpoints]
+        self.snapshots = {}    # investigation_id -> [snapshots]
+        self.lock = threading.Lock()
+        self._load_data()
+        logger.info(f"🧠 Investigation Manager Initialized (Storage: {self.storage_file})")
+
+    def _load_data(self):
+        """Load research memory from persistent storage"""
+        try:
+            if os.path.exists(self.storage_file):
+                with open(self.storage_file, 'r') as f:
+                    data = json.load(f)
+                    self.investigations = data.get("investigations", {})
+                    self.notes = data.get("notes", {})
+                    self.checkpoints = data.get("checkpoints", {})
+                    self.snapshots = data.get("snapshots", {})
+        except Exception as e:
+            logger.error(f"Failed to load investigation data: {e}")
+
+    def _save_data(self):
+        """Save research memory to persistent storage"""
+        try:
+            with open(self.storage_file, 'w') as f:
+                json.dump({
+                    "investigations": self.investigations,
+                    "notes": self.notes,
+                    "checkpoints": self.checkpoints,
+                    "snapshots": self.snapshots
+                }, f, indent=4)
+        except Exception as e:
+            logger.error(f"Failed to save investigation data: {e}")
+
+    def create_investigation(self, target, goal, description="", status="active", investigation_id=None):
+        """Create a new research investigation"""
+        with self.lock:
+            inv_id = investigation_id or str(uuid.uuid4())
+            now = time.time()
+            self.investigations[inv_id] = {
+                "investigation_id": inv_id,
+                "target": target,
+                "goal": goal,
+                "description": description,
+                "status": status,
+                "stage": "recon",
+                "creation_time": now,
+                "last_updated": now
+            }
+            self._save_data()
+            return inv_id
+
+    def update_stage(self, investigation_id, stage):
+        """Update current research stage"""
+        with self.lock:
+            if investigation_id in self.investigations:
+                self.investigations[investigation_id]["stage"] = stage
+                self.investigations[investigation_id]["last_updated"] = time.time()
+                self._save_data()
+                return True
+            return False
+
+    def add_note(self, investigation_id, note, timestamp=None):
+        """Add research reasoning note"""
+        with self.lock:
+            if investigation_id not in self.investigations:
+                return False
+            if investigation_id not in self.notes:
+                self.notes[investigation_id] = []
+            
+            self.notes[investigation_id].append({
+                "note": note,
+                "timestamp": timestamp or time.time()
+            })
+            self.investigations[investigation_id]["last_updated"] = time.time()
+            self._save_data()
+            return True
+
+    def save_checkpoint(self, investigation_id, stage, completed_tasks, pending_tasks, key_findings, summary):
+        """Save investigation progress checkpoint"""
+        with self.lock:
+            if investigation_id not in self.investigations:
+                return False
+            if investigation_id not in self.checkpoints:
+                self.checkpoints[investigation_id] = []
+            
+            checkpoint = {
+                "checkpoint_id": str(uuid.uuid4()),
+                "timestamp": time.time(),
+                "stage": stage,
+                "completed_tasks": completed_tasks,
+                "pending_tasks": pending_tasks,
+                "key_findings": key_findings,
+                "summary": summary
+            }
+            self.checkpoints[investigation_id].append(checkpoint)
+            self.investigations[investigation_id]["last_updated"] = time.time()
+            self._save_data()
+            return checkpoint["checkpoint_id"]
+
+    def save_snapshot(self, investigation_id, summary):
+        """Save a compressed summary snapshot"""
+        with self.lock:
+            if investigation_id not in self.investigations:
+                return False
+            if investigation_id not in self.snapshots:
+                self.snapshots[investigation_id] = []
+            
+            snapshot = {
+                "snapshot_id": str(uuid.uuid4()),
+                "timestamp": time.time(),
+                "summary": summary
+            }
+            self.snapshots[investigation_id].append(snapshot)
+            self.investigations[investigation_id]["last_updated"] = time.time()
+            self._save_data()
+            return snapshot["snapshot_id"]
+
+    def list_investigations(self):
+        """List all active and past investigations"""
+        with self.lock:
+            return sorted(list(self.investigations.values()), key=lambda x: x['last_updated'], reverse=True)
+
+    def get_investigation(self, investigation_id):
+        """Get full details for an investigation"""
+        with self.lock:
+            return self.investigations.get(investigation_id)
+
+    def get_notes(self, investigation_id):
+        """Get all notes for an investigation"""
+        with self.lock:
+            return self.notes.get(investigation_id, [])
+
+    def get_checkpoints(self, investigation_id):
+        """Get all checkpoints for an investigation"""
+        with self.lock:
+            return self.checkpoints.get(investigation_id, [])
+
+    def get_snapshots(self, investigation_id):
+        """Get all snapshots for an investigation"""
+        with self.lock:
+            return self.snapshots.get(investigation_id, [])
+
+investigation_manager = InvestigationManager()
+
+
+global_task_manager = TaskManager()
+
+@app.route("/api/task/run", methods=["POST"])
+def api_task_run():
+    """Generic tool runner endpoint with metadata support"""
+    try:
+        params = request.json
+        tool = params.get("tool", "")
+        args = params.get("args", [])
+        timeout = params.get("timeout", COMMAND_TIMEOUT)
+        metadata = params.get("metadata", {})
+        
+        if not tool:
+            return jsonify({"error": "Tool is required"}), 400
+            
+        # Ensure args is a list
+        if isinstance(args, str):
+            import shlex
+            args = shlex.split(args)
+            
+        task_id = global_task_manager.submit_task(tool, args, timeout, metadata)
+        
+        return jsonify({
+            "success": True,
+            "task_id": task_id,
+            "status": "started",
+            "message": f"Tool {tool} started asynchronously",
+            "metadata": metadata
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/task/status/<task_id>", methods=["GET"])
+def api_task_status(task_id):
+    """Generic task status endpoint"""
+    try:
+        result = global_task_manager.get_task_status(task_id)
+        if result.get("status") == "not_found":
+            return jsonify({"error": "Task not found"}), 404
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/task/list", methods=["GET"])
+def api_task_list():
+    """List all tasks with support for filtering"""
+    try:
+        tasks = global_task_manager.list_tasks()
+        
+        # Apply filters from query parameters
+        status_filter = request.args.get('status')
+        tool_filter = request.args.get('tool')
+        target_filter = request.args.get('target')
+        category_filter = request.args.get('category')
+        
+        filtered_tasks = []
+        for task in tasks:
+            if status_filter and task.get('status') != status_filter:
+                continue
+            if tool_filter and task.get('tool') != tool_filter:
+                continue
+            
+            # Metadata filters
+            metadata = task.get('metadata', {})
+            if target_filter and metadata.get('target') != target_filter:
+                continue
+            if category_filter and metadata.get('category') != category_filter:
+                continue
+                
+            filtered_tasks.append(task)
+            
+        return jsonify({
+            "success": True,
+            "tasks": filtered_tasks,
+            "count": len(filtered_tasks),
+            "total_count": len(tasks)
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/task/kill/<task_id>", methods=["POST"])
+def api_task_kill(task_id):
+    """Terminate a running task"""
+    try:
+        success = global_task_manager.kill_task(task_id)
+        if success:
+            return jsonify({"success": True, "message": f"Task {task_id} terminated"})
+        return jsonify({"success": False, "message": f"Task {task_id} not found or not running"}), 404
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/system/status", methods=["GET"])
+def api_system_status():
+    """Get system resource usage and stats"""
+    try:
+        cpu_usage = psutil.cpu_percent(interval=None)
+        memory = psutil.virtual_memory()
+        disk = psutil.disk_usage('/')
+        
+        # Count running tasks
+        tasks = global_task_manager.list_tasks()
+        running_count = sum(1 for t in tasks if t['status'] == 'running')
+        
+        return jsonify({
+            "success": True,
+            "cpu_usage_percent": cpu_usage,
+            "memory": {
+                "percent": memory.percent,
+                "available_gb": memory.available / (1024**3),
+                "total_gb": memory.total / (1024**3)
+            },
+            "disk": {
+                "percent": disk.percent,
+                "free_gb": disk.free / (1024**3),
+                "total_gb": disk.total / (1024**3)
+            },
+            "running_tasks": running_count,
+            "total_tasks_history": len(tasks)
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/tools/discover", methods=["GET"])
+def api_tools_discover():
+    """Discover available executables in system PATH with inferred categorization"""
+    try:
+        path_env = os.environ.get('PATH', '').split(os.pathsep)
+        tools_dict = {}
+        
+        # Simple heuristic-based categorization
+        categories = {
+            "network_scan": ["nmap", "masscan", "rustscan", "zmap"],
+            "web_enum": ["gobuster", "ffuf", "dirb", "dirbuster", "nikto", "wfuzz", "arjun"],
+            "subdomain_enum": ["amass", "subfinder", "assetfinder", "findomain"],
+            "binary_analysis": ["gdb", "radare2", "r2", "objdump", "readelf", "nm", "strace", "ltrace"],
+            "reverse_engineering": ["ghidra", "hopper", "binaryninja"],
+            "fuzzing": ["afl", "honggfuzz", "boofuzz"],
+            "network_sniffing": ["tcpdump", "wireshark", "tshark", "bettercap", "responder", "ettercap"],
+            "recon": ["curl", "wget", "dig", "nslookup", "whois"]
+        }
+        
+        for directory in path_env:
+            if not os.path.isdir(directory):
+                continue
+            try:
+                for filename in os.listdir(directory):
+                    filepath = os.path.join(directory, filename)
+                    if os.path.isfile(filepath) and os.access(filepath, os.X_OK):
+                        if filename not in tools_dict:
+                            # Inferred category
+                            category = "general"
+                            for cat, members in categories.items():
+                                if filename in members:
+                                    category = cat
+                                    break
+                            
+                            tools_dict[filename] = {
+                                "path": filepath,
+                                "category": category
+                            }
+            except PermissionError:
+                continue
+        
+        return jsonify({
+            "success": True,
+            "tools": tools_dict,
+            "count": len(tools_dict)
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/artifact/store", methods=["POST"])
+def api_artifact_store():
+    """Store a discovery artifact with investigation context"""
+    try:
+        params = request.json
+        if not params.get("artifact_type") or not params.get("artifact_location"):
+            return jsonify({"error": "artifact_type and artifact_location are required"}), 400
+            
+        a_id = artifact_manager.store_artifact(
+            artifact_type=params.get("artifact_type"),
+            location=params.get("artifact_location"),
+            source_task_id=params.get("source_task_id"),
+            description=params.get("description", ""),
+            metadata=params.get("metadata", {}),
+            artifact_id=params.get("artifact_id"),
+            parent_artifact_id=params.get("parent_artifact_id"),
+            investigation_id=params.get("investigation_id"),
+            curiosity_score=params.get("curiosity_score", 0)
+        )
+        
+        return jsonify({
+            "success": True,
+            "artifact_id": a_id,
+            "message": "Artifact stored successfully"
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/artifact/list", methods=["GET"])
+def api_artifact_list():
+    """List all discovery artifacts"""
+    try:
+        artifacts = artifact_manager.list_artifacts()
+        return jsonify({
+            "success": True,
+            "artifacts": artifacts,
+            "count": len(artifacts)
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/artifact/get/<artifact_id>", methods=["GET"])
+def api_artifact_get(artifact_id):
+    """Get details for a specific artifact"""
+    try:
+        artifact = artifact_manager.get_artifact(artifact_id)
+        if not artifact:
+            return jsonify({"error": "Artifact not found"}), 404
+        return jsonify({
+            "success": True,
+            "artifact": artifact
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/task/output/<task_id>", methods=["GET"])
+def api_task_output(task_id):
+    """Retrieve full output for a task"""
+    try:
+        stream = request.args.get("stream", "stdout")
+        if stream not in ["stdout", "stderr"]:
+            return jsonify({"error": "Invalid stream type. Use stdout or stderr"}), 400
+            
+        output = global_task_manager.get_task_output(task_id, stream)
+        if output is None:
+            return jsonify({"error": "Task not found"}), 404
+            
+        return jsonify({
+            "success": True,
+            "task_id": task_id,
+            "stream": stream,
+            "output": output
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+
+
+
+@app.route("/api/investigation/create", methods=["POST"])
+def api_investigation_create():
+    """Create a new research investigation"""
+    try:
+        params = request.json
+        if not params.get("target") or not params.get("goal"):
+            return jsonify({"error": "target and goal are required"}), 400
+            
+        inv_id = investigation_manager.create_investigation(
+            target=params.get("target"),
+            goal=params.get("goal"),
+            description=params.get("description", ""),
+            status=params.get("status", "active"),
+            investigation_id=params.get("investigation_id")
+        )
+        
+        return jsonify({
+            "success": True,
+            "investigation_id": inv_id,
+            "message": "Investigation created successfully"
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/investigation/list", methods=["GET"])
+def api_investigation_list():
+    """List all investigations"""
+    try:
+        investigations = investigation_manager.list_investigations()
+        return jsonify({
+            "success": True,
+            "investigations": investigations,
+            "count": len(investigations)
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/investigation/get/<investigation_id>", methods=["GET"])
+def api_investigation_get(investigation_id):
+    """Get details for a specific investigation"""
+    try:
+        inv = investigation_manager.get_investigation(investigation_id)
+        if not inv:
+            return jsonify({"error": "Investigation not found"}), 404
+        return jsonify({
+            "success": True,
+            "investigation": inv
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/investigation/update_stage", methods=["POST"])
+def api_investigation_update_stage():
+    """Update investigation research stage"""
+    try:
+        params = request.json
+        inv_id = params.get("investigation_id")
+        stage = params.get("stage")
+        if not inv_id or not stage:
+            return jsonify({"error": "investigation_id and stage are required"}), 400
+            
+        if investigation_manager.update_stage(inv_id, stage):
+            return jsonify({"success": True, "message": f"Stage updated to {stage}"})
+        return jsonify({"error": "Investigation not found"}), 404
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/investigation/add_note", methods=["POST"])
+def api_investigation_add_note():
+    """Add a note to an investigation"""
+    try:
+        params = request.json
+        inv_id = params.get("investigation_id")
+        note = params.get("note")
+        if not inv_id or not note:
+            return jsonify({"error": "investigation_id and note are required"}), 400
+            
+        if investigation_manager.add_note(inv_id, note, params.get("timestamp")):
+            return jsonify({"success": True, "message": "Note added successfully"})
+        return jsonify({"error": "Investigation not found"}), 404
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/investigation/notes/<investigation_id>", methods=["GET"])
+def api_investigation_notes(investigation_id):
+    """Retrieve all notes for an investigation"""
+    try:
+        notes = investigation_manager.get_notes(investigation_id)
+        return jsonify({
+            "success": True,
+            "investigation_id": investigation_id,
+            "notes": notes,
+            "count": len(notes)
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/investigation/checkpoint/save", methods=["POST"])
+def api_investigation_checkpoint_save():
+    """Save investigation progress checkpoint"""
+    try:
+        params = request.json
+        inv_id = params.get("investigation_id")
+        if not inv_id:
+            return jsonify({"error": "investigation_id is required"}), 400
+            
+        checkpoint_id = investigation_manager.save_checkpoint(
+            investigation_id=inv_id,
+            stage=params.get("stage", ""),
+            completed_tasks=params.get("completed_tasks", []),
+            pending_tasks=params.get("pending_tasks", []),
+            key_findings=params.get("key_findings", []),
+            summary=params.get("summary", "")
+        )
+        
+        if checkpoint_id:
+            return jsonify({
+                "success": True,
+                "checkpoint_id": checkpoint_id,
+                "message": "Checkpoint saved successfully"
+            })
+        return jsonify({"error": "Investigation not found"}), 404
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/investigation/checkpoint/list/<investigation_id>", methods=["GET"])
+def api_investigation_checkpoint_list(investigation_id):
+    """Retrieve all checkpoints for an investigation"""
+    try:
+        checkpoints = investigation_manager.get_checkpoints(investigation_id)
+        return jsonify({
+            "success": True,
+            "investigation_id": investigation_id,
+            "checkpoints": checkpoints,
+            "count": len(checkpoints)
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/investigation/checkpoint/latest/<investigation_id>", methods=["GET"])
+def api_investigation_checkpoint_latest(investigation_id):
+    """Retrieve the latest checkpoint for an investigation"""
+    try:
+        checkpoints = investigation_manager.get_checkpoints(investigation_id)
+        if not checkpoints:
+            return jsonify({"error": "No checkpoints found"}), 404
+        return jsonify({
+            "success": True,
+            "checkpoint": checkpoints[-1]
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/investigation/snapshot", methods=["POST"])
+def api_investigation_snapshot():
+    """Save a reasoning snapshot"""
+    try:
+        params = request.json
+        inv_id = params.get("investigation_id")
+        summary = params.get("summary")
+        if not inv_id or not summary:
+            return jsonify({"error": "investigation_id and summary are required"}), 400
+            
+        snapshot_id = investigation_manager.save_snapshot(inv_id, summary)
+        if snapshot_id:
+            return jsonify({
+                "success": True,
+                "snapshot_id": snapshot_id,
+                "message": "Snapshot saved successfully"
+            })
+        return jsonify({"error": "Investigation not found"}), 404
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/investigation/snapshots/<investigation_id>", methods=["GET"])
+def api_investigation_snapshots(investigation_id):
+    """Retrieve all snapshots for an investigation"""
+    try:
+        snapshots = investigation_manager.get_snapshots(investigation_id)
+        return jsonify({
+            "success": True,
+            "investigation_id": investigation_id,
+            "snapshots": snapshots,
+            "count": len(snapshots)
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/artifact/update_score", methods=["POST"])
+def api_artifact_update_score():
+    """Update curiosity score for an artifact"""
+    try:
+        params = request.json
+        a_id = params.get("artifact_id")
+        score = params.get("curiosity_score")
+        if a_id is None or score is None:
+            return jsonify({"error": "artifact_id and curiosity_score are required"}), 400
+            
+        if artifact_manager.update_score(a_id, score):
+            return jsonify({"success": True, "message": "Score updated successfully"})
+        return jsonify({"error": "Artifact not found"}), 404
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/artifact/graph/<investigation_id>", methods=["GET"])
+def api_artifact_graph(investigation_id):
+    """Retrieve artifact graph for an investigation"""
+    try:
+        artifacts = artifact_manager.list_artifacts()
+        inv_artifacts = [a for a in artifacts if a.get("investigation_id") == investigation_id]
+        
+        # Build relationship map
+        return jsonify({
+            "success": True,
+            "investigation_id": investigation_id,
+            "artifacts": inv_artifacts,
+            "count": len(inv_artifacts)
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 # File Operations API Endpoints
+
 
 @app.route("/api/files/create", methods=["POST"])
 def create_file():
