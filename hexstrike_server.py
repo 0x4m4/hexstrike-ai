@@ -13151,7 +13151,7 @@ def httpx():
             logger.warning("🌐 httpx called without target parameter")
             return jsonify({"error": "Target parameter is required"}), 400
 
-        command = f"httpx -l {target} -t {threads}"
+        command = f"$(go env GOPATH)/bin/httpx -l {target} -t {threads}"
 
         if probe:
             command += " -probe"
@@ -14920,6 +14920,11 @@ def graphql_scanner():
             "recommendations": []
         }
 
+        MITIGATION_HINTS = [
+            "maximum query", "complexity", "cost", "depth", "throttle",
+            "rate limit", "too many", "not supported"
+        ]
+
         # Test 1: Introspection query
         if introspection:
             introspection_query = '''
@@ -14927,59 +14932,112 @@ def graphql_scanner():
                 __schema {
                     types {
                         name
-                        fields {
-                            name
-                            type {
-                                name
-                            }
-                        }
                     }
                 }
             }
             '''
-
             clean_query = introspection_query.replace('\n', ' ').replace('  ', ' ').strip()
-            command = f"curl -s -X POST -H 'Content-Type: application/json' -d '{{\"query\":\"{clean_query}\"}}' '{endpoint}'"
+            command = (
+                "curl -s -X POST "
+                "-H 'Content-Type: application/json' "
+                f"-d '{{\"query\":\"{clean_query}\"}}' "
+                f"'{endpoint}'"
+            )
             result = execute_command(command, use_cache=False)
 
             results["tests_performed"].append("introspection_query")
 
-            if "data" in result.get("stdout", ""):
+            stdout = result.get("stdout", "") or ""
+            data = None
+            try:
+                data = json.loads(stdout)
+            except Exception:
+                data = None
+
+            if isinstance(data, dict) and data.get("data", {}).get("__schema"):
                 results["vulnerabilities"].append({
                     "type": "introspection_enabled",
                     "severity": "MEDIUM",
-                    "description": "GraphQL introspection is enabled"
+                    "description": "GraphQL introspection is enabled (data.__schema is present)"
                 })
 
         # Test 2: Query depth analysis
         deep_query = "{ " * query_depth + "field" + " }" * query_depth
-        command = f"curl -s -X POST -H 'Content-Type: application/json' -d '{{\"query\":\"{deep_query}\"}}' {endpoint}"
+        command = (
+            "curl -s -X POST "
+            "-H 'Content-Type: application/json' "
+            f"-d '{{\"query\":\"{deep_query}\"}}' "
+            f"'{endpoint}'"
+        )
         depth_result = execute_command(command, use_cache=False)
 
         results["tests_performed"].append("query_depth_analysis")
 
-        if "error" not in depth_result.get("stdout", "").lower():
-            results["vulnerabilities"].append({
-                "type": "no_query_depth_limit",
-                "severity": "HIGH",
-                "description": f"No query depth limiting detected (tested depth: {query_depth})"
-            })
+        depth_stdout = depth_result.get("stdout", "") or ""
+        depth_stdout_lower = depth_stdout.lower()
+
+        depth_json = None
+        try:
+            depth_json = json.loads(depth_stdout)
+        except Exception:
+            depth_json = None
+
+        is_graphql_like = (
+            isinstance(depth_json, dict)
+            and ("data" in depth_json or "errors" in depth_json)
+        )
+
+        if is_graphql_like:
+            has_error_word = "error" in depth_stdout_lower
+            has_mitigation_hint = any(h in depth_stdout_lower for h in MITIGATION_HINTS)
+            if not has_error_word and not has_mitigation_hint:
+                results["vulnerabilities"].append({
+                    "type": "no_query_depth_limit",
+                    "severity": "HIGH",
+                    "description": f"No explicit query depth limiting detected (tested depth: {query_depth})"
+                })
 
         # Test 3: Batch query testing
         batch_query = '[' + ','.join(['{\"query\":\"{field}\"}' for _ in range(10)]) + ']'
-        command = f"curl -s -X POST -H 'Content-Type: application/json' -d '{batch_query}' {endpoint}"
+        command = (
+            "curl -s -X POST "
+            "-H 'Content-Type: application/json' "
+            f"-d '{batch_query}' "
+            f"'{endpoint}'"
+        )
         batch_result = execute_command(command, use_cache=False)
 
         results["tests_performed"].append("batch_query_testing")
 
-        if "data" in batch_result.get("stdout", "") and batch_result.get("success"):
-            results["vulnerabilities"].append({
-                "type": "batch_queries_allowed",
-                "severity": "MEDIUM",
-                "description": "Batch queries are allowed without rate limiting"
-            })
+        batch_stdout = batch_result.get("stdout", "") or ""
+        batch_success = bool(batch_result.get("success"))
+        batch_data = None
+        try:
+            batch_data = json.loads(batch_stdout)
+        except Exception:
+            batch_data = None
 
-        # Generate recommendations
+        def _batch_not_supported_text(s: str) -> bool:
+            s_low = (s or "").lower()
+            return ("batch" in s_low) and ("not supported" in s_low)
+
+        if _batch_not_supported_text(batch_stdout):
+            pass
+        elif isinstance(batch_data, list) and len(batch_data) == 10:
+            ok_count = 0
+            for item in batch_data:
+                if isinstance(item, dict) and item.get("data"):
+                    ok_count += 1
+
+            if ok_count > 0:
+                results["vulnerabilities"].append({
+                    "type": "batch_queries_allowed",
+                    "severity": "MEDIUM",
+                    "description": f"Batch queries are allowed without visible rate limiting (OK items: {ok_count}/10)"
+                })
+        else:
+            pass
+
         if results["vulnerabilities"]:
             results["recommendations"] = [
                 "Disable introspection in production",
@@ -15001,6 +15059,7 @@ def graphql_scanner():
         return jsonify({
             "error": f"Server error: {str(e)}"
         }), 500
+
 
 @app.route("/api/tools/jwt_analyzer", methods=["POST"])
 def jwt_analyzer():
