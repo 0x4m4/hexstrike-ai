@@ -8929,14 +8929,44 @@ class FileOperationsManager:
     """Handle file operations with security and validation"""
 
     def __init__(self, base_dir: str = "/tmp/hexstrike_files"):
-        self.base_dir = Path(base_dir)
+        self.base_dir = Path(base_dir).resolve()
         self.base_dir.mkdir(exist_ok=True)
         self.max_file_size = 100 * 1024 * 1024  # 100MB
+
+    def _validate_path(self, filename: str) -> 'Path':
+        """Validate and resolve a file path, ensuring it stays within the sandbox.
+
+        Prevents path traversal attacks (CWE-22) by resolving the full
+        canonical path (following symlinks) and verifying it remains under
+        base_dir. Raises ValueError on any escape attempt.
+        """
+        # Reject absolute paths outright
+        if Path(filename).is_absolute():
+            raise ValueError("Absolute paths are not allowed")
+
+        # Reject null bytes which can truncate paths in some OS APIs
+        if "\x00" in filename:
+            raise ValueError("Null bytes are not allowed in filenames")
+
+        # Resolve to canonical absolute path (resolves .., symlinks, etc.)
+        resolved = (self.base_dir / filename).resolve()
+
+        # Ensure the resolved path is within the sandbox directory.
+        # Using Path.relative_to() which raises ValueError if not a subpath,
+        # avoiding prefix false-positives (e.g. /tmp/hexstrike_files_evil).
+        try:
+            resolved.relative_to(self.base_dir)
+        except ValueError:
+            raise ValueError(
+                "Path traversal detected: resolved path escapes sandbox directory"
+            )
+
+        return resolved
 
     def create_file(self, filename: str, content: str, binary: bool = False) -> Dict[str, Any]:
         """Create a file with the specified content"""
         try:
-            file_path = self.base_dir / filename
+            file_path = self._validate_path(filename)
             file_path.parent.mkdir(parents=True, exist_ok=True)
 
             if len(content.encode()) > self.max_file_size:
@@ -8959,7 +8989,7 @@ class FileOperationsManager:
     def modify_file(self, filename: str, content: str, append: bool = False) -> Dict[str, Any]:
         """Modify an existing file"""
         try:
-            file_path = self.base_dir / filename
+            file_path = self._validate_path(filename)
             if not file_path.exists():
                 return {"success": False, "error": "File does not exist"}
 
@@ -8977,7 +9007,7 @@ class FileOperationsManager:
     def delete_file(self, filename: str) -> Dict[str, Any]:
         """Delete a file or directory"""
         try:
-            file_path = self.base_dir / filename
+            file_path = self._validate_path(filename)
             if not file_path.exists():
                 return {"success": False, "error": "File does not exist"}
 
@@ -8996,7 +9026,7 @@ class FileOperationsManager:
     def list_files(self, directory: str = ".") -> Dict[str, Any]:
         """List files in a directory"""
         try:
-            dir_path = self.base_dir / directory
+            dir_path = self._validate_path(directory)
             if not dir_path.exists():
                 return {"success": False, "error": "Directory does not exist"}
 
