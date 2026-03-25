@@ -64,3 +64,30 @@ class TestIntelligentErrorHandler:
         resources = handler._get_system_resources()
         assert resources["cpu_percent"] == 95.0
         assert resources["memory_percent"] == 90.0
+
+    def test_ambiguous_error_prioritization(self, handler):
+        # String contains both 'timeout' and 'denied'
+        msg = "Operation timed out but access was denied"
+        # Handler currently checks patterns in order defined in _initialize_error_patterns
+        # In hexstrike_server.py, Timeout patterns are first.
+        error_type = handler.classify_error(msg)
+        assert error_type == ErrorType.TIMEOUT
+
+    def test_human_suggestions_fallback(self, handler):
+        from hexstrike_server import ErrorContext
+        from datetime import datetime
+        
+        context = ErrorContext(
+            tool_name="unknown_tool",
+            target="target",
+            parameters={},
+            error_type=ErrorType.UNKNOWN,
+            error_message="???",
+            attempt_count=1,
+            timestamp=datetime.now(),
+            stack_trace="",
+            system_resources={}
+        )
+        suggestions = handler._get_human_suggestions(context)
+        assert len(suggestions) > 0
+        assert "Review error details" in suggestions[0]
