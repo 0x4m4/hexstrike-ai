@@ -10898,6 +10898,733 @@ def execute_subfinder_scan(target, params):
     except Exception as e:
         return {"success": False, "error": str(e)}
 
+# ============================================================================
+# PHASE 2 & 3 EXECUTION METHODS - Enhanced Reconnaissance Pipeline
+# ============================================================================
+
+def execute_phase2_http_discovery(domain: str, subdomains_file: str = None, output_dir: str = None) -> Dict[str, Any]:
+    """
+    Phase 2: HTTP Service Discovery
+    Takes subdomains from Phase 1, identifies live HTTP services and technologies
+
+    Args:
+        domain: Target domain
+        subdomains_file: Path to subdomains.txt from Phase 1
+        output_dir: Directory to save results
+
+    Returns:
+        Dictionary with live_hosts, technologies, and status
+    """
+    try:
+        import os
+        import json
+        from datetime import datetime
+
+        if not output_dir:
+            output_dir = f"recon/{domain}"
+        os.makedirs(output_dir, exist_ok=True)
+
+        results = {
+            "phase": "phase2_http_discovery",
+            "domain": domain,
+            "started_at": datetime.now().isoformat(),
+            "completed_at": None,
+            "status": "running",
+            "tools_executed": [],
+            "live_hosts": [],
+            "technologies": {},
+            "errors": []
+        }
+
+        logger.info(f"{ModernVisualEngine.create_section_header('PHASE 2: HTTP SERVICE DISCOVERY', icon='🌐')}")
+
+        # Determine input source
+        if subdomains_file and os.path.exists(subdomains_file):
+            input_file = subdomains_file
+            logger.info(f"📁 Loading subdomains from {subdomains_file}")
+        else:
+            # Use domain directly if no subdomains file
+            input_file = f"{output_dir}/subdomains.txt"
+            with open(input_file, 'w') as f:
+                f.write(domain)
+            logger.info(f"📝 Created input file with domain: {domain}")
+
+        # Tool 1: httpx - Probe for live hosts and detect technologies
+        logger.info(f"{ModernVisualEngine.format_tool_status('httpx', 'RUNNING', domain, progress=0.25)}")
+        try:
+            httpx_output_file = f"{output_dir}/httpx_raw.txt"
+            httpx_cmd = f"cat {input_file} | httpx -tech-detect -status-code -title -json -o {httpx_output_file}"
+            httpx_result = execute_command(httpx_cmd)
+
+            if httpx_result.get("success"):
+                # Parse httpx output
+                with open(httpx_output_file, 'r') as f:
+                    for line in f:
+                        try:
+                            data = json.loads(line.strip())
+                            host_info = {
+                                "url": data.get("url", ""),
+                                "status_code": data.get("status_code", 0),
+                                "title": data.get("title", ""),
+                                "webserver": data.get("webserver", ""),
+                                "tech": data.get("tech", []),
+                                "content_type": data.get("content_type", "")
+                            }
+                            if host_info["url"]:
+                                results["live_hosts"].append(host_info)
+                                # Aggregate technologies
+                                for tech in host_info.get("tech", []):
+                                    if tech not in results["technologies"]:
+                                        results["technologies"][tech] = {"count": 0, "hosts": []}
+                                    results["technologies"][tech]["count"] += 1
+                                    results["technologies"][tech]["hosts"].append(host_info["url"])
+                        except json.JSONDecodeError:
+                            continue
+
+                results["tools_executed"].append({"tool": "httpx", "status": "success", "hosts_found": len(results["live_hosts"])})
+                logger.info(f"{ModernVisualEngine.format_tool_status('httpx', 'SUCCESS', domain, progress=0.5)}")
+            else:
+                results["errors"].append(f"httpx failed: {httpx_result.get('error', 'unknown error')}")
+                results["tools_executed"].append({"tool": "httpx", "status": "failed"})
+                logger.error(f"{ModernVisualEngine.format_tool_status('httpx', 'FAILED', domain)}")
+
+        except Exception as e:
+            results["errors"].append(f"httpx exception: {str(e)}")
+            logger.error(f"💥 httpx execution error: {str(e)}")
+
+        # Tool 2: nuclei - Technology detection with info severity
+        if results["live_hosts"]:
+            logger.info(f"{ModernVisualEngine.format_tool_status('nuclei', 'RUNNING', domain, progress=0.75)}")
+            try:
+                live_hosts_file = f"{output_dir}/live_hosts.txt"
+                with open(live_hosts_file, 'w') as f:
+                    for host in results["live_hosts"]:
+                        f.write(f"{host['url']}\n")
+
+                nuclei_output = f"{output_dir}/nuclei_tech.json"
+                nuclei_cmd = f"nuclei -l {live_hosts_file} -severity info -tags tech -json -o {nuclei_output}"
+                nuclei_result = execute_command(nuclei_cmd)
+
+                if nuclei_result.get("success"):
+                    results["tools_executed"].append({"tool": "nuclei", "status": "success"})
+                    logger.info(f"{ModernVisualEngine.format_tool_status('nuclei', 'SUCCESS', domain, progress=1.0)}")
+                else:
+                    results["tools_executed"].append({"tool": "nuclei", "status": "failed", "error": nuclei_result.get('error')})
+
+            except Exception as e:
+                results["errors"].append(f"nuclei exception: {str(e)}")
+
+        # Save results
+        results["completed_at"] = datetime.now().isoformat()
+        results["status"] = "completed" if results["live_hosts"] else "failed"
+
+        # Write live_hosts.txt
+        live_hosts_path = f"{output_dir}/live_hosts.txt"
+        with open(live_hosts_path, 'w') as f:
+            for host in results["live_hosts"]:
+                f.write(f"{host['url']}\n")
+
+        # Write technologies.json
+        tech_path = f"{output_dir}/technologies.json"
+        with open(tech_path, 'w') as f:
+            json.dump(results["technologies"], f, indent=2)
+
+        # Write phase results
+        phase_results_path = f"{output_dir}/phase2_results.json"
+        with open(phase_results_path, 'w') as f:
+            json.dump(results, f, indent=2)
+
+        logger.info(f"{ModernVisualEngine.COLORS['SUCCESS']}✅ Phase 2 complete: {len(results['live_hosts'])} live hosts found{ModernVisualEngine.COLORS['RESET']}")
+
+        return {
+            "success": True,
+            "phase": "phase2",
+            "results": results,
+            "output_files": {
+                "live_hosts": live_hosts_path,
+                "technologies": tech_path,
+                "phase_results": phase_results_path
+            }
+        }
+
+    except Exception as e:
+        logger.error(f"💥 Phase 2 execution error: {str(e)}")
+        return {"success": False, "phase": "phase2", "error": str(e)}
+
+def execute_phase3_content_discovery(domain: str, live_hosts_file: str = None, output_dir: str = None) -> Dict[str, Any]:
+    """
+    Phase 3: Content Discovery
+    Takes live hosts from Phase 2, discovers content, endpoints, and JS files
+
+    Args:
+        domain: Target domain
+        live_hosts_file: Path to live_hosts.txt from Phase 2
+        output_dir: Directory to save results
+
+    Returns:
+        Dictionary with endpoints, js_files, and status
+    """
+    try:
+        import os
+        import json
+        from datetime import datetime
+
+        if not output_dir:
+            output_dir = f"recon/{domain}"
+        os.makedirs(output_dir, exist_ok=True)
+
+        results = {
+            "phase": "phase3_content_discovery",
+            "domain": domain,
+            "started_at": datetime.now().isoformat(),
+            "completed_at": None,
+            "status": "running",
+            "tools_executed": [],
+            "endpoints": [],
+            "js_files": [],
+            "parameters": [],
+            "errors": []
+        }
+
+        logger.info(f"{ModernVisualEngine.create_section_header('PHASE 3: CONTENT DISCOVERY', icon='📁')}")
+
+        # Determine input source
+        if live_hosts_file and os.path.exists(live_hosts_file):
+            input_file = live_hosts_file
+            logger.info(f"📁 Loading live hosts from {live_hosts_file}")
+        else:
+            default_input = f"{output_dir}/live_hosts.txt"
+            if os.path.exists(default_input):
+                input_file = default_input
+            else:
+                results["errors"].append("No live hosts file found")
+                return {"success": False, "phase": "phase3", "error": "No live hosts file"}
+
+        # Tool 1: katana - Crawl and discover endpoints
+        logger.info(f"{ModernVisualEngine.format_tool_status('katana', 'RUNNING', domain, progress=0.25)}")
+        try:
+            katana_output = f"{output_dir}/katana_urls.txt"
+            katana_cmd = f"katana -list {input_file} -depth 3 -js-crawl -o {katana_output}"
+            katana_result = execute_command(katana_cmd)
+
+            if katana_result.get("success"):
+                # Parse katana output
+                with open(katana_output, 'r') as f:
+                    for line in f:
+                        url = line.strip()
+                        if url:
+                            results["endpoints"].append({
+                                "url": url,
+                                "source": "katana",
+                                "type": "crawled"
+                            })
+                results["tools_executed"].append({"tool": "katana", "status": "success", "urls_found": len(results["endpoints"])})
+                logger.info(f"{ModernVisualEngine.format_tool_status('katana', 'SUCCESS', domain, progress=0.5)}")
+            else:
+                results["tools_executed"].append({"tool": "katana", "status": "failed"})
+
+        except Exception as e:
+            results["errors"].append(f"katana exception: {str(e)}")
+            logger.error(f"💥 katana execution error: {str(e)}")
+
+        # Tool 2: gau - GetAllUrls from Wayback, Common Crawl, etc
+        logger.info(f"{ModernVisualEngine.format_tool_status('gau', 'RUNNING', domain, progress=0.6)}")
+        try:
+            gau_output = f"{output_dir}/gau_urls.txt"
+            gau_cmd = f"cat {input_file} | gau --o {gau_output} --subs"
+            gau_result = execute_command(gau_cmd)
+
+            if gau_result.get("success"):
+                with open(gau_output, 'r') as f:
+                    gau_count = 0
+                    for line in f:
+                        url = line.strip()
+                        if url and url not in [e["url"] for e in results["endpoints"]]:
+                            results["endpoints"].append({
+                                "url": url,
+                                "source": "gau",
+                                "type": "historical"
+                            })
+                            gau_count += 1
+                results["tools_executed"].append({"tool": "gau", "status": "success", "urls_found": gau_count})
+                logger.info(f"{ModernVisualEngine.format_tool_status('gau', 'SUCCESS', domain, progress=0.75)}")
+
+        except Exception as e:
+            results["errors"].append(f"gau exception: {str(e)}")
+
+        # Tool 3: waybackurls
+        logger.info(f"{ModernVisualEngine.format_tool_status('waybackurls', 'RUNNING', domain)}")
+        try:
+            wayback_output = f"{output_dir}/wayback_urls.txt"
+            wayback_cmd = f"cat {input_file} | waybackurls > {wayback_output}"
+            wayback_result = execute_command(wayback_cmd)
+
+            if wayback_result.get("success"):
+                results["tools_executed"].append({"tool": "waybackurls", "status": "success"})
+
+        except Exception as e:
+            results["errors"].append(f"waybackurls exception: {str(e)}")
+
+        # Extract JS files from endpoints
+        logger.info(f"🔍 Extracting JavaScript files from discovered endpoints...")
+        for endpoint in results["endpoints"]:
+            url = endpoint["url"]
+            if '.js' in url or 'javascript' in url:
+                results["js_files"].append({"url": url, "source": endpoint["source"]})
+
+        # Tool 4: dirsearch - Directory brute force on first live host
+        if results["endpoints"]:
+            logger.info(f"{ModernVisualEngine.format_tool_status('dirsearch', 'RUNNING', domain, progress=0.9)}")
+            try:
+                first_target = results["endpoints"][0]["url"].split('/')[2]  # Extract domain
+                dirsearch_output = f"{output_dir}/dirsearch_results.txt"
+                dirsearch_cmd = f"dirsearch -u https://{first_target} -e php,html,js,txt,json,xml,zip,bak,old -o {dirsearch_output} --format=simple"
+                dirsearch_result = execute_command(dirsearch_cmd)
+
+                if dirsearch_result.get("success"):
+                    results["tools_executed"].append({"tool": "dirsearch", "status": "success"})
+
+            except Exception as e:
+                results["errors"].append(f"dirsearch exception: {str(e)}")
+
+        # Save results
+        results["completed_at"] = datetime.now().isoformat()
+        results["status"] = "completed"
+
+        # Write endpoints.txt
+        endpoints_path = f"{output_dir}/endpoints.txt"
+        with open(endpoints_path, 'w') as f:
+            for endpoint in results["endpoints"]:
+                f.write(f"{endpoint['url']}\n")
+
+        # Write js_files.txt
+        js_files_path = f"{output_dir}/js_files.txt"
+        with open(js_files_path, 'w') as f:
+            for js in results["js_files"]:
+                f.write(f"{js['url']}\n")
+
+        # Write phase results
+        phase_results_path = f"{output_dir}/phase3_results.json"
+        with open(phase_results_path, 'w') as f:
+            json.dump(results, f, indent=2)
+
+        logger.info(f"{ModernVisualEngine.COLORS['SUCCESS']}✅ Phase 3 complete: {len(results['endpoints'])} endpoints, {len(results['js_files'])} JS files{ModernVisualEngine.COLORS['RESET']}")
+
+        return {
+            "success": True,
+            "phase": "phase3",
+            "results": results,
+            "output_files": {
+                "endpoints": endpoints_path,
+                "js_files": js_files_path,
+                "phase_results": phase_results_path
+            }
+        }
+
+    except Exception as e:
+        logger.error(f"💥 Phase 3 execution error: {str(e)}")
+        return {"success": False, "phase": "phase3", "error": str(e)}
+
+# ============================================================================
+# PHASE CHAINING - Full Recon Pipeline with Automatic Transitions
+# ============================================================================
+
+def execute_full_recon_pipeline(domain: str, start_phase: int = 1, end_phase: int = 4,
+                                 output_dir: str = None) -> Dict[str, Any]:
+    """
+    Execute full reconnaissance pipeline with automatic phase chaining
+
+    Phase 1: Subdomain Discovery (amass, subfinder, assetfinder)
+    Phase 2: HTTP Service Discovery (httpx, nuclei)
+    Phase 3: Content Discovery (katana, gau, waybackurls, dirsearch)
+    Phase 4: Parameter Discovery (paramspider, arjun, x8)
+
+    Args:
+        domain: Target domain to scan
+        start_phase: Which phase to start from (1-4)
+        end_phase: Which phase to end at (1-4)
+        output_dir: Directory for all outputs
+
+    Returns:
+        Complete pipeline results with all phase outputs
+    """
+    import os
+    import json
+    from datetime import datetime
+
+    if not output_dir:
+        output_dir = f"recon/{domain}"
+    os.makedirs(output_dir, exist_ok=True)
+
+    pipeline_results = {
+        "domain": domain,
+        "started_at": datetime.now().isoformat(),
+        "completed_at": None,
+        "start_phase": start_phase,
+        "end_phase": end_phase,
+        "phases_completed": [],
+        "phases_failed": [],
+        "outputs": {},
+        "errors": []
+    }
+
+    logger.info(f"{ModernVisualEngine.create_section_header('FULL RECON PIPELINE', icon='🚀')}")
+    logger.info(f"🎯 Target: {domain} | Phases: {start_phase} → {end_phase}")
+
+    # Phase 1: Subdomain Discovery
+    if start_phase <= 1 <= end_phase:
+        logger.info(f"{ModernVisualEngine.format_command_execution('Starting Phase 1: Subdomain Discovery', 'STARTING')}")
+        try:
+            # Execute Phase 1 tools
+            phase1_result = execute_phase1_subdomain_discovery(domain, output_dir)
+            if phase1_result.get("success"):
+                pipeline_results["phases_completed"].append(1)
+                pipeline_results["outputs"]["phase1"] = phase1_result
+                logger.info(f"{ModernVisualEngine.COLORS['SUCCESS']}✅ Phase 1 completed: {phase1_result.get('subdomains_found', 0)} subdomains{ModernVisualEngine.COLORS['RESET']}")
+            else:
+                pipeline_results["phases_failed"].append(1)
+                pipeline_results["errors"].append(f"Phase 1 failed: {phase1_result.get('error')}")
+                logger.error(f"❌ Phase 1 failed: {phase1_result.get('error')}")
+        except Exception as e:
+            pipeline_results["phases_failed"].append(1)
+            pipeline_results["errors"].append(f"Phase 1 exception: {str(e)}")
+
+    # Phase 2: HTTP Service Discovery (requires Phase 1 output)
+    if start_phase <= 2 <= end_phase:
+        logger.info(f"{ModernVisualEngine.format_command_execution('Starting Phase 2: HTTP Service Discovery', 'STARTING')}")
+        try:
+            subdomains_file = f"{output_dir}/subdomains.txt"
+            if not os.path.exists(subdomains_file) and start_phase == 2:
+                logger.warning(f"⚠️ Phase 2 starting but no Phase 1 output found")
+
+            phase2_result = execute_phase2_http_discovery(domain, subdomains_file, output_dir)
+            if phase2_result.get("success"):
+                pipeline_results["phases_completed"].append(2)
+                pipeline_results["outputs"]["phase2"] = phase2_result
+                logger.info(f"{ModernVisualEngine.COLORS['SUCCESS']}✅ Phase 2 completed: {len(phase2_result.get('results', {}).get('live_hosts', []))} live hosts{ModernVisualEngine.COLORS['RESET']}")
+            else:
+                pipeline_results["phases_failed"].append(2)
+                pipeline_results["errors"].append(f"Phase 2 failed: {phase2_result.get('error')}")
+        except Exception as e:
+            pipeline_results["phases_failed"].append(2)
+            pipeline_results["errors"].append(f"Phase 2 exception: {str(e)}")
+
+    # Phase 3: Content Discovery (requires Phase 2 output)
+    if start_phase <= 3 <= end_phase:
+        logger.info(f"{ModernVisualEngine.format_command_execution('Starting Phase 3: Content Discovery', 'STARTING')}")
+        try:
+            live_hosts_file = f"{output_dir}/live_hosts.txt"
+            if not os.path.exists(live_hosts_file) and start_phase == 3:
+                logger.warning(f"⚠️ Phase 3 starting but no Phase 2 output found")
+
+            phase3_result = execute_phase3_content_discovery(domain, live_hosts_file, output_dir)
+            if phase3_result.get("success"):
+                pipeline_results["phases_completed"].append(3)
+                pipeline_results["outputs"]["phase3"] = phase3_result
+                logger.info(f"{ModernVisualEngine.COLORS['SUCCESS']}✅ Phase 3 completed: {len(phase3_result.get('results', {}).get('endpoints', []))} endpoints{ModernVisualEngine.COLORS['RESET']}")
+            else:
+                pipeline_results["phases_failed"].append(3)
+                pipeline_results["errors"].append(f"Phase 3 failed: {phase3_result.get('error')}")
+        except Exception as e:
+            pipeline_results["phases_failed"].append(3)
+            pipeline_results["errors"].append(f"Phase 3 exception: {str(e)}")
+
+    # Phase 4: Parameter Discovery (requires Phase 3 output)
+    if start_phase <= 4 <= end_phase:
+        logger.info(f"{ModernVisualEngine.format_command_execution('Starting Phase 4: Parameter Discovery', 'STARTING')}")
+        try:
+            # Phase 4 execution
+            phase4_result = execute_phase4_parameter_discovery(domain, output_dir)
+            if phase4_result.get("success"):
+                pipeline_results["phases_completed"].append(4)
+                pipeline_results["outputs"]["phase4"] = phase4_result
+                logger.info(f"{ModernVisualEngine.COLORS['SUCCESS']}✅ Phase 4 completed{ModernVisualEngine.COLORS['RESET']}")
+            else:
+                pipeline_results["phases_failed"].append(4)
+                pipeline_results["errors"].append(f"Phase 4 failed: {phase4_result.get('error')}")
+        except Exception as e:
+            pipeline_results["phases_failed"].append(4)
+            pipeline_results["errors"].append(f"Phase 4 exception: {str(e)}")
+
+    # Finalize results
+    pipeline_results["completed_at"] = datetime.now().isoformat()
+    pipeline_results["total_phases_completed"] = len(pipeline_results["phases_completed"])
+    pipeline_results["status"] = "completed" if not pipeline_results["phases_failed"] else "partial"
+
+    # Save pipeline results
+    pipeline_path = f"{output_dir}/pipeline_results.json"
+    with open(pipeline_path, 'w') as f:
+        json.dump(pipeline_results, f, indent=2)
+
+    logger.info(f"{ModernVisualEngine.create_section_header('PIPELINE COMPLETE', icon='✅')}")
+    logger.info(f"📊 Phases completed: {pipeline_results['total_phases_completed']}/{end_phase - start_phase + 1}")
+    logger.info(f"📁 Results saved to: {output_dir}")
+
+    return {
+        "success": True,
+        "pipeline": pipeline_results,
+        "output_dir": output_dir
+    }
+
+def execute_phase1_subdomain_discovery(domain: str, output_dir: str) -> Dict[str, Any]:
+    """
+    Phase 1: Subdomain Discovery using amass, subfinder, and assetfinder
+    """
+    import os
+    import json
+    from datetime import datetime
+
+    results = {
+        "phase": "phase1_subdomain_discovery",
+        "domain": domain,
+        "started_at": datetime.now().isoformat(),
+        "completed_at": None,
+        "subdomains_found": 0,
+        "subdomains": [],
+        "tools_executed": [],
+        "errors": []
+    }
+
+    logger.info(f"{ModernVisualEngine.create_section_header('PHASE 1: SUBDOMAIN DISCOVERY', icon='🔍')}")
+
+    all_subdomains = set()
+
+    # Tool 1: amass
+    logger.info(f"{ModernVisualEngine.format_tool_status('amass', 'RUNNING', domain)}")
+    try:
+        amass_output = f"{output_dir}/amass.txt"
+        amass_result = execute_amass_scan(domain, {"additional_args": f"-o {amass_output}"})
+        if amass_result.get("success") and os.path.exists(amass_output):
+            with open(amass_output, 'r') as f:
+                for line in f:
+                    sub = line.strip()
+                    if sub:
+                        all_subdomains.add(sub)
+            results["tools_executed"].append({"tool": "amass", "status": "success", "found": len(all_subdomains)})
+    except Exception as e:
+        results["errors"].append(f"amass: {str(e)}")
+
+    # Tool 2: subfinder
+    logger.info(f"{ModernVisualEngine.format_tool_status('subfinder', 'RUNNING', domain)}")
+    try:
+        subfinder_output = f"{output_dir}/subfinder.txt"
+        subfinder_result = execute_subfinder_scan(domain, {"additional_args": f"-o {subfinder_output}"})
+        if subfinder_result.get("success") and os.path.exists(subfinder_output):
+            with open(subfinder_output, 'r') as f:
+                for line in f:
+                    sub = line.strip()
+                    if sub:
+                        all_subdomains.add(sub)
+            results["tools_executed"].append({"tool": "subfinder", "status": "success"})
+    except Exception as e:
+        results["errors"].append(f"subfinder: {str(e)}")
+
+    # Tool 3: assetfinder
+    logger.info(f"{ModernVisualEngine.format_tool_status('assetfinder', 'RUNNING', domain)}")
+    try:
+        assetfinder_output = f"{output_dir}/assetfinder.txt"
+        assetfinder_result = execute_command(f"assetfinder --subs-only {domain} > {assetfinder_output}")
+        if assetfinder_result.get("success") and os.path.exists(assetfinder_output):
+            with open(assetfinder_output, 'r') as f:
+                for line in f:
+                    sub = line.strip()
+                    if sub:
+                        all_subdomains.add(sub)
+            results["tools_executed"].append({"tool": "assetfinder", "status": "success"})
+    except Exception as e:
+        results["errors"].append(f"assetfinder: {str(e)}")
+
+    # Save combined results
+    results["subdomains"] = sorted(list(all_subdomains))
+    results["subdomains_found"] = len(all_subdomains)
+    results["completed_at"] = datetime.now().isoformat()
+
+    # Write subdomains.txt
+    subdomains_path = f"{output_dir}/subdomains.txt"
+    with open(subdomains_path, 'w') as f:
+        for sub in sorted(all_subdomains):
+            f.write(f"{sub}\n")
+
+    # Write phase results
+    phase_results_path = f"{output_dir}/phase1_results.json"
+    with open(phase_results_path, 'w') as f:
+        json.dump(results, f, indent=2)
+
+    logger.info(f"{ModernVisualEngine.COLORS['SUCCESS']}✅ Phase 1 complete: {results['subdomains_found']} subdomains{ModernVisualEngine.COLORS['RESET']}")
+
+    return {
+        "success": True,
+        "phase": "phase1",
+        "subdomains_found": results["subdomains_found"],
+        "results": results
+    }
+
+def execute_phase4_parameter_discovery(domain: str, output_dir: str) -> Dict[str, Any]:
+    """
+    Phase 4: Parameter Discovery using paramspider, arjun, and x8
+    """
+    import os
+    import json
+    from datetime import datetime
+
+    results = {
+        "phase": "phase4_parameter_discovery",
+        "domain": domain,
+        "started_at": datetime.now().isoformat(),
+        "completed_at": None,
+        "parameters_found": 0,
+        "parameters": [],
+        "tools_executed": [],
+        "errors": []
+    }
+
+    logger.info(f"{ModernVisualEngine.create_section_header('PHASE 4: PARAMETER DISCOVERY', icon='🔧')}")
+
+    all_parameters = set()
+
+    # Tool 1: paramspider
+    logger.info(f"{ModernVisualEngine.format_tool_status('paramspider', 'RUNNING', domain)}")
+    try:
+        paramspider_output = f"{output_dir}/paramspider.txt"
+        paramspider_result = execute_paramspider_scan(domain, {"additional_args": f"-o {paramspider_output}"})
+        if paramspider_result.get("success"):
+            results["tools_executed"].append({"tool": "paramspider", "status": "success"})
+    except Exception as e:
+        results["errors"].append(f"paramspider: {str(e)}")
+
+    # Tool 2: arjun
+    logger.info(f"{ModernVisualEngine.format_tool_status('arjun', 'RUNNING', domain)}")
+    try:
+        arjun_output = f"{output_dir}/arjun.json"
+        arjun_result = execute_arjun_scan(domain, {"additional_args": f"-oT {arjun_output}"})
+        if arjun_result.get("success"):
+            results["tools_executed"].append({"tool": "arjun", "status": "success"})
+    except Exception as e:
+        results["errors"].append(f"arjun: {str(e)}")
+
+    # Save results
+    results["completed_at"] = datetime.now().isoformat()
+    results["status"] = "completed"
+
+    # Write parameters.txt
+    params_path = f"{output_dir}/parameters.txt"
+    with open(params_path, 'w') as f:
+        for param in sorted(all_parameters):
+            f.write(f"{param}\n")
+
+    # Write phase results
+    phase_results_path = f"{output_dir}/phase4_results.json"
+    with open(phase_results_path, 'w') as f:
+        json.dump(results, f, indent=2)
+
+    logger.info(f"{ModernVisualEngine.COLORS['SUCCESS']}✅ Phase 4 complete{ModernVisualEngine.COLORS['RESET']}")
+
+    return {
+        "success": True,
+        "phase": "phase4",
+        "results": results
+    }
+
+# ============================================================================
+# API ENDPOINTS FOR PHASE CHAINING
+# ============================================================================
+
+@app.route("/api/recon/pipeline", methods=["POST"])
+def api_full_recon_pipeline():
+    """Execute full reconnaissance pipeline with all phases"""
+    try:
+        data = request.get_json()
+        if not data or 'domain' not in data:
+            return jsonify({"error": "Domain is required"}), 400
+
+        domain = data['domain']
+        start_phase = data.get('start_phase', 1)
+        end_phase = data.get('end_phase', 4)
+        output_dir = data.get('output_dir')
+
+        logger.info(f"🚀 Starting full recon pipeline for {domain}")
+
+        result = execute_full_recon_pipeline(domain, start_phase, end_phase, output_dir)
+
+        return jsonify(result)
+
+    except Exception as e:
+        logger.error(f"💥 Pipeline API error: {str(e)}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route("/api/recon/phase/<int:phase_id>", methods=["POST"])
+def api_execute_phase(phase_id):
+    """Execute a specific reconnaissance phase"""
+    try:
+        data = request.get_json()
+        if not data or 'domain' not in data:
+            return jsonify({"error": "Domain is required"}), 400
+
+        domain = data['domain']
+        output_dir = data.get('output_dir', f"recon/{domain}")
+
+        logger.info(f"🚀 Executing Phase {phase_id} for {domain}")
+
+        if phase_id == 1:
+            result = execute_phase1_subdomain_discovery(domain, output_dir)
+        elif phase_id == 2:
+            subdomains_file = data.get('subdomains_file', f"{output_dir}/subdomains.txt")
+            result = execute_phase2_http_discovery(domain, subdomains_file, output_dir)
+        elif phase_id == 3:
+            live_hosts_file = data.get('live_hosts_file', f"{output_dir}/live_hosts.txt")
+            result = execute_phase3_content_discovery(domain, live_hosts_file, output_dir)
+        elif phase_id == 4:
+            result = execute_phase4_parameter_discovery(domain, output_dir)
+        else:
+            return jsonify({"error": f"Invalid phase ID: {phase_id}"}), 400
+
+        return jsonify(result)
+
+    except Exception as e:
+        logger.error(f"💥 Phase {phase_id} API error: {str(e)}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route("/api/recon/status/<path:domain>", methods=["GET"])
+def api_get_recon_status(domain):
+    """Get the status of a reconnaissance pipeline"""
+    try:
+        import os
+        import json
+
+        output_dir = f"recon/{domain}"
+        pipeline_file = f"{output_dir}/pipeline_results.json"
+
+        if not os.path.exists(pipeline_file):
+            return jsonify({
+                "success": False,
+                "error": "No recon data found for this domain",
+                "domain": domain
+            }), 404
+
+        with open(pipeline_file, 'r') as f:
+            pipeline_data = json.load(f)
+
+        # Check which output files exist
+        files = {
+            "subdomains": os.path.exists(f"{output_dir}/subdomains.txt"),
+            "live_hosts": os.path.exists(f"{output_dir}/live_hosts.txt"),
+            "technologies": os.path.exists(f"{output_dir}/technologies.json"),
+            "endpoints": os.path.exists(f"{output_dir}/endpoints.txt"),
+            "js_files": os.path.exists(f"{output_dir}/js_files.txt"),
+            "parameters": os.path.exists(f"{output_dir}/parameters.txt")
+        }
+
+        return jsonify({
+            "success": True,
+            "domain": domain,
+            "pipeline": pipeline_data,
+            "output_files": files
+        })
+
+    except Exception as e:
+        logger.error(f"💥 Status API error: {str(e)}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
 @app.route("/api/intelligence/technology-detection", methods=["POST"])
 def detect_technologies():
     """Detect technologies and create technology-specific testing recommendations"""
