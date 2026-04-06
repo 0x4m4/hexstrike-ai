@@ -1,0 +1,28 @@
+name: Validate Skill
+
+on:
+  push:
+    branches: [main, hol-skill-validate]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Validate skill structure
+        run: |
+          echo "Validating skill structure..."
+          # Check for required files
+          if [ ! -f "hexstrike-ai-mcp.json" ]; then
+            echo "Error: hexstrike-ai-mcp.json not found"
+            exit 1
+          fi
+          if [ ! -f "hexstrike_mcp.py" ]; then
+            echo "Error: hexstrike_mcp.py not found"
+            exit 1
+          fi
+          echo "Skill structure validated successfully"
