@@ -255,6 +255,26 @@ Configure VS Code settings in `.vscode/settings.json`:
 }
 ```
 
+### Alibaba Qwen Code Integration
+
+Configure Qwen Code settings in `.qwen/settings.json`:
+```json
+{
+  "mcpServers": {
+    "hexstrike": {
+      "command": "python3",
+      "args": [
+        "/path/to/hexstrike-ai/hexstrike_mcp.py"
+      ],
+      "cwd": "/path/to/your/workdir",
+      "env": {
+        "HEXSTRIKE_HOST": "127.0.0.1",
+        "HEXSTRIKE_PORT": "8888"
+      }
+    }
+  }
+}
+```
 ---
 
 ## Features
