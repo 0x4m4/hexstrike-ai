@@ -22,6 +22,16 @@
 
 ---
 
+## Agent Operations & Interface Docs
+
+- `AGENTS.md` - Persistent instructions for AI agents operating HexStrike MCP workflows.
+- `docs/update_check.md` - How to check and sync this fork with upstream `0x4m4/hexstrike-ai`.
+- `docs/interface_usage.md` - CLI-first usage guide plus GUI-ready interface contract.
+- `docs/agent_skill_repos.md` - Curated GitHub repositories for skills and MCP security references.
+- `hexstrike-tool-surface.json` - Machine-readable interface map for CLI clients and future GUI scaffolding.
+
+---
+
 <div align="center">
 
 ## Follow Our Social Accounts
