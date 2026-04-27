@@ -1,0 +1,35 @@
+# Virtual environments
+hexstrike-env/
+venv/
+env/
+.venv/
+*.env
+
+# Logs
+*.log
+hexstrike.log
+hexstrike_server.log
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+*.egg
+
+# Local secrets / environment
+.env
+.env.local
+
+# Claude Code local settings
+.claude/settings.local.json
+
+# OS artifacts
+.DS_Store
+Thumbs.db
