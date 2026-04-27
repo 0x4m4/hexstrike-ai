@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "hexstrike-ai": {
+      "command": "python",
+      "args": [
+        "server.py"
+      ]
+    }
+  }
+}
