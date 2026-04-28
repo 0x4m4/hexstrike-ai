@@ -126,6 +126,87 @@ source hexstrike-env/bin/activate  # Linux/Mac
 pip3 install -r requirements.txt
 
 ```
+Ecco la versione corretta (inglese, struttura invariata):
+
+````markdown
+### 🐳 Docker Installation
+
+**Quick start**  
+*Note:* The helper scripts use `sudo`, and the container runs in `privileged` mode to ensure access to required capabilities (for example, the raw socket capability used by pentesting tools). You can harden the container based on your requirements, but additional checks are needed. See `docker-compose.yml` for capability details.
+
+Rationale:
+- Use the latest stable release of Kali Linux.
+- Install the latest tools using official methods (apt, official GitHub releases; compile only when necessary).
+- Provide a consistent, prebuilt, preconfigured, and reproducible environment that includes all required tools.
+
+```bash
+# 1) Clone the repository
+git clone https://github.com/0x4m4/hexstrike-ai.git
+cd hexstrike-ai
+chmod +x ./docker/*.sh
+
+# 2) Build the Docker image
+./docker/build-docker-image.sh
+
+# 3) Start the MCP server (host networking, privileged, caches persisted)
+./docker/start-docker-mcp-server.sh
+````
+
+**Verify installation**
+
+```bash
+# Health endpoint
+curl http://localhost:8888/health
+```
+
+### Update tool caches and databases
+
+The server starts immediately; a one-time background warmup runs automatically.
+To refresh caches explicitly (for example, before a batch of scans):
+
+```bash
+# Docker
+docker compose -f docker/docker-compose.yml exec hexstrike-mcp-server \
+  /usr/local/bin/update-tools-databases.sh
+```
+
+#### What gets updated
+
+* WPScan vulnerability database
+* Trivy database
+* Nuclei templates
+* ExploitDB (searchsploit)
+* Nikto signatures
+* Nmap NSE script database (`script.db`)
+* OWASP ZAP add-ons
+
+#### Where data is persisted (host → container)
+
+* `./data/trivy` → `/root/.cache/trivy`
+* `./data/wpscan` → `/root/.wpscan/db`
+* `./data/nuclei-templates` → `/root/nuclei-templates`
+* `./data/amass` → `/root/.config/amass`
+* `./data/msf` → `/root/.msf4`
+* `./data/exploitdb` → `/usr/share/exploitdb`
+* `./data/nikto` → `/var/lib/nikto`
+* `./data/zap` → `/root/.ZAP`
+* `./data/postgres` → `/var/lib/postgresql` (used by Clair and optional Metasploit databases)
+
+## Appendix: kube-bench - Host socket enablement (Docker/Podman)
+
+`kube-bench` needs a Docker-compatible API socket available inside the container at `/var/run/docker.sock`.
+`docker-compose.yml` already mounts the socket. If you use Docker Engine, nothing else to do. If you use Podman, enable the socket:
+
+```bash
+sudo systemctl enable --now podman.socket
+```
+
+Test inside the container:
+
+```bash
+sudo docker exec -it hexstrike-mcp-server bash
+docker ps
+```
 
 ### Installation and Setting Up Guide for various AI Clients:
 
@@ -254,7 +335,16 @@ Configure VS Code settings in `.vscode/settings.json`:
   "inputs": []
 }
 ```
-
+### VS Code ChatGPT Codex Integration
+Configure Codex settings in `~/.codex/config.toml`
+```yaml
+[mcp_servers.hexstrike-ai]
+command = "python3"
+args = ["-X","utf8",
+  "/path/to/hexstrike-ai/hexstrike_mcp.py",
+  "--server","http://127.0.0.1:8888"
+]
+```
 ---
 
 ## Features

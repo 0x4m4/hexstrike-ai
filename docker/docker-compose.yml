@@ -1,0 +1,169 @@
+# ==============================================================================
+# HexStrike AI MCP Server v6.0 - Docker Compose Configuration
+# ==============================================================================
+# This compose file provides easy deployment of HexStrike MCP server
+# with proper network capabilities and volume mounts
+# ==============================================================================
+
+version: "3.8"
+
+services:
+  # ----------------------------------------------------------------------------
+  # HexStrike MCP Server
+  # ----------------------------------------------------------------------------
+  hexstrike-mcp-server:
+    # Build configuration
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+
+    # Container name for easy reference
+    container_name: hexstrike-mcp-server
+
+    # Image name and tag
+    image: hexstrike-ai:v6.0
+
+    # Environment variables
+    environment:
+      - PYTHONUNBUFFERED=1
+      - COMMAND_TIMEOUT=3600
+      # - DEBUG_MODE=true
+      # - MCP_PORT=8888
+      # Clair API
+      - CLAIR_ADDR=http://127.0.0.1:10080
+      # Metasploit DB URL (empty = disabled)
+      - MSF_DB_URL=postgresql://msf:msf@127.0.0.1:5432/msf
+
+    volumes:
+      - ../logs/hexstrike.log:/opt/hexstrike/hexstrike.log:rw,Z
+      - ./config/clair-config.yaml:/etc/clair/config.yaml:ro,Z
+      - ../data/trivy:/root/.cache/trivy:rw,Z
+      - ../data/wpscan:/root/.wpscan/db:rw,Z
+      - ../data/nuclei-templates:/root/nuclei-templates:rw,Z
+      - ../data/amass:/root/.config/amass:rw,Z
+      - ../data/msf:/root/.msf4:rw,Z
+      - ../data/exploitdb:/usr/share/exploitdb:rw,Z
+      - ../data/zap:/root/.ZAP:rw,Z
+      # Mount workspace used by checkov_iac_scan as default location
+      - ../data/workspace:/workspace:rw,Z
+      # Necessay mounts for kube-bench that neeed host socket access
+      - /var/run/docker.sock:/var/run/docker.sock        # Docker API socket (shim in case of Podman)
+      # Add this volume below if you have podman
+      - /run/podman/podman.sock:/run/podman/podman.sock  # Podman API socket
+      # Optional: mount kube-bench config. MCP client also can pass --config_dir for custom path
+      # - ../data/kube-bench:/etc/kube-bench
+
+    # Restart policy suitable for production
+    restart: unless-stopped
+
+    # Health check configuration
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8888/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+    # Give the container full host networking (required by many scanners/sniffers)
+    network_mode: "host"
+
+    # ==============================================================================
+    # PRIVILEGED MODE - Maximum Tool Compatibility (127 security tools)
+    # ==============================================================================
+    # Enabled to guarantee all pentesting tools work without capability issues.
+    # This includes: nmap, masscan, metasploit, wireshark, tcpdump, aircrack-ng,
+    # docker-bench, kube-hunter, falco, volatility, gdb, radare2, etc.
+    #
+    # Security Note: Safe in controlled pentesting environments with network_mode: host.
+    # For hardening, disable privileged and use cap_add below (require testing).
+    # ==============================================================================
+    privileged: true
+
+    # ==============================================================================
+    # ALTERNATIVE: Fine-grained Capabilities (if privileged: false)
+    # ==============================================================================
+    # Uncomment these if you disable privileged mode and want granular control.
+    # Note: Some tools may still fail without privileged mode.
+    # ==============================================================================
+    # cap_add:
+    #   - NET_RAW           # Raw sockets (nmap -sS, masscan, tcpdump, wireshark)
+    #   - NET_ADMIN         # Network management (ip, ifconfig, airmon-ng, responder)
+    #   - NET_BIND_SERVICE  # Bind ports < 1024 (metasploit, zaproxy, burpsuite)
+    #   - NET_BROADCAST     # Broadcast packets (ARP scan, responder)
+    #   - SYS_ADMIN         # Mount, namespace, advanced operations (docker-bench, containers)
+    #   - SYS_PTRACE        # Debugging/tracing (gdb, strace, volatility)
+    #   - SYS_CHROOT        # Chroot operations (some exploitation tools)
+    #   - DAC_OVERRIDE      # Bypass file permission checks (forensics tools)
+    #   - DAC_READ_SEARCH   # Bypass directory read permission checks
+    #   - SETUID            # Set UID (some exploitation scenarios)
+    #   - SETGID            # Set GID (some exploitation scenarios)
+    #   - SETPCAP           # Set process capabilities
+    #   - SYS_MODULE        # Load kernel modules (advanced wireless tools)
+    #   - SYS_RAWIO         # Raw I/O (direct hardware access)
+    #   - IPC_LOCK          # Lock memory (prevent swapping sensitive data)
+    #   - SYS_NICE          # Change process priority
+
+    # Security knobs for RHEL/Alma SELinux compatibility
+    security_opt:
+      - seccomp=unconfined  # Allow all syscalls (required for raw sockets and advanced tools)
+      - apparmor=unconfined # Disable AppArmor on Debian/Ubuntu hosts
+      - label=disable       # Disable SELinux labeling inside container for CentOS/RHEL hosts
+
+    # File descriptors & shared memory (Chromium/ZAP/Burp can need bigger /dev/shm)
+    ulimits:
+      nofile: 65536
+    shm_size: "1g"
+
+    # Optional devices (enable if needed for USB wireless cards or VPN testing)
+    # devices:
+    #   - "/dev/bus/usb:/dev/bus/usb"        # USB wireless adapters (airmon-ng, kismet)
+    #   - "/dev/net/tun:/dev/net/tun"        # TUN/TAP for VPN testing
+
+  # ------------------------------------------------------------------------------
+  # Clair v4 - Container image and vulnerability scanning API
+  # - Default: connect to local Postgres service "hexstrike-postgres"
+  # - External DB: change the connstring in ./config/clair-config.yaml to point to your external PostgreSQL
+  # ------------------------------------------------------------------------------
+  hexstrike-clair:
+    image: quay.io/projectquay/clair:4.8.0
+    pull_policy: always
+    container_name: hexstrike-clair
+    restart: unless-stopped
+    network_mode: "host"
+    volumes:
+      - ./config/clair-config.yaml:/etc/clair/config.yaml:ro,Z
+    command: ["-conf=/etc/clair/config.yaml"]
+    depends_on:
+      hexstrike-postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:6060/healthz"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  # ----------------------------------------------------------------------------
+  # PostgreSQL 18 — local DB for Clair (and optional Metasploit)
+  # ----------------------------------------------------------------------------
+  hexstrike-postgres:
+    image: docker.io/postgres:18
+    pull_policy: always
+    container_name: hexstrike-postgres
+    restart: unless-stopped
+    user: "999:999"
+    environment:
+      POSTGRES_PASSWORD: postgres
+    # Bind Postgres only to localhost on host network
+    network_mode: "host"
+    command: ["-c", "listen_addresses=127.0.0.1"]
+    volumes:
+      # DB init scripts live here (create users/databases, etc.)
+      - ./config/db-init:/docker-entrypoint-initdb.d:ro,Z
+      # Mount the parent; the image manages the child path internally
+      - ../data/postgres:/var/lib/postgresql:Z,U
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -h 127.0.0.1 -p 5432 -d clair"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
