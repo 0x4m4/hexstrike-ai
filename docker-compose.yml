@@ -1,0 +1,12 @@
+services:
+  hexstrike-mcp:
+    build:
+      context: .
+      network: host
+    container_name: hexstrike-mcp
+    ports:
+      - "8888:8888"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - HEXSTRIKE_HOST=0.0.0.0
+    restart: unless-stopped
