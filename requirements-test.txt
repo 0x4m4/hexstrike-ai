@@ -1,0 +1,92 @@
+# HexStrike Testing Dependencies
+# Install with: pip install -r requirements-test.txt
+
+# ============================================================================
+# CORE TESTING FRAMEWORK
+# ============================================================================
+pytest>=7.4.0,<9.0.0              # Testing framework
+pytest-cov>=4.1.0,<6.0.0          # Coverage plugin for pytest
+pytest-xdist>=3.3.0,<4.0.0        # Parallel test execution
+pytest-timeout>=2.1.0,<3.0.0      # Timeout support for tests
+pytest-mock>=3.11.0,<4.0.0        # Enhanced mocking support
+pytest-asyncio>=0.21.0,<1.0.0     # Async test support
+
+# ============================================================================
+# CODE COVERAGE & QUALITY
+# ============================================================================
+coverage>=7.3.0,<8.0.0            # Code coverage measurement
+coverage[toml]>=7.3.0,<8.0.0      # TOML support for coverage config
+
+# ============================================================================
+# MOCKING & TEST UTILITIES
+# ============================================================================
+pytest-flask>=1.2.0,<2.0.0        # Flask testing utilities
+responses>=0.23.0,<1.0.0          # Mock HTTP requests library
+freezegun>=1.2.0,<2.0.0           # Mock datetime for testing
+faker>=19.0.0,<21.0.0             # Generate fake test data
+factory-boy>=3.3.0,<4.0.0         # Test fixture factories
+
+# ============================================================================
+# HTTP & API TESTING
+# ============================================================================
+httpretty>=1.1.0,<2.0.0           # HTTP request mocking
+requests-mock>=1.11.0,<2.0.0      # Mock requests library responses
+
+# ============================================================================
+# SUBPROCESS & COMMAND MOCKING
+# ============================================================================
+pytest-subprocess>=1.5.0,<2.0.0   # Mock subprocess calls
+
+# ============================================================================
+# PERFORMANCE & PROFILING
+# ============================================================================
+pytest-benchmark>=4.0.0,<5.0.0    # Performance benchmarking
+pytest-profiling>=1.7.0,<2.0.0    # Code profiling during tests
+
+# ============================================================================
+# TEST REPORTING
+# ============================================================================
+pytest-html>=3.2.0,<5.0.0         # HTML test reports
+pytest-json-report>=1.5.0,<2.0.0  # JSON test reports
+pytest-metadata>=3.0.0,<4.0.0     # Add metadata to test reports
+
+# ============================================================================
+# LINTING & CODE QUALITY (optional but recommended)
+# ============================================================================
+pylint>=3.0.0,<4.0.0              # Python linter
+flake8>=6.1.0,<8.0.0              # Style guide enforcement
+black>=23.7.0,<25.0.0             # Code formatter
+isort>=5.12.0,<6.0.0              # Import sorting
+mypy>=1.5.0,<2.0.0                # Static type checking
+
+# ============================================================================
+# SECURITY TESTING
+# ============================================================================
+bandit>=1.7.5,<2.0.0              # Security issue scanner
+safety>=2.3.0,<4.0.0              # Dependency vulnerability scanner
+
+# ============================================================================
+# DOCUMENTATION
+# ============================================================================
+pytest-testdox>=3.1.0,<4.0.0      # Generate test documentation
+
+# ============================================================================
+# DEBUGGING
+# ============================================================================
+pytest-pdb>=0.3.0,<1.0.0          # PDB debugging support
+pytest-clarity>=1.0.0,<2.0.0      # Better assertion error messages
+pytest-icdiff>=0.6,<1.0           # Better diff output
+
+# ============================================================================
+# MAIN APPLICATION DEPENDENCIES (from requirements.txt)
+# These are required to run the tests
+# ============================================================================
+flask>=2.3.0,<4.0.0
+requests>=2.31.0,<3.0.0
+psutil>=5.9.0,<6.0.0
+beautifulsoup4>=4.12.0,<5.0.0
+aiohttp>=3.8.0,<4.0.0
+
+# Note: Heavy dependencies like selenium, mitmproxy, pwntools, and angr
+# are not required for unit tests as we mock their functionality.
+# Install them separately if running integration tests that need them.

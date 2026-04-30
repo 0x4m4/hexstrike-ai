@@ -1,0 +1,55 @@
+{
+  "critical_vulnerabilities": [
+    {
+      "id": "CVE-2021-44228",
+      "name": "Log4Shell - Apache Log4j RCE",
+      "severity": "critical",
+      "cvss_score": 10.0,
+      "description": "Remote code execution vulnerability in Apache Log4j",
+      "affected_component": "log4j-core",
+      "remediation": "Update to Log4j 2.17.1 or later"
+    },
+    {
+      "id": "CVE-2021-41773",
+      "name": "Apache Path Traversal",
+      "severity": "critical",
+      "cvss_score": 9.8,
+      "description": "Path traversal and RCE in Apache HTTP Server",
+      "affected_component": "httpd 2.4.49",
+      "remediation": "Update to Apache 2.4.51 or later"
+    }
+  ],
+  "high_vulnerabilities": [
+    {
+      "id": "CVE-2022-22965",
+      "name": "Spring4Shell",
+      "severity": "high",
+      "cvss_score": 8.1,
+      "description": "Remote code execution in Spring Framework",
+      "affected_component": "spring-framework",
+      "remediation": "Update Spring Framework to patched version"
+    }
+  ],
+  "medium_vulnerabilities": [
+    {
+      "id": "EXPOSED-ADMIN",
+      "name": "Exposed Admin Panel",
+      "severity": "medium",
+      "cvss_score": 5.3,
+      "description": "Admin panel accessible without authentication",
+      "affected_component": "web application",
+      "remediation": "Implement authentication and restrict access"
+    }
+  ],
+  "low_vulnerabilities": [
+    {
+      "id": "WEAK-SSL",
+      "name": "Weak SSL/TLS Configuration",
+      "severity": "low",
+      "cvss_score": 3.7,
+      "description": "Server supports weak SSL/TLS ciphers",
+      "affected_component": "ssl configuration",
+      "remediation": "Disable weak ciphers and protocols"
+    }
+  ]
+}
