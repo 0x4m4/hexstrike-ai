@@ -35,6 +35,7 @@ from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta
 from typing import Dict, Any, Optional
 from collections import OrderedDict
+import shlex
 import shutil
 import venv
 import zipfile
@@ -93,6 +94,10 @@ logger = logging.getLogger(__name__)
 # Flask app configuration
 app = Flask(__name__)
 app.config['JSON_SORT_KEYS'] = False
+
+# Register modular blueprints
+from modules.augustus import augustus_bp  # noqa: E402
+app.register_blueprint(augustus_bp)
 
 # API Configuration
 API_PORT = int(os.environ.get('HEXSTRIKE_PORT', 8888))
@@ -17248,6 +17253,53 @@ def get_alternative_tools():
 
     except Exception as e:
         logger.error(f"Error getting alternative tools: {str(e)}")
+        return jsonify({"error": f"Server error: {str(e)}"}), 500
+
+@app.route("/api/tools/pius", methods=["POST"])
+def pius():
+    """Execute PIUS for external attack surface discovery"""
+    try:
+        params = request.json
+        org = params.get("org", "")
+        domain = params.get("domain", "")
+        asn = params.get("asn", "")
+        mode = params.get("mode", "passive")
+        output_format = params.get("output_format", "json")
+        plugins = params.get("plugins", "")
+        disable_plugins = params.get("disable_plugins", "")
+        concurrency = params.get("concurrency", 0)
+        additional_args = params.get("additional_args", "")
+
+        if not org:
+            logger.warning("🌐 PIUS called without org parameter")
+            return jsonify({"error": "org parameter is required"}), 400
+
+        pius_bin = "/home/kali/gopath/bin/pius"
+        command = f"{pius_bin} run --org {shlex.quote(org)}"
+
+        if domain:
+            command += f" --domain {shlex.quote(domain)}"
+        if asn:
+            command += f" --asn {shlex.quote(asn)}"
+        if mode and mode != "passive":
+            command += f" --mode {shlex.quote(mode)}"
+        if output_format:
+            command += f" --output {shlex.quote(output_format)}"
+        if plugins:
+            command += f" --plugins {shlex.quote(plugins)}"
+        if disable_plugins:
+            command += f" --disable {shlex.quote(disable_plugins)}"
+        if concurrency and int(concurrency) > 0:
+            command += f" --concurrency {int(concurrency)}"
+        if additional_args:
+            command += f" {additional_args}"
+
+        logger.info(f"🔍 Starting PIUS attack surface discovery: {org}")
+        result = execute_command(command)
+        logger.info(f"📊 PIUS discovery completed for {org}")
+        return jsonify(result)
+    except Exception as e:
+        logger.error(f"💥 Error in PIUS endpoint: {str(e)}")
         return jsonify({"error": f"Server error: {str(e)}"}), 500
 
 # Create the banner after all classes are defined
