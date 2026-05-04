@@ -11775,6 +11775,475 @@ session.fuzz()
     # END AUGUSTUS MODULE
     # =========================================================================
 
+    # =========================================================================
+    # PRAETORIAN TOOLS MODULE
+    # =========================================================================
+
+    @mcp.tool()
+    def noseyparker_scan(targets: str = "", git_url: str = "", github_user: str = "",
+                         github_org: str = "", datastore: str = "/tmp/np-datastore",
+                         output_format: str = "json", rules: str = "",
+                         additional_args: str = "") -> Dict[str, Any]:
+        """
+        Scan files, directories, git repos, or GitHub for secrets using noseyparker.
+
+        noseyparker finds secrets like API keys, tokens, passwords, and credentials
+        across codebases, git history, and GitHub repos using 170+ detection rules.
+
+        Args:
+            targets: Comma-separated file/directory paths to scan
+            git_url: Single git repository URL to scan
+            github_user: GitHub username — scans all their public repos
+            github_org: GitHub organization — scans all org repos
+            datastore: Path to store scan results (default: /tmp/np-datastore)
+            output_format: text | json | jsonl (default: json)
+            rules: Path to custom rules file
+            additional_args: Extra noseyparker arguments
+
+        Returns:
+            Scan results with discovered secrets, locations, and match context
+        """
+        data = {"targets": targets, "git_url": git_url, "github_user": github_user,
+                "github_org": github_org, "datastore": datastore,
+                "output_format": output_format, "rules": rules,
+                "additional_args": additional_args}
+        logger.info(f"🔍 noseyparker scan: {targets or git_url or github_org or github_user}")
+        result = hexstrike_client.safe_post("api/praetorian/noseyparker/scan", data)
+        if result.get("success") or "scan" in result:
+            logger.info("✅ noseyparker scan completed")
+        return result
+
+    @mcp.tool()
+    def titus_scan(path: str, git: bool = False, validate: bool = False,
+                   output_format: str = "json", extract: str = "",
+                   additional_args: str = "") -> Dict[str, Any]:
+        """
+        Scan for secrets using titus with optional live API validation.
+
+        titus is a high-performance secrets scanner that can validate discovered
+        credentials against live APIs to confirm they are active.
+
+        Args:
+            path: File or directory path to scan (required)
+            git: Include git commit history in scan
+            validate: Validate discovered secrets against live APIs
+            output_format: json | sarif (default: json)
+            extract: Extraction mode e.g. "all"
+            additional_args: Extra titus arguments
+
+        Returns:
+            Discovered secrets with file locations and optional validation status
+        """
+        data = {"path": path, "git": git, "validate": validate,
+                "output_format": output_format, "extract": extract,
+                "additional_args": additional_args}
+        logger.info(f"🔑 titus scan: {path}")
+        result = hexstrike_client.safe_post("api/praetorian/titus/scan", data)
+        if result.get("success"):
+            logger.info("✅ titus scan completed")
+        return result
+
+    @mcp.tool()
+    def fingerprintx_scan(targets: str = "", targets_file: str = "", udp: bool = False,
+                           fast: bool = False, timeout_ms: int = 0,
+                           output_format: str = "json",
+                           additional_args: str = "") -> Dict[str, Any]:
+        """
+        Fingerprint services on open ports using fingerprintx (170+ protocols).
+
+        fingerprintx identifies running services and their versions on network ports,
+        supporting TCP and UDP across 170+ protocols.
+
+        Args:
+            targets: Comma-separated host:port targets e.g. "192.168.1.1:22,10.0.0.1:80"
+            targets_file: File path with one host:port per line
+            udp: Include UDP service fingerprinting
+            fast: Enable fast scan mode
+            timeout_ms: Per-probe timeout in milliseconds
+            output_format: json | text (default: json)
+            additional_args: Extra fingerprintx arguments
+
+        Returns:
+            Identified services with protocol, version, and banner information
+        """
+        data = {"targets": targets, "targets_file": targets_file, "udp": udp,
+                "fast": fast, "timeout_ms": timeout_ms, "output_format": output_format,
+                "additional_args": additional_args}
+        logger.info(f"🔭 fingerprintx scan: {targets or targets_file}")
+        result = hexstrike_client.safe_post("api/praetorian/fingerprintx/scan", data)
+        if result.get("success"):
+            logger.info("✅ fingerprintx scan completed")
+        return result
+
+    @mcp.tool()
+    def brutus_scan(target: str, protocol: str, username: str = "",
+                    username_file: str = "", password: str = "",
+                    password_file: str = "", threads: int = 0,
+                    additional_args: str = "") -> Dict[str, Any]:
+        """
+        Test credentials against network services using brutus.
+
+        brutus is a fast, zero-dependency credential testing tool supporting
+        SSH, MySQL, MSSQL, RDP, FTP, SMTP, POP3, IMAP, LDAP, and more.
+
+        Args:
+            target: Target hostname or IP (required)
+            protocol: Service protocol — ssh/mysql/mssql/rdp/ftp/smtp/pop3/imap/ldap (required)
+            username: Single username to test
+            username_file: File containing usernames (one per line)
+            password: Single password to test
+            password_file: File containing passwords (one per line)
+            threads: Number of concurrent threads
+            additional_args: Extra brutus arguments
+
+        Returns:
+            Valid credentials found, failed attempts, and timing information
+        """
+        data = {"target": target, "protocol": protocol, "username": username,
+                "username_file": username_file, "password": password,
+                "password_file": password_file, "threads": threads,
+                "json_output": True, "additional_args": additional_args}
+        logger.info(f"🔐 brutus credential test: {target} ({protocol})")
+        result = hexstrike_client.safe_post("api/praetorian/brutus/scan", data)
+        if result.get("success"):
+            logger.info("✅ brutus scan completed")
+        return result
+
+    @mcp.tool()
+    def nerva_scan(targets: str = "", targets_file: str = "", udp: bool = False,
+                   sctp: bool = False, timeout_ms: int = 0, workers: int = 0,
+                   misconfigs: bool = False, output_format: str = "json",
+                   additional_args: str = "") -> Dict[str, Any]:
+        """
+        Fingerprint services using nerva (170+ TCP/UDP/SCTP protocols).
+
+        nerva is a fast service fingerprinting CLI designed to work with
+        port scanner output (e.g. from naabu) for protocol identification.
+
+        Args:
+            targets: Comma-separated host:port targets
+            targets_file: File with one host:port per line
+            udp: Enable UDP fingerprinting
+            sctp: Enable SCTP fingerprinting
+            timeout_ms: Probe timeout in milliseconds
+            workers: Number of concurrent workers
+            misconfigs: Check for service misconfigurations
+            output_format: json | csv (default: json)
+            additional_args: Extra nerva arguments
+
+        Returns:
+            Identified protocols, service versions, and misconfiguration findings
+        """
+        data = {"targets": targets, "targets_file": targets_file, "udp": udp,
+                "sctp": sctp, "timeout_ms": timeout_ms, "workers": workers,
+                "misconfigs": misconfigs, "output_format": output_format,
+                "additional_args": additional_args}
+        logger.info(f"🔭 nerva fingerprint: {targets or targets_file}")
+        result = hexstrike_client.safe_post("api/praetorian/nerva/scan", data)
+        if result.get("success"):
+            logger.info("✅ nerva scan completed")
+        return result
+
+    @mcp.tool()
+    def hadrian_test(api_type: str, api_url: str, roles_file: str = "",
+                     auth_file: str = "", output_format: str = "json",
+                     dry_run: bool = False, llm_provider: str = "",
+                     proxy: str = "", additional_args: str = "") -> Dict[str, Any]:
+        """
+        Test API security for REST, GraphQL, or gRPC using hadrian.
+
+        hadrian validates API authorization controls, tests BOLA/BROKEN AUTH,
+        checks for IDOR, and performs AI-assisted security testing across
+        REST, GraphQL, and gRPC APIs.
+
+        Args:
+            api_type: rest | graphql | grpc (required)
+            api_url: Target API base URL (required)
+            roles_file: YAML file defining user roles and permissions
+            auth_file: Authentication configuration file
+            output_format: json (default)
+            dry_run: Show planned tests without executing
+            llm_provider: openai | anthropic (for AI-assisted test generation)
+            proxy: HTTP proxy URL e.g. "http://127.0.0.1:8080"
+            additional_args: Extra hadrian arguments
+
+        Returns:
+            API security test results with vulnerability findings and severity
+        """
+        data = {"api_type": api_type, "api_url": api_url, "roles_file": roles_file,
+                "auth_file": auth_file, "output_format": output_format,
+                "dry_run": dry_run, "llm_provider": llm_provider,
+                "proxy": proxy, "additional_args": additional_args}
+        logger.info(f"🌐 hadrian API test: {api_type} {api_url}")
+        result = hexstrike_client.safe_post("api/praetorian/hadrian/test", data)
+        if result.get("success"):
+            logger.info("✅ hadrian test completed")
+        return result
+
+    @mcp.tool()
+    def trajan_scan(platform: str, repo: str = "", org: str = "", group: str = "",
+                    output_format: str = "json",
+                    additional_args: str = "") -> Dict[str, Any]:
+        """
+        Scan CI/CD pipelines for vulnerabilities using trajan.
+
+        trajan detects misconfigurations and attack vectors in GitHub Actions,
+        GitLab CI, and Azure DevOps pipelines including secret exposure,
+        script injection, and pipeline poisoning risks.
+
+        Args:
+            platform: github | gitlab | ado (required)
+            repo: Repository in owner/repo format for single-repo scan
+            org: Organization name for full org-wide scan
+            group: GitLab group name for group-wide scan
+            output_format: json (default)
+            additional_args: Extra trajan arguments
+
+        Requires env vars: GITHUB_TOKEN / GITLAB_TOKEN / ADO_TOKEN
+
+        Returns:
+            CI/CD vulnerability findings with severity, description, and remediation
+        """
+        data = {"platform": platform, "repo": repo, "org": org, "group": group,
+                "output_format": output_format, "additional_args": additional_args}
+        logger.info(f"🔧 trajan CI/CD scan: {platform} {repo or org or group}")
+        result = hexstrike_client.safe_post("api/praetorian/trajan/scan", data)
+        if result.get("success"):
+            logger.info("✅ trajan scan completed")
+        return result
+
+    @mcp.tool()
+    def vespasian_scan(url: str = "", mode: str = "scan", api_type: str = "",
+                       output: str = "", auth_headers: str = "", probe: bool = False,
+                       proxy: str = "", import_format: str = "", import_file: str = "",
+                       additional_args: str = "") -> Dict[str, Any]:
+        """
+        Discover and map API attack surface using vespasian.
+
+        vespasian discovers APIs from live traffic capture, browser crawling,
+        or imported proxy logs (Burp/HAR/mitmproxy) and generates API specs.
+
+        Args:
+            url: Target URL to crawl or scan (required for scan/crawl mode)
+            mode: scan | crawl | import | generate (default: scan)
+            api_type: rest | graphql | wsdl
+            output: Output file path for generated spec
+            auth_headers: Comma-separated auth headers e.g. "Authorization: Bearer token"
+            probe: Actively probe discovered endpoints
+            proxy: HTTP proxy URL
+            import_format: burp | har | mitmproxy (for import mode)
+            import_file: Capture file to import
+            additional_args: Extra vespasian arguments
+
+        Returns:
+            Discovered API endpoints, parameters, and generated OpenAPI/GraphQL spec
+        """
+        headers = [h.strip() for h in auth_headers.split(",")] if auth_headers else []
+        data = {"url": url, "mode": mode, "api_type": api_type, "output": output,
+                "auth_headers": headers, "probe": probe, "proxy": proxy,
+                "import_format": import_format, "import_file": import_file,
+                "additional_args": additional_args}
+        logger.info(f"🕸️ vespasian API discovery: {mode} {url}")
+        result = hexstrike_client.safe_post("api/praetorian/vespasian/scan", data)
+        if result.get("success"):
+            logger.info("✅ vespasian scan completed")
+        return result
+
+    @mcp.tool()
+    def julius_probe(targets: str = "", targets_file: str = "",
+                     output_format: str = "json", concurrency: int = 10,
+                     timeout: int = 0, verbose: bool = False,
+                     additional_args: str = "") -> Dict[str, Any]:
+        """
+        Identify LLM services on open ports using julius.
+
+        julius discovers Ollama, vLLM, and other LLM inference endpoints
+        across a network — useful for finding exposed AI infrastructure.
+
+        Args:
+            targets: Comma-separated host:port targets e.g. "10.0.0.1:11434,10.0.0.2:8000"
+            targets_file: File with one host:port per line
+            output_format: table | json | jsonl (default: json)
+            concurrency: Concurrent probes (default: 10)
+            timeout: Probe timeout in seconds
+            verbose: Verbose output
+            additional_args: Extra julius arguments
+
+        Returns:
+            Identified LLM services with provider, model list, and endpoint details
+        """
+        data = {"targets": targets, "targets_file": targets_file,
+                "output_format": output_format, "concurrency": concurrency,
+                "timeout": timeout, "verbose": verbose,
+                "additional_args": additional_args}
+        logger.info(f"🤖 julius LLM probe: {targets or targets_file}")
+        result = hexstrike_client.safe_post("api/praetorian/julius/probe", data)
+        if result.get("success"):
+            logger.info("✅ julius probe completed")
+        return result
+
+    @mcp.tool()
+    def mcphammer_run(config_server_url: str, port: int = 3000,
+                      additional_args: str = "") -> Dict[str, Any]:
+        """
+        Run MCPHammer to security-test an MCP server.
+
+        MCPHammer evaluates Model Context Protocol servers for security issues
+        including tool injection, prompt manipulation, and access control flaws.
+
+        Args:
+            config_server_url: URL of the MCP server to test (required)
+            port: MCPHammer listener port (default: 3000)
+            additional_args: Extra MCPHammer arguments
+
+        Returns:
+            MCP server security findings with vulnerability descriptions
+        """
+        data = {"config_server_url": config_server_url, "port": port,
+                "additional_args": additional_args}
+        logger.info(f"🔨 MCPHammer: testing {config_server_url}")
+        result = hexstrike_client.safe_post("api/praetorian/mcphammer/run", data)
+        if result.get("success"):
+            logger.info("✅ MCPHammer completed")
+        return result
+
+    @mcp.tool()
+    def aurelian_recon(cloud: str, module: str, neo4j_uri: str = "",
+                       output_format: str = "json",
+                       additional_args: str = "") -> Dict[str, Any]:
+        """
+        Perform cloud security reconnaissance using aurelian.
+
+        aurelian is an open-source cloud security recon framework that discovers
+        exposed resources, secrets, and attack paths in AWS, Azure, and GCP.
+
+        Args:
+            cloud: aws | azure | gcp (required)
+            module: Recon module to run (required). Examples:
+                whoami           - identify current identity/permissions
+                find-secrets     - search for exposed secrets
+                public-resources - find publicly accessible resources
+                graph            - build attack graph (requires neo4j)
+            neo4j_uri: Neo4j connection URI for graph module
+            output_format: json (default)
+            additional_args: Extra aurelian arguments
+
+        Requires cloud credentials as env vars (AWS_ACCESS_KEY_ID etc.)
+
+        Returns:
+            Cloud reconnaissance findings with resources, permissions, and risk
+        """
+        data = {"cloud": cloud, "module": module, "neo4j_uri": neo4j_uri,
+                "output_format": output_format, "additional_args": additional_args}
+        logger.info(f"☁️  aurelian recon: {cloud} {module}")
+        result = hexstrike_client.safe_post("api/praetorian/aurelian/recon", data)
+        if result.get("success"):
+            logger.info("✅ aurelian recon completed")
+        return result
+
+    @mcp.tool()
+    def ntlmrecon_scan(target: str, host_header: str = "", debug: bool = False,
+                       additional_args: str = "") -> Dict[str, Any]:
+        """
+        Discover NTLM-enabled HTTP endpoints using NTLMRecon.
+
+        NTLMRecon identifies web services that accept NTLM authentication,
+        extracting domain, server, and OS information from NTLM negotiation.
+
+        Args:
+            target: Target URL to probe (required) e.g. "https://mail.target.com"
+            host_header: Custom Host header override
+            debug: Enable debug output
+            additional_args: Extra NTLMRecon arguments
+
+        Returns:
+            NTLM endpoint details including domain, NetBIOS name, DNS name, and OS
+        """
+        data = {"target": target, "host_header": host_header,
+                "json_output": True, "debug": debug,
+                "additional_args": additional_args}
+        logger.info(f"🔍 NTLMRecon: {target}")
+        result = hexstrike_client.safe_post("api/praetorian/ntlmrecon/scan", data)
+        if result.get("success"):
+            logger.info("✅ NTLMRecon completed")
+        return result
+
+    @mcp.tool()
+    def gokart_scan(path: str, output_format: str = "json", verbose: bool = False,
+                    additional_args: str = "") -> Dict[str, Any]:
+        """
+        Run static security analysis on Go source code using gokart.
+
+        gokart performs taint analysis to find security vulnerabilities in Go code
+        including XSS, SQL injection, command injection, and path traversal.
+
+        Args:
+            path: Path to Go package or module directory (required)
+            output_format: json | sarif | csv (default: json)
+            verbose: Enable verbose output
+            additional_args: Extra gokart arguments
+
+        Returns:
+            Security vulnerability findings with severity, location, and taint flow
+        """
+        data = {"path": path, "output_format": output_format,
+                "verbose": verbose, "additional_args": additional_args}
+        logger.info(f"📊 gokart scan: {path}")
+        result = hexstrike_client.safe_post("api/praetorian/gokart/scan", data)
+        if result.get("success"):
+            logger.info("✅ gokart scan completed")
+        return result
+
+    @mcp.tool()
+    def trident_spray(username_file: str, password_file: str, auth_provider: str,
+                      interval: str = "", window: str = "", config_file: str = "",
+                      additional_args: str = "") -> Dict[str, Any]:
+        """
+        Run automated password spraying against an auth provider using trident.
+
+        trident orchestrates slow, deliberate password spraying to stay under
+        account lockout thresholds against Okta, O365, ADFS, and other providers.
+
+        Args:
+            username_file: Path to usernames file (required)
+            password_file: Path to passwords file (required)
+            auth_provider: Authentication provider e.g. okta | o365 | adfs (required)
+            interval: Time between spray rounds e.g. "30m"
+            window: Total spray window e.g. "8h"
+            config_file: Path to trident config file
+            additional_args: Extra trident-client arguments
+
+        Requires: TRIDENT_SERVER_URL and server-side trident deployment
+
+        Returns:
+            Valid credential pairs discovered during the spray campaign
+        """
+        data = {"username_file": username_file, "password_file": password_file,
+                "auth_provider": auth_provider, "interval": interval,
+                "window": window, "config_file": config_file,
+                "additional_args": additional_args}
+        logger.info(f"🔑 trident spray: {auth_provider}")
+        result = hexstrike_client.safe_post("api/praetorian/trident/spray", data)
+        if result.get("success"):
+            logger.info("✅ trident spray completed")
+        return result
+
+    @mcp.tool()
+    def praetorian_status() -> Dict[str, Any]:
+        """
+        Check installation status and versions of all Praetorian tools.
+
+        Returns:
+            Dictionary of all Praetorian tools with installed status and version
+        """
+        logger.info("📋 Checking Praetorian tools status")
+        result = hexstrike_client.safe_get("api/praetorian/status")
+        return result
+
+    # =========================================================================
+    # END PRAETORIAN TOOLS MODULE
+    # =========================================================================
+
     @mcp.tool()
     def pius_scan(org: str, domain: str = "", asn: str = "", mode: str = "passive",
                   output_format: str = "json", plugins: str = "", disable_plugins: str = "",

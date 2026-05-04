@@ -96,8 +96,10 @@ app = Flask(__name__)
 app.config['JSON_SORT_KEYS'] = False
 
 # Register modular blueprints
-from modules.augustus import augustus_bp  # noqa: E402
+from modules.augustus import augustus_bp      # noqa: E402
+from modules.praetorian import praetorian_bp  # noqa: E402
 app.register_blueprint(augustus_bp)
+app.register_blueprint(praetorian_bp)
 
 # API Configuration
 API_PORT = int(os.environ.get('HEXSTRIKE_PORT', 8888))
