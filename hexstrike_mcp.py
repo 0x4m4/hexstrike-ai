@@ -141,7 +141,7 @@ logger = logging.getLogger(__name__)
 
 # Default configuration
 DEFAULT_HEXSTRIKE_SERVER = "http://127.0.0.1:8888"  # Default HexStrike server URL
-DEFAULT_REQUEST_TIMEOUT = 300  # 5 minutes default timeout for API requests
+DEFAULT_REQUEST_TIMEOUT = 7200  # 2 hours default timeout for API requests
 MAX_RETRIES = 3  # Maximum number of retries for connection attempts
 
 class HexStrikeClient:
@@ -166,7 +166,7 @@ class HexStrikeClient:
                 logger.info(f"🔗 Attempting to connect to HexStrike AI API at {server_url} (attempt {i+1}/{MAX_RETRIES})")
                 # First try a direct connection test before using the health endpoint
                 try:
-                    test_response = self.session.get(f"{self.server_url}/health", timeout=5)
+                    test_response = self.session.get(f"{self.server_url}/health", timeout=60)
                     test_response.raise_for_status()
                     health_check = test_response.json()
                     connected = True

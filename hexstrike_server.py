@@ -6661,9 +6661,11 @@ def setup_logging():
 
 # Configuration (using existing API_PORT from top of file)
 DEBUG_MODE = os.environ.get("DEBUG_MODE", "0").lower() in ("1", "true", "yes", "y")
-COMMAND_TIMEOUT = 300  # 5 minutes default timeout
+COMMAND_TIMEOUT = 7200  # 2 hours default timeout
 CACHE_SIZE = 1000
 CACHE_TTL = 3600  # 1 hour
+# Set PROGRESS_INLINE_MODE=0 to revert to classic scrolling log output
+PROGRESS_INLINE_MODE = os.environ.get("PROGRESS_INLINE_MODE", "1").lower() not in ("0", "false", "no", "n")
 
 class HexStrikeCache:
     """Advanced caching system for command results"""
@@ -6819,7 +6821,12 @@ class EnhancedCommandExecutor:
             logger.error(f"Error reading stderr: {e}")
 
     def _show_progress(self, duration: float):
-        """Show enhanced progress indication for long-running commands"""
+        """Show progress for long-running commands.
+
+        Behaviour is controlled by the PROGRESS_INLINE_MODE config flag:
+          - True  (default): single line that updates in-place via \\r (clean terminal)
+          - False           : classic logger.info lines (useful for file-based log capture)
+        """
         if duration > 2:  # Show progress for commands taking more than 2 seconds
             progress_chars = ModernVisualEngine.PROGRESS_STYLES['dots']
             start = time.time()
@@ -6834,7 +6841,7 @@ class EnhancedCommandExecutor:
 
                 # Calculate ETA
                 eta = 0
-                if progress_percent > 5:  # Only show ETA after 5% progress
+                if progress_percent > 5:
                     eta = ((elapsed / progress_percent) * 100) - elapsed
 
                 # Calculate speed
@@ -6849,21 +6856,43 @@ class EnhancedCommandExecutor:
                     bytes_processed
                 )
 
-                # Create beautiful progress bar using ModernVisualEngine
-                progress_bar = ModernVisualEngine.render_progress_bar(
-                    progress_fraction,
-                    width=30,
-                    style='cyber',
-                    label=f"⚡ PROGRESS {char}",
-                    eta=eta,
-                    speed=speed
-                )
+                # Build compact progress bar string
+                filled = int(30 * progress_fraction)
+                empty = 30 - filled
+                bar = f"{'█' * filled}{'░' * empty}"
+                eta_str = f" ETA: {eta:.0f}s" if eta > 0 else ""
 
-                logger.info(f"{progress_bar} | {elapsed:.1f}s | PID: {self.process.pid}")
+                if PROGRESS_INLINE_MODE:
+                    # In-place update: overwrite the same terminal line via \r
+                    line = (
+                        f"\r⚡ PROGRESS {char}: [{bar}] "
+                        f"{progress_percent:.1f}%{eta_str} | "
+                        f"{elapsed:.1f}s | Speed: {speed} | PID: {self.process.pid}   "
+                    )
+                    sys.stdout.write(line)
+                    sys.stdout.flush()
+                else:
+                    # Classic mode: new log line each tick (useful when piping to a log file)
+                    progress_bar = ModernVisualEngine.render_progress_bar(
+                        progress_fraction,
+                        width=30,
+                        style='cyber',
+                        label=f"⚡ PROGRESS {char}",
+                        eta=eta,
+                        speed=speed
+                    )
+                    logger.info(f"{progress_bar} | {elapsed:.1f}s | PID: {self.process.pid}")
+
                 time.sleep(0.8)
                 i += 1
                 if elapsed > self.timeout:
                     break
+
+            if PROGRESS_INLINE_MODE:
+                # Newline after in-place bar so subsequent logs aren't corrupted
+                sys.stdout.write("\n")
+                sys.stdout.flush()
+
 
     def execute(self) -> Dict[str, Any]:
         """Execute the command with enhanced monitoring and output"""
