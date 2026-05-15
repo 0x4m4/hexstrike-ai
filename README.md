@@ -693,6 +693,22 @@ python3 hexstrike_server.py --port 8888 --debug
 
 ---
 
+## Community Documentation
+
+A community-maintained lab guide covering real-world HexStrike AI usage with Gemini CLI, OpenAI Codex, Cursor MCP, and Ollama — from installation to full Active Directory compromise.
+
+📖 **[HexStrike AI Lab Guide](https://anpa1200.github.io/Hexstrike-AI-guide/)** — by [@anpa1200](https://github.com/anpa1200)
+
+**Covers:**
+- Installation on Kali Linux 2025.4 (package + source)
+- LLM integrations: Gemini CLI · OpenAI Codex · Cursor MCP · Ollama (local/air-gapped)
+- Attack techniques: network, web app, wireless, SSH, SMB, Active Directory, ADCS ESC8, web+cloud
+- Recon & OSINT: Shodan integration · email-to-exposure-map workflows
+- Password recovery: ZIP · PDF · Office documents · WPA2
+- Full PT walkthroughs: lab setup · full subnet compromise · black-box AD engagement
+
+---
+
 ## License
 
 MIT License - see LICENSE file for details.
