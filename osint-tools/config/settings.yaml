@@ -1,0 +1,72 @@
+installation:
+  target_dir: "osint-tools"
+  log_level: "INFO"
+  parallel_installs: 4
+  timeout: 300
+
+categories:
+  username:
+    name: "Username Investigation"
+    priority: 1
+    tools:
+      - maigret
+      - sherlock
+      - blackbird
+      - whatsmyname
+      - usersearch
+  email:
+    name: "Email Investigation"
+    priority: 2
+    tools:
+      - holehe
+      - ghunt
+      - haveibeenpwned
+      - hunter
+      - tomba
+  recon:
+    name: "Automation & Recon"
+    priority: 3
+    tools:
+      - spiderfoot
+      - recon-ng
+      - theharvester
+  social:
+    name: "Social Media Intelligence"
+    priority: 4
+    tools:
+      - snscrape
+      - instaloader
+      - twint
+  infrastructure:
+    name: "Infrastructure Intelligence"
+    priority: 5
+    tools:
+      - maltego
+      - shodan
+      - censys
+      - securitytrails
+  breach:
+    name: "Breach & Leak Search"
+    priority: 6
+    tools:
+      - dehashed
+      - intelx
+      - leakix
+  media:
+    name: "Media & Archive Tools"
+    priority: 7
+    tools:
+      - exiftool
+      - tineye
+      - waybackmachine
+
+platforms:
+  kali:
+    name: "Kali Linux"
+    package_manager: "apt"
+  ubuntu:
+    name: "Ubuntu/Debian"
+    package_manager: "apt"
+  macos:
+    name: "macOS"
+    package_manager: "brew"
