@@ -1,0 +1,20 @@
+# OSINT Tools - Git Ignore
+.env
+.env.local
+.env.*.local
+__pycache__/
+*.py[cod]
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+osint-env/
+venv/
+.vscode/
+.idea/
+*.log
+logs/
+output/
+results/
+.DS_Store
