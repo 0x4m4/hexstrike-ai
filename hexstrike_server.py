@@ -711,7 +711,7 @@ class IntelligentDecisionEngine:
             "api_testing": [
                 {"tool": "httpx", "priority": 1, "params": {"probe": True, "tech_detect": True}},
                 {"tool": "arjun", "priority": 2, "params": {"method": "GET,POST", "stable": True}},
-                {"tool": "x8", "priority": 3, "params": {"method": "GET", "wordlist": "/usr/share/wordlists/x8/params.txt"}},
+                {"tool": "x8", "priority": 3, "params": {"method": "GET", "wordlist": "./wordlists/x8/params.txt"}},
                 {"tool": "paramspider", "priority": 4, "params": {"level": 2}},
                 {"tool": "nuclei", "priority": 5, "params": {"tags": "api,graphql,jwt", "severity": "high,critical"}},
                 {"tool": "ffuf", "priority": 6, "params": {"mode": "parameter", "method": "POST"}}
@@ -3499,9 +3499,9 @@ class CTFToolManager:
             "katana": "katana -depth 3 -js-crawl -form-extraction -headless",
             "sqlmap": "sqlmap --batch --level 3 --risk 2 --threads 5",
             "dalfox": "dalfox url --mining-dom --mining-dict --deep-domxss",
-            "gobuster": "gobuster dir -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt -x php,html,txt,js",
+            "gobuster": "gobuster dir -w ./wordlists/dirbuster/directory-list-2.3-medium.txt -x php,html,txt,js",
             "dirsearch": "dirsearch -u {} -e php,html,js,txt,xml,json -t 50",
-            "feroxbuster": "feroxbuster -u {} -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt -x php,html,js,txt",
+            "feroxbuster": "feroxbuster -u {} -w ./wordlists/dirbuster/directory-list-2.3-medium.txt -x php,html,js,txt",
             "arjun": "arjun -u {} --get --post",
             "paramspider": "paramspider -d {}",
             "wpscan": "wpscan --url {} --enumerate ap,at,cb,dbe",
@@ -3510,7 +3510,7 @@ class CTFToolManager:
 
             # Cryptography Challenge Tools
             "hashcat": "hashcat -m 0 -a 0 --potfile-disable --quiet",
-            "john": "john --wordlist=/usr/share/wordlists/rockyou.txt --format=Raw-MD5",
+            "john": "john --wordlist=./wordlists/rockyou.txt --format=Raw-MD5",
             "hash-identifier": "hash-identifier",
             "hashid": "hashid -m",
             "cipher-identifier": "python3 /opt/cipher-identifier/cipher_identifier.py",
@@ -3706,7 +3706,7 @@ class CTFToolManager:
         if tool in ["hashcat", "john"]:
             # For hash cracking, add common wordlists and rules
             if "wordlist" not in base_command:
-                base_command += " --wordlist=/usr/share/wordlists/rockyou.txt"
+                base_command += " --wordlist=./wordlists/rockyou.txt"
             if tool == "hashcat" and "--rules" not in base_command:
                 base_command += " --rules-file=/usr/share/hashcat/rules/best64.rule"
 
@@ -4752,7 +4752,7 @@ class ParameterOptimizer:
             base_params.update({
                 "mode": "dir",
                 "threads": 20,
-                "wordlist": "/usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt"
+                "wordlist": "./wordlists/dirbuster/directory-list-2.3-medium.txt"
             })
         elif tool == "sqlmap":
             base_params.update({
@@ -9845,7 +9845,7 @@ def execute_gobuster_scan(target, params):
     """Execute gobuster scan with optimized parameters"""
     try:
         mode = params.get('mode', 'dir')
-        wordlist = params.get('wordlist', '/usr/share/wordlists/dirb/common.txt')
+        wordlist = params.get('wordlist', './wordlists/dirb/common.txt')
         additional_args = params.get('additional_args', '')
 
         cmd_parts = ['gobuster', mode, '-u', target, '-w', wordlist]
@@ -9902,7 +9902,7 @@ def execute_sqlmap_scan(target, params):
 def execute_ffuf_scan(target, params):
     """Execute ffuf scan with optimized parameters"""
     try:
-        wordlist = params.get('wordlist', '/usr/share/wordlists/dirb/common.txt')
+        wordlist = params.get('wordlist', './wordlists/dirb/common.txt')
         additional_args = params.get('additional_args', '')
 
         # Ensure target has FUZZ placeholder
@@ -9920,7 +9920,7 @@ def execute_ffuf_scan(target, params):
 def execute_feroxbuster_scan(target, params):
     """Execute feroxbuster scan with optimized parameters"""
     try:
-        wordlist = params.get('wordlist', '/usr/share/wordlists/dirb/common.txt')
+        wordlist = params.get('wordlist', './wordlists/dirb/common.txt')
         additional_args = params.get('additional_args', '')
 
         cmd_parts = ['feroxbuster', '-u', target, '-w', wordlist]
@@ -10381,7 +10381,7 @@ def gobuster():
         params = request.json
         url = params.get("url", "")
         mode = params.get("mode", "dir")
-        wordlist = params.get("wordlist", "/usr/share/wordlists/dirb/common.txt")
+        wordlist = params.get("wordlist", "./wordlists/dirb/common.txt")
         additional_args = params.get("additional_args", "")
         use_recovery = params.get("use_recovery", True)
 
@@ -10960,7 +10960,7 @@ def dirb():
     try:
         params = request.json
         url = params.get("url", "")
-        wordlist = params.get("wordlist", "/usr/share/wordlists/dirb/common.txt")
+        wordlist = params.get("wordlist", "./wordlists/dirb/common.txt")
         additional_args = params.get("additional_args", "")
 
         if not url:
@@ -11148,7 +11148,7 @@ def john():
     try:
         params = request.json
         hash_file = params.get("hash_file", "")
-        wordlist = params.get("wordlist", "/usr/share/wordlists/rockyou.txt")
+        wordlist = params.get("wordlist", "./wordlists/rockyou.txt")
         format_type = params.get("format", "")
         additional_args = params.get("additional_args", "")
 
@@ -11242,7 +11242,7 @@ def ffuf():
     try:
         params = request.json
         url = params.get("url", "")
-        wordlist = params.get("wordlist", "/usr/share/wordlists/dirb/common.txt")
+        wordlist = params.get("wordlist", "./wordlists/dirb/common.txt")
         mode = params.get("mode", "directory")
         match_codes = params.get("match_codes", "200,204,301,302,307,401,403")
         additional_args = params.get("additional_args", "")
@@ -11368,7 +11368,7 @@ def hashcat():
         hash_file = params.get("hash_file", "")
         hash_type = params.get("hash_type", "")
         attack_mode = params.get("attack_mode", "0")
-        wordlist = params.get("wordlist", "/usr/share/wordlists/rockyou.txt")
+        wordlist = params.get("wordlist", "./wordlists/rockyou.txt")
         mask = params.get("mask", "")
         additional_args = params.get("additional_args", "")
 
@@ -12680,7 +12680,7 @@ def feroxbuster():
     try:
         params = request.json
         url = params.get("url", "")
-        wordlist = params.get("wordlist", "/usr/share/wordlists/dirb/common.txt")
+        wordlist = params.get("wordlist", "./wordlists/dirb/common.txt")
         threads = params.get("threads", 10)
         additional_args = params.get("additional_args", "")
 
@@ -12776,7 +12776,7 @@ def wfuzz():
     try:
         params = request.json
         url = params.get("url", "")
-        wordlist = params.get("wordlist", "/usr/share/wordlists/dirb/common.txt")
+        wordlist = params.get("wordlist", "./wordlists/dirb/common.txt")
         additional_args = params.get("additional_args", "")
 
         if not url:
@@ -12811,7 +12811,7 @@ def dirsearch():
         params = request.json
         url = params.get("url", "")
         extensions = params.get("extensions", "php,html,js,txt,xml,json")
-        wordlist = params.get("wordlist", "/usr/share/wordlists/dirsearch/common.txt")
+        wordlist = params.get("wordlist", "./wordlists/dirsearch/common.txt")
         threads = params.get("threads", 30)
         recursive = params.get("recursive", False)
         additional_args = params.get("additional_args", "")
@@ -13023,7 +13023,7 @@ def x8():
     try:
         params = request.json
         url = params.get("url", "")
-        wordlist = params.get("wordlist", "/usr/share/wordlists/x8/params.txt")
+        wordlist = params.get("wordlist", "./wordlists/x8/params.txt")
         method = params.get("method", "GET")
         body = params.get("body", "")
         headers = params.get("headers", "")
@@ -14846,7 +14846,7 @@ def api_fuzzer():
         base_url = params.get("base_url", "")
         endpoints = params.get("endpoints", [])
         methods = params.get("methods", ["GET", "POST", "PUT", "DELETE"])
-        wordlist = params.get("wordlist", "/usr/share/wordlists/api/api-endpoints.txt")
+        wordlist = params.get("wordlist", "./wordlists/api/api-endpoints.txt")
 
         if not base_url:
             logger.warning("🌐 API Fuzzer called without base_url parameter")
