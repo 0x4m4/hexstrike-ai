@@ -1,0 +1,16 @@
+[Unit]
+Description=OSINT Framework API Server
+After=network.target
+
+[Service]
+Type=simple
+User=osint
+Group=osint
+WorkingDirectory=/opt/osint/osint-framework
+Environment="PATH=/opt/osint/osint-framework/osint-env/bin"
+ExecStart=/opt/osint/osint-framework/osint-env/bin/python -m uvicorn api.main:app --host 0.0.0.0 --port 8000
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
