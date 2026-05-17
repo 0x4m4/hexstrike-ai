@@ -1,0 +1,79 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: osint-framework
+  namespace: osint-framework
+  labels:
+    app: osint-framework
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: osint-framework
+  template:
+    metadata:
+      labels:
+        app: osint-framework
+    spec:
+      containers:
+      - name: api
+        image: osint-framework:latest
+        ports:
+        - containerPort: 8000
+          name: http
+        envFrom:
+        - configMapRef:
+            name: osint-config
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        volumeMounts:
+        - name: data
+          mountPath: /app/data
+        - name: tools
+          mountPath: /app/tools
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: osint-data
+      - name: tools
+        persistentVolumeClaim:
+          claimName: osint-tools
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: osint-data
+  namespace: osint-framework
+spec:
+  accessModes: ["ReadWriteOnce"]
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: osint-tools
+  namespace: osint-framework
+spec:
+  accessModes: ["ReadWriteOnce"]
+  resources:
+    requests:
+      storage: 10Gi

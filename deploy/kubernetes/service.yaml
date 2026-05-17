@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: osint-framework
+  namespace: osint-framework
+spec:
+  type: ClusterIP
+  ports:
+  - port: 8000
+    targetPort: 8000
+    protocol: TCP
+    name: http
+  selector:
+    app: osint-framework
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: osint-framework-lb
+  namespace: osint-framework
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+    targetPort: 8000
+    protocol: TCP
+    name: http
+  selector:
+    app: osint-framework

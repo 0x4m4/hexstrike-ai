@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: osint-framework
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: osint-config
+  namespace: osint-framework
+data:
+  DATABASE_URL: "sqlite+aiosqlite:///app/data/osint.db"
+  API_HOST: "0.0.0.0"
+  API_PORT: "8000"
+  DEBUG: "false"
