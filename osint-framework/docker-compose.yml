@@ -1,12 +1,28 @@
 version: '3.8'
+
 services:
   osint-framework:
     build: .
+    container_name: osint-framework
+    restart: unless-stopped
     ports:
       - "8000:8000"
     volumes:
       - ./data:/app/data
+      - ../osint-tools/tools:/app/tools
     environment:
       - DATABASE_URL=sqlite+aiosqlite:///app/data/osint.db
       - API_HOST=0.0.0.0
       - API_PORT=8000
+      - DEBUG=false
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - osint-network
+
+networks:
+  osint-network:
+    driver: bridge
