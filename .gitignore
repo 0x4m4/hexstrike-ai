@@ -1,0 +1,28 @@
+# Python cache/runtime artifacts
+__pycache__/
+*.py[cod]
+*.log
+
+# Local virtualenvs and ad-hoc package installs
+.venv/
+venv/
+env/
+osint-env/
+
+# Generated Python package trees accidentally installed into osint-tools/
+osint-tools/bin/
+osint-tools/*.dist-info/
+osint-tools/*.libs/
+osint-tools/click/
+osint-tools/dateutil/
+osint-tools/dotenv/
+osint-tools/markdown_it/
+osint-tools/mdurl/
+osint-tools/numpy/
+osint-tools/pandas/
+osint-tools/pygments/
+osint-tools/rich/
+osint-tools/tqdm/
+osint-tools/yaml/
+osint-tools/_yaml/
+osint-tools/six.py

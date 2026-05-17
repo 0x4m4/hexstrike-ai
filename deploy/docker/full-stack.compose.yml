@@ -1,0 +1,48 @@
+services:
+  osint-framework:
+    build:
+      context: ../../osint-framework
+    container_name: hexstrike-osint-framework
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      - ../../osint-framework/data:/app/data
+      - ../../osint-tools/tools:/app/tools:ro
+    environment:
+      DATABASE_URL: sqlite+aiosqlite:///app/data/osint.db
+      API_HOST: 0.0.0.0
+      API_PORT: "8000"
+      DEBUG: "false"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=5).read()"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - hexstrike-network
+
+  hexstrike-website:
+    build:
+      context: ../../../hexstrike-website-master
+    container_name: hexstrike-website
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      NEXT_TELEMETRY_DISABLED: "1"
+      CATALOG_LINKS_PATH: /data/catalog-links.json
+      OSINT_API_URL: http://osint-framework:8000
+    volumes:
+      - ../../osint-tools/config/catalog-links.json:/data/catalog-links.json:ro
+    depends_on:
+      osint-framework:
+        condition: service_healthy
+    networks:
+      - hexstrike-network
+
+networks:
+  hexstrike-network:
+    driver: bridge
