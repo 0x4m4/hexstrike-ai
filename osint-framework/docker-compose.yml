@@ -1,0 +1,12 @@
+version: '3.8'
+services:
+  osint-framework:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data
+    environment:
+      - DATABASE_URL=sqlite+aiosqlite:///app/data/osint.db
+      - API_HOST=0.0.0.0
+      - API_PORT=8000

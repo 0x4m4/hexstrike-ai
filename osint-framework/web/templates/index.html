@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>OSINT Framework</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #1a1a2e; color: #eee; }
+        .container { max-width: 800px; margin: 0 auto; }
+        h1 { color: #00d4ff; }
+        .search-box { display: flex; gap: 10px; margin: 20px 0; }
+        .search-box input { flex: 1; padding: 10px; border-radius: 5px; border: none; }
+        .search-box select, .search-box button { padding: 10px; border-radius: 5px; border: none; cursor: pointer; }
+        .search-box button { background: #00d4ff; color: #000; font-weight: bold; }
+        pre { background: #16213e; padding: 15px; border-radius: 5px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>OSINT Automation Framework</h1>
+        <div class="search-box">
+            <input type="text" id="target" placeholder="Enter target (username, email, IP)">
+            <select id="tool-select">
+                <option value="maigret">Maigret</option>
+                <option value="sherlock">Sherlock</option>
+                <option value="holehe">Holehe</option>
+                <option value="all">All Tools</option>
+            </select>
+            <button onclick="runSearch()">Search</button>
+        </div>
+        <div id="results"></div>
+        <div class="history">
+            <h2>Recent Searches</h2>
+            <div id="history-list"></div>
+        </div>
+    </div>
+    <script>
+        async function runSearch() {
+            const target = document.getElementById('target').value;
+            const tool = document.getElementById('tool-select').value;
+            if (!target) { alert('Please enter a target'); return; }
+            const tools = tool === 'all' ? ['maigret', 'sherlock', 'holehe'] : [tool];
+            try {
+                const response = await fetch('/api/v1/search', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({target, tools})
+                });
+                const result = await response.json();
+                document.getElementById('results').innerHTML = '<pre>' + JSON.stringify(result, null, 2) + '</pre>';
+            } catch (e) {
+                document.getElementById('results').innerHTML = '<pre>Error: ' + e + '</pre>';
+            }
+        }
+        async function loadHistory() {
+            try {
+                const response = await fetch('/api/v1/history');
+                const data = await response.json();
+                document.getElementById('history-list').innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+            } catch (e) {}
+        }
+        loadHistory();
+    </script>
+</body>
+</html>
