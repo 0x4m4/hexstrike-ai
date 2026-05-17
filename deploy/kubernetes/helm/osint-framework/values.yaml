@@ -1,0 +1,41 @@
+replicaCount: 2
+
+image:
+  repository: osint-framework
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+service:
+  type: ClusterIP
+  port: 8000
+
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    kubernetes.io/ingress.class: nginx
+  hosts:
+    - host: osint.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 100m
+    memory: 256Mi
+
+persistence:
+  enabled: true
+  size: 5Gi
+  storageClass: default
+  toolsSize: 10Gi
+
+config:
+  DATABASE_URL: "sqlite+aiosqlite:///app/data/osint.db"
+  API_HOST: "0.0.0.0"
+  API_PORT: "8000"
+  DEBUG: "false"
