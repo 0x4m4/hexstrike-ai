@@ -26,3 +26,6 @@ osint-tools/tqdm/
 osint-tools/yaml/
 osint-tools/_yaml/
 osint-tools/six.py
+
+# Local git worktrees
+.worktrees/
