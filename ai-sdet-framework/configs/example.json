@@ -1,0 +1,10 @@
+{
+  "appName": "Example Domain",
+  "baseUrl": "https://example.com",
+  "selectors": {
+    "home": {
+      "title": "h1",
+      "moreInfoLink": "a"
+    }
+  }
+}

@@ -14,6 +14,30 @@
 
 [🚀 **Explore Interactive Doc**](docs/AI_SDET_FRAMEWORK_INTERACTIVE.md) • [🏗️ **Architecture**](docs/architecture.md) • [📅 **Roadmap**](docs/implementation-roadmap.md)
 
+## 🛠️ SDET Framework Quick Start
+
+### 1. Prerequisites
+- [Node.js](https://nodejs.org/) (v18 or higher)
+- [npm](https://www.npmjs.com/)
+
+### 2. Setup
+```bash
+cd ai-sdet-framework
+npm install
+npx playwright install chromium
+```
+
+### 3. Run Tests
+```bash
+# Run the smoke test
+npx playwright test
+```
+
+### 4. View Reports
+```bash
+npx playwright show-report
+```
+
 ---
 
 # HexStrike AI MCP Agents v6.0
