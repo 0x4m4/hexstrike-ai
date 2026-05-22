@@ -2,6 +2,20 @@
 
 <img src="assets/hexstrike-logo.png" alt="HexStrike AI Logo" width="220" style="margin-bottom: 20px;"/>
 
+# AI-Powered Universal SDET Automation Framework
+### Transforming HexStrike AI into a World-Class QA Automation Engine
+
+> **Strategic Note:** This repository is being adapted into an **AI-Powered Universal SDET Automation Framework**. We are pivoting from offensive security workflows toward safe, authorized, and intelligent web application testing.
+
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0%2B-blue.svg)](https://www.typescriptlang.org/)
+[![Playwright](https://img.shields.io/badge/Playwright-Latest-green.svg)](https://playwright.dev/)
+[![AI-Enhanced](https://img.shields.io/badge/AI-Powered%20Testing-purple.svg)](#)
+[![MCP](https://img.shields.io/badge/MCP-SDET%20Ready-orange.svg)](#)
+
+[🚀 **Explore Interactive Doc**](docs/AI_SDET_FRAMEWORK_INTERACTIVE.md) • [🏗️ **Architecture**](docs/architecture.md) • [📅 **Roadmap**](docs/implementation-roadmap.md)
+
+---
+
 # HexStrike AI MCP Agents v6.0
 ### AI-Powered MCP Cybersecurity Automation Platform
 
