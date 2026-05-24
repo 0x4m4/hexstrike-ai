@@ -2673,12 +2673,12 @@ def setup_mcp_server(hexstrike_client: HexStrikeClient) -> FastMCP:
         return result
 
     @mcp.tool()
-    def httpx_probe(target: str, probe: bool = True, tech_detect: bool = False,
+    def httpx_probe_single(target: str, probe: bool = True, tech_detect: bool = False,
                    status_code: bool = False, content_length: bool = False,
                    title: bool = False, web_server: bool = False, threads: int = 50,
                    additional_args: str = "") -> Dict[str, Any]:
         """
-        Execute httpx for fast HTTP probing and technology detection.
+        Execute httpx for fast HTTP probing and technology detection (single target).
 
         Args:
             target: Target file or single URL
