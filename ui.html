@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HexStrike AI</title>
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --surface: #111;
+    --surface2: #1a1a1a;
+    --border: #2a2a2a;
+    --red: #cc0000;
+    --red-bright: #ff2222;
+    --red-dim: #660000;
+    --green: #00cc44;
+    --yellow: #ccaa00;
+    --text: #e0e0e0;
+    --text-dim: #666;
+    --mono: 'Courier New', monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--mono); font-size: 13px; height: 100vh; display: flex; flex-direction: column; }
+
+  /* Header */
+  #header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--red-dim);
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-shrink: 0;
+  }
+  #logo { color: var(--red-bright); font-size: 18px; font-weight: bold; letter-spacing: 2px; }
+  #logo span { color: var(--text-dim); font-size: 11px; margin-left: 8px; letter-spacing: 1px; }
+  #server-status { margin-left: auto; display: flex; align-items: center; gap: 8px; font-size: 12px; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text-dim); }
+  .dot.online { background: var(--green); box-shadow: 0 0 6px var(--green); }
+  .dot.offline { background: var(--red); box-shadow: 0 0 6px var(--red); }
+
+  /* Layout */
+  #app { display: flex; flex: 1; overflow: hidden; }
+
+  /* Sidebar */
+  #sidebar {
+    width: 220px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    overflow-y: auto;
+  }
+  .nav-section { padding: 12px 16px 4px; color: var(--red-dim); font-size: 10px; letter-spacing: 2px; text-transform: uppercase; }
+  .nav-item {
+    padding: 8px 16px;
+    cursor: pointer;
+    border-left: 3px solid transparent;
+    transition: all 0.15s;
+    color: var(--text-dim);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .nav-item:hover { background: var(--surface2); color: var(--text); }
+  .nav-item.active { border-left-color: var(--red); color: var(--red-bright); background: var(--surface2); }
+  .nav-item .icon { margin-right: 8px; }
+
+  /* Main content */
+  #main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+  /* Tab panels */
+  .panel { display: none; flex: 1; flex-direction: column; overflow: hidden; padding: 20px; gap: 16px; }
+  .panel.active { display: flex; }
+
+  /* Cards */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 16px;
+  }
+  .card-title { color: var(--red-bright); font-size: 11px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 12px; }
+
+  /* Dashboard grid */
+  #dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+  .stat-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 4px; padding: 14px 16px; }
+  .stat-label { color: var(--text-dim); font-size: 10px; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; }
+  .stat-value { font-size: 22px; color: var(--red-bright); font-weight: bold; }
+  .stat-sub { color: var(--text-dim); font-size: 11px; margin-top: 2px; }
+
+  /* Form elements */
+  .form-row { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; }
+  .form-group { display: flex; flex-direction: column; gap: 5px; flex: 1; min-width: 150px; }
+  label { font-size: 11px; color: var(--text-dim); letter-spacing: 1px; text-transform: uppercase; }
+  input, select, textarea {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 7px 10px;
+    font-family: var(--mono);
+    font-size: 13px;
+    border-radius: 3px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--red-dim); }
+  select option { background: var(--bg); }
+  textarea { resize: vertical; min-height: 80px; }
+
+  /* Buttons */
+  .btn {
+    padding: 7px 16px;
+    border: none;
+    border-radius: 3px;
+    font-family: var(--mono);
+    font-size: 12px;
+    cursor: pointer;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .btn-primary { background: var(--red); color: #fff; }
+  .btn-primary:hover { background: var(--red-bright); }
+  .btn-primary:disabled { background: var(--red-dim); cursor: not-allowed; opacity: 0.6; }
+  .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+  .btn-secondary:hover { border-color: var(--red-dim); color: var(--red-bright); }
+  .btn-danger { background: transparent; color: var(--red); border: 1px solid var(--red-dim); }
+  .btn-danger:hover { background: var(--red-dim); }
+
+  /* Output terminal */
+  .terminal {
+    background: #050505;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 12px;
+    font-family: var(--mono);
+    font-size: 12px;
+    overflow-y: auto;
+    flex: 1;
+    min-height: 200px;
+    max-height: 400px;
+    white-space: pre-wrap;
+    word-break: break-all;
+    line-height: 1.5;
+  }
+  .terminal .line-info { color: #aaa; }
+  .terminal .line-success { color: var(--green); }
+  .terminal .line-error { color: var(--red-bright); }
+  .terminal .line-warn { color: var(--yellow); }
+  .terminal .line-cmd { color: var(--red-bright); }
+  .terminal .prompt { color: var(--red-dim); }
+  .terminal-empty { color: var(--text-dim); font-style: italic; }
+
+  /* Process table */
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th { color: var(--text-dim); font-size: 10px; letter-spacing: 1px; text-transform: uppercase; padding: 6px 10px; border-bottom: 1px solid var(--border); text-align: left; }
+  td { padding: 7px 10px; border-bottom: 1px solid var(--border); }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--surface2); }
+  .badge { padding: 2px 7px; border-radius: 10px; font-size: 10px; letter-spacing: 1px; }
+  .badge-green { background: rgba(0,200,68,0.15); color: var(--green); border: 1px solid rgba(0,200,68,0.3); }
+  .badge-red { background: rgba(200,0,0,0.15); color: var(--red-bright); border: 1px solid rgba(200,0,0,0.3); }
+  .badge-yellow { background: rgba(200,170,0,0.15); color: var(--yellow); border: 1px solid rgba(200,170,0,0.3); }
+
+  /* Tool grid */
+  #tool-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; max-height: 300px; overflow-y: auto; }
+  .tool-chip {
+    padding: 6px 10px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 11px;
+    transition: all 0.15s;
+    text-align: center;
+    color: var(--text-dim);
+  }
+  .tool-chip:hover { border-color: var(--red-dim); color: var(--text); }
+  .tool-chip.available { border-color: rgba(0,200,68,0.3); color: var(--green); }
+  .tool-chip.selected { background: var(--red-dim); border-color: var(--red); color: #fff; }
+
+  /* Tool search */
+  #tool-search { margin-bottom: 10px; }
+
+  /* Loading spinner */
+  .spinner { display: inline-block; width: 12px; height: 12px; border: 2px solid var(--border); border-top-color: var(--red); border-radius: 50%; animation: spin 0.6s linear infinite; vertical-align: middle; margin-right: 6px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--red-dim); }
+
+  /* Overflow scroll for panels */
+  .panel-scroll { overflow-y: auto; flex: 1; }
+
+  /* Intelligence results */
+  .result-section { margin-bottom: 12px; }
+  .result-key { color: var(--red-bright); font-size: 11px; letter-spacing: 1px; }
+  .result-val { color: var(--text); margin-left: 12px; }
+
+  /* Payload display */
+  #payload-output { background: #050505; border: 1px solid var(--border); border-radius: 3px; padding: 12px; font-size: 12px; overflow-y: auto; max-height: 250px; white-space: pre-wrap; word-break: break-all; color: var(--green); }
+
+  /* Telemetry bars */
+  .bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .bar-label { width: 120px; color: var(--text-dim); font-size: 11px; flex-shrink: 0; }
+  .bar-track { flex: 1; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+  .bar-fill { height: 100%; background: var(--red); border-radius: 3px; transition: width 0.4s; }
+  .bar-val { width: 50px; text-align: right; font-size: 11px; color: var(--text-dim); flex-shrink: 0; }
+
+  .row-flex { display: flex; gap: 16px; }
+  .row-flex > * { flex: 1; min-width: 0; }
+
+  #processes-table-wrap { overflow-x: auto; }
+  .refresh-btn { margin-left: auto; }
+
+  .tag-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+  .tag { padding: 2px 8px; border-radius: 10px; font-size: 11px; background: var(--surface2); border: 1px solid var(--border); color: var(--text-dim); }
+</style>
+</head>
+<body>
+
+<div id="header">
+  <div id="logo">HEXSTRIKE<span>AI v6.0</span></div>
+  <div id="server-status">
+    <div class="dot" id="status-dot"></div>
+    <span id="status-text">Connecting...</span>
+    <span id="uptime-text" style="color:var(--text-dim);margin-left:8px;"></span>
+  </div>
+</div>
+
+<div id="app">
+  <div id="sidebar">
+    <div class="nav-section">Dashboard</div>
+    <div class="nav-item active" data-panel="dashboard"><span class="icon">◈</span> Overview</div>
+    <div class="nav-item" data-panel="telemetry"><span class="icon">◈</span> Telemetry</div>
+    <div class="nav-item" data-panel="processes"><span class="icon">◈</span> Processes</div>
+
+    <div class="nav-section">Intelligence</div>
+    <div class="nav-item" data-panel="analyze"><span class="icon">◈</span> Analyze Target</div>
+    <div class="nav-item" data-panel="smartscan"><span class="icon">◈</span> Smart Scan</div>
+    <div class="nav-item" data-panel="attackchain"><span class="icon">◈</span> Attack Chain</div>
+
+    <div class="nav-section">Tools</div>
+    <div class="nav-item" data-panel="tools"><span class="icon">◈</span> Run Tool</div>
+    <div class="nav-item" data-panel="bugbounty"><span class="icon">◈</span> Bug Bounty</div>
+    <div class="nav-item" data-panel="ctf"><span class="icon">◈</span> CTF</div>
+
+    <div class="nav-section">Utilities</div>
+    <div class="nav-item" data-panel="payloads"><span class="icon">◈</span> Payloads</div>
+    <div class="nav-item" data-panel="command"><span class="icon">◈</span> Command Exec</div>
+    <div class="nav-item" data-panel="cache"><span class="icon">◈</span> Cache</div>
+  </div>
+
+  <div id="main">
+
+    <!-- DASHBOARD -->
+    <div class="panel active panel-scroll" id="panel-dashboard">
+      <div id="dashboard-grid">
+        <div class="stat-card"><div class="stat-label">Server Status</div><div class="stat-value" id="d-status">--</div></div>
+        <div class="stat-card"><div class="stat-label">Uptime</div><div class="stat-value" id="d-uptime">--</div></div>
+        <div class="stat-card"><div class="stat-label">Tools Available</div><div class="stat-value" id="d-tools">--</div><div class="stat-sub" id="d-tools-sub"></div></div>
+        <div class="stat-card"><div class="stat-label">Commands Run</div><div class="stat-value" id="d-cmds">--</div></div>
+        <div class="stat-card"><div class="stat-label">Success Rate</div><div class="stat-value" id="d-success">--</div></div>
+        <div class="stat-card"><div class="stat-label">Avg Exec Time</div><div class="stat-value" id="d-avgtime">--</div></div>
+        <div class="stat-card"><div class="stat-label">Cache Hits</div><div class="stat-value" id="d-cachehits">--</div></div>
+        <div class="stat-card"><div class="stat-label">Version</div><div class="stat-value" id="d-version" style="font-size:16px;">--</div></div>
+      </div>
+
+      <div class="row-flex">
+        <div class="card" style="flex:2">
+          <div class="card-title">Available Tools</div>
+          <input type="text" id="tool-search" placeholder="Filter tools..." style="width:100%;margin-bottom:10px;">
+          <div id="tool-grid"></div>
+        </div>
+        <div class="card" style="flex:1">
+          <div class="card-title">System Metrics</div>
+          <div id="sys-metrics"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TELEMETRY -->
+    <div class="panel panel-scroll" id="panel-telemetry">
+      <div class="card">
+        <div class="card-title" style="display:flex;justify-content:space-between;">
+          Telemetry
+          <button class="btn btn-secondary" onclick="loadTelemetry()">Refresh</button>
+        </div>
+        <div id="telemetry-content">Loading...</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Cache Statistics</div>
+        <div id="cache-stats-content">Loading...</div>
+      </div>
+    </div>
+
+    <!-- PROCESSES -->
+    <div class="panel" id="panel-processes" style="overflow:hidden;">
+      <div class="card" style="flex:1;display:flex;flex-direction:column;overflow:hidden;">
+        <div class="card-title" style="display:flex;align-items:center;">
+          Active Processes
+          <button class="btn btn-secondary refresh-btn" onclick="loadProcesses()">Refresh</button>
+        </div>
+        <div id="processes-table-wrap" style="overflow:auto;flex:1;">
+          <table>
+            <thead><tr><th>PID</th><th>Name</th><th>Status</th><th>CPU%</th><th>Mem%</th><th>Actions</th></tr></thead>
+            <tbody id="process-tbody"><tr><td colspan="6" style="color:var(--text-dim);text-align:center;padding:20px;">Loading...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ANALYZE TARGET -->
+    <div class="panel panel-scroll" id="panel-analyze">
+      <div class="card">
+        <div class="card-title">AI Target Analysis</div>
+        <div class="form-row">
+          <div class="form-group" style="flex:2">
+            <label>Target</label>
+            <input id="analyze-target" type="text" placeholder="domain.com / 192.168.1.1 / https://...">
+          </div>
+          <div class="form-group">
+            <label>Context</label>
+            <select id="analyze-context">
+              <option value="bug_bounty">Bug Bounty</option>
+              <option value="ctf">CTF</option>
+              <option value="red_team">Red Team</option>
+              <option value="pentest">Pentest</option>
+            </select>
+          </div>
+          <div class="form-group" style="flex:none">
+            <label>&nbsp;</label>
+            <button class="btn btn-primary" id="analyze-btn" onclick="runAnalyze()">Analyze</button>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="flex:1">
+        <div class="card-title">Results</div>
+        <div class="terminal" id="analyze-output"><span class="terminal-empty">Enter a target and click Analyze...</span></div>
+      </div>
+    </div>
+
+    <!-- SMART SCAN -->
+    <div class="panel panel-scroll" id="panel-smartscan">
+      <div class="card">
+        <div class="card-title">Smart Scan</div>
+        <div class="form-row">
+          <div class="form-group" style="flex:2">
+            <label>Target</label>
+            <input id="scan-target" type="text" placeholder="192.168.1.0/24 / domain.com">
+          </div>
+          <div class="form-group">
+            <label>Scan Type</label>
+            <select id="scan-type">
+              <option value="full">Full</option>
+              <option value="web">Web</option>
+              <option value="network">Network</option>
+              <option value="quick">Quick</option>
+            </select>
+          </div>
+          <div class="form-group" style="flex:none">
+            <label>&nbsp;</label>
+            <button class="btn btn-primary" onclick="runSmartScan()">Run Scan</button>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="flex:1">
+        <div class="card-title">Scan Output</div>
+        <div class="terminal" id="scan-output"><span class="terminal-empty">Configure and run a scan...</span></div>
+      </div>
+    </div>
+
+    <!-- ATTACK CHAIN -->
+    <div class="panel panel-scroll" id="panel-attackchain">
+      <div class="card">
+        <div class="card-title">Create Attack Chain</div>
+        <div class="form-row">
+          <div class="form-group" style="flex:2">
+            <label>Target</label>
+            <input id="chain-target" type="text" placeholder="target.com">
+          </div>
+          <div class="form-group">
+            <label>Objective</label>
+            <select id="chain-objective">
+              <option value="full_compromise">Full Compromise</option>
+              <option value="data_exfiltration">Data Exfiltration</option>
+              <option value="privilege_escalation">Priv Escalation</option>
+              <option value="web_app_compromise">Web App</option>
+            </select>
+          </div>
+          <div class="form-group" style="flex:none">
+            <label>&nbsp;</label>
+            <button class="btn btn-primary" onclick="runAttackChain()">Generate</button>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="flex:1">
+        <div class="card-title">Attack Chain</div>
+        <div class="terminal" id="chain-output"><span class="terminal-empty">Generate an attack chain...</span></div>
+      </div>
+    </div>
+
+    <!-- TOOLS -->
+    <div class="panel panel-scroll" id="panel-tools">
+      <div class="row-flex" style="flex-shrink:0;">
+        <div class="card" style="flex:1">
+          <div class="card-title">Select Tool</div>
+          <input type="text" id="tool-select-search" placeholder="Search tools..." style="width:100%;margin-bottom:10px;" oninput="filterToolSelect()">
+          <select id="tool-select" size="10" style="width:100%;background:var(--bg);" onchange="buildToolForm()"></select>
+        </div>
+        <div class="card" style="flex:2">
+          <div class="card-title">Parameters</div>
+          <div id="tool-form-area">
+            <span style="color:var(--text-dim);">Select a tool to configure...</span>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="flex:1">
+        <div class="card-title">Output</div>
+        <div class="terminal" id="tool-output"><span class="terminal-empty">Run a tool to see output...</span></div>
+      </div>
+    </div>
+
+    <!-- BUG BOUNTY -->
+    <div class="panel panel-scroll" id="panel-bugbounty">
+      <div class="card">
+        <div class="card-title">Bug Bounty Workflows</div>
+        <div class="form-row">
+          <div class="form-group" style="flex:2">
+            <label>Target Domain</label>
+            <input id="bb-target" type="text" placeholder="target.com">
+          </div>
+          <div class="form-group">
+            <label>Workflow</label>
+            <select id="bb-workflow">
+              <option value="reconnaissance-workflow">Reconnaissance</option>
+              <option value="vulnerability-hunting-workflow">Vuln Hunting</option>
+              <option value="osint-workflow">OSINT</option>
+              <option value="business-logic-workflow">Business Logic</option>
+              <option value="file-upload-testing">File Upload</option>
+              <option value="comprehensive-assessment">Comprehensive</option>
+            </select>
+          </div>
+          <div class="form-group" style="flex:none">
+            <label>&nbsp;</label>
+            <button class="btn btn-primary" onclick="runBugBounty()">Run Workflow</button>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="flex:1">
+        <div class="card-title">Workflow Output</div>
+        <div class="terminal" id="bb-output"><span class="terminal-empty">Select a workflow and run...</span></div>
+      </div>
+    </div>
+
+    <!-- CTF -->
+    <div class="panel panel-scroll" id="panel-ctf">
+      <div class="card">
+        <div class="card-title">CTF Tools</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Challenge</label>
+            <input id="ctf-target" type="text" placeholder="Challenge name / URL / file">
+          </div>
+          <div class="form-group">
+            <label>Category</label>
+            <select id="ctf-category">
+              <option value="web">Web</option>
+              <option value="binary">Binary / PWN</option>
+              <option value="crypto">Crypto</option>
+              <option value="forensics">Forensics</option>
+              <option value="osint">OSINT</option>
+              <option value="misc">Misc</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Action</label>
+            <select id="ctf-action">
+              <option value="auto-solve-challenge">Auto Solve</option>
+              <option value="suggest-tools">Suggest Tools</option>
+              <option value="team-strategy">Team Strategy</option>
+            </select>
+          </div>
+          <div class="form-group" style="flex:none">
+            <label>&nbsp;</label>
+            <button class="btn btn-primary" onclick="runCTF()">Execute</button>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="flex:1">
+        <div class="card-title">CTF Output</div>
+        <div class="terminal" id="ctf-output"><span class="terminal-empty">Configure and run a CTF tool...</span></div>
+      </div>
+    </div>
+
+    <!-- PAYLOADS -->
+    <div class="panel panel-scroll" id="panel-payloads">
+      <div class="card">
+        <div class="card-title">Payload Generator</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Payload Type</label>
+            <select id="payload-type">
+              <option value="xss">XSS</option>
+              <option value="sqli">SQL Injection</option>
+              <option value="rce">RCE</option>
+              <option value="ssrf">SSRF</option>
+              <option value="lfi">LFI</option>
+              <option value="xxe">XXE</option>
+              <option value="ssti">SSTI</option>
+              <option value="open_redirect">Open Redirect</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Target Context</label>
+            <input id="payload-target" type="text" placeholder="e.g. HTML attribute, JSON field...">
+          </div>
+          <div class="form-group" style="flex:none">
+            <label>&nbsp;</label>
+            <button class="btn btn-primary" onclick="generatePayload()">Generate</button>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="flex:1">
+        <div class="card-title">Generated Payloads</div>
+        <div id="payload-output"><span style="color:var(--text-dim);font-style:italic;">Generate payloads to see them here...</span></div>
+      </div>
+    </div>
+
+    <!-- COMMAND EXEC -->
+    <div class="panel panel-scroll" id="panel-command">
+      <div class="card">
+        <div class="card-title">Command Execution</div>
+        <div class="form-row">
+          <div class="form-group" style="flex:1">
+            <label>Command</label>
+            <input id="cmd-input" type="text" placeholder="nmap -sV target.com" onkeydown="if(event.key==='Enter')runCommand()">
+          </div>
+          <div class="form-group">
+            <label>Working Dir</label>
+            <input id="cmd-cwd" type="text" placeholder="/tmp (optional)">
+          </div>
+          <div class="form-group" style="flex:none">
+            <label>&nbsp;</label>
+            <button class="btn btn-primary" onclick="runCommand()">Execute</button>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="flex:1;display:flex;flex-direction:column;">
+        <div class="card-title" style="display:flex;align-items:center;">
+          Output
+          <button class="btn btn-secondary refresh-btn" onclick="clearTerminal('cmd-output')">Clear</button>
+        </div>
+        <div class="terminal" id="cmd-output" style="max-height:none;flex:1;"><span class="terminal-empty">Enter a command and execute...</span></div>
+      </div>
+    </div>
+
+    <!-- CACHE -->
+    <div class="panel panel-scroll" id="panel-cache">
+      <div class="card">
+        <div class="card-title" style="display:flex;align-items:center;">
+          Cache Management
+          <button class="btn btn-danger" style="margin-left:auto;" onclick="clearCache()">Clear Cache</button>
+        </div>
+        <div id="full-cache-stats">Loading...</div>
+      </div>
+    </div>
+
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<script>
+const API = 'http://127.0.0.1:8888';
+
+// ── Navigation ────────────────────────────────────────────────────────────────
+document.querySelectorAll('.nav-item').forEach(el => {
+  el.addEventListener('click', () => {
+    document.querySelectorAll('.nav-item').forEach(x => x.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(x => x.classList.remove('active'));
+    el.classList.add('active');
+    const panel = document.getElementById('panel-' + el.dataset.panel);
+    if (panel) panel.classList.add('active');
+    onPanelSwitch(el.dataset.panel);
+  });
+});
+
+function onPanelSwitch(name) {
+  if (name === 'telemetry') { loadTelemetry(); loadCacheStats(); }
+  if (name === 'processes') loadProcesses();
+  if (name === 'tools') populateToolSelect();
+  if (name === 'cache') loadFullCacheStats();
+}
+
+// ── API helpers ───────────────────────────────────────────────────────────────
+async function api(path, method='GET', body=null) {
+  const opts = { method, headers: {'Content-Type':'application/json'} };
+  if (body) opts.body = JSON.stringify(body);
+  const r = await fetch(API + path, opts);
+  return r.json();
+}
+
+function termWrite(id, text, cls='line-info') {
+  const el = document.getElementById(id);
+  el.innerHTML = '';
+  if (typeof text === 'object') text = JSON.stringify(text, null, 2);
+  const lines = String(text).split('\n');
+  lines.forEach(line => {
+    const span = document.createElement('span');
+    span.className = cls;
+    span.textContent = line + '\n';
+    el.appendChild(span);
+  });
+  el.scrollTop = el.scrollHeight;
+}
+
+function termAppend(id, text, cls='line-info') {
+  const el = document.getElementById(id);
+  const prev = el.querySelector('.terminal-empty');
+  if (prev) prev.remove();
+  if (typeof text === 'object') text = JSON.stringify(text, null, 2);
+  const span = document.createElement('span');
+  span.className = cls;
+  span.textContent = String(text) + '\n';
+  el.appendChild(span);
+  el.scrollTop = el.scrollHeight;
+}
+
+function clearTerminal(id) {
+  document.getElementById(id).innerHTML = '<span class="terminal-empty">Cleared.</span>';
+}
+
+function fmtUptime(s) {
+  s = Math.floor(s);
+  const h = Math.floor(s/3600), m = Math.floor((s%3600)/60), ss = s%60;
+  return h ? `${h}h ${m}m` : m ? `${m}m ${ss}s` : `${ss}s`;
+}
+
+// ── Health polling ────────────────────────────────────────────────────────────
+async function checkHealth() {
+  try {
+    const d = await api('/health');
+    document.getElementById('status-dot').className = 'dot online';
+    document.getElementById('status-text').textContent = 'Online';
+    document.getElementById('uptime-text').textContent = fmtUptime(d.uptime);
+    // Dashboard stats
+    document.getElementById('d-status').textContent = d.status === 'healthy' ? 'OK' : d.status;
+    document.getElementById('d-status').style.color = d.status === 'healthy' ? 'var(--green)' : 'var(--red-bright)';
+    document.getElementById('d-uptime').textContent = fmtUptime(d.uptime);
+    document.getElementById('d-tools').textContent = d.total_tools_available;
+    document.getElementById('d-tools-sub').textContent = `of ${d.total_tools_count} total`;
+    document.getElementById('d-cmds').textContent = d.telemetry.commands_executed;
+    document.getElementById('d-success').textContent = d.telemetry.success_rate;
+    document.getElementById('d-avgtime').textContent = d.telemetry.average_execution_time;
+    document.getElementById('d-cachehits').textContent = d.cache_stats.hits;
+    document.getElementById('d-version').textContent = d.version;
+
+    // System metrics
+    const sm = d.telemetry.system_metrics || {};
+    const metricsHtml = Object.entries(sm).map(([k,v]) => {
+      const pct = typeof v === 'number' ? Math.min(v, 100) : null;
+      return `<div class="bar-row">
+        <div class="bar-label">${k}</div>
+        ${pct !== null ? `<div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div><div class="bar-val">${v}%</div>` : `<div class="bar-val" style="flex:1">${v}</div>`}
+      </div>`;
+    }).join('');
+    document.getElementById('sys-metrics').innerHTML = metricsHtml || '<span style="color:var(--text-dim)">No metrics available</span>';
+
+    // Tool chips
+    buildToolGrid(d.tools_status);
+  } catch(e) {
+    document.getElementById('status-dot').className = 'dot offline';
+    document.getElementById('status-text').textContent = 'Offline';
+    document.getElementById('d-status').textContent = 'OFFLINE';
+    document.getElementById('d-status').style.color = 'var(--red-bright)';
+  }
+}
+
+function buildToolGrid(tools) {
+  const search = document.getElementById('tool-search').value.toLowerCase();
+  const grid = document.getElementById('tool-grid');
+  grid.innerHTML = '';
+  Object.entries(tools).filter(([k]) => !search || k.includes(search)).forEach(([k,v]) => {
+    const chip = document.createElement('div');
+    chip.className = 'tool-chip' + (v ? ' available' : '');
+    chip.textContent = k;
+    chip.title = v ? 'Available' : 'Not installed';
+    grid.appendChild(chip);
+  });
+}
+
+document.getElementById('tool-search').addEventListener('input', () => checkHealth());
+
+// ── Telemetry ─────────────────────────────────────────────────────────────────
+async function loadTelemetry() {
+  const d = await api('/api/telemetry');
+  const el = document.getElementById('telemetry-content');
+  el.innerHTML = Object.entries(d).map(([k,v]) => {
+    const val = typeof v === 'object' ? JSON.stringify(v) : v;
+    return `<div class="bar-row"><div class="bar-label">${k}</div><div style="color:var(--text);font-size:12px;">${val}</div></div>`;
+  }).join('');
+}
+
+async function loadCacheStats() {
+  const d = await api('/api/cache/stats');
+  const el = document.getElementById('cache-stats-content');
+  el.innerHTML = Object.entries(d).map(([k,v]) => `
+    <div class="bar-row"><div class="bar-label">${k}</div><div style="color:var(--text);font-size:12px;">${v}</div></div>
+  `).join('');
+}
+
+async function loadFullCacheStats() {
+  const d = await api('/api/cache/stats');
+  document.getElementById('full-cache-stats').innerHTML = `<pre style="color:var(--green);font-size:12px;">${JSON.stringify(d,null,2)}</pre>`;
+}
+
+async function clearCache() {
+  await api('/api/cache/clear','POST');
+  termAppend('cmd-output','Cache cleared.','line-success');
+  loadFullCacheStats();
+}
+
+// ── Processes ─────────────────────────────────────────────────────────────────
+async function loadProcesses() {
+  const d = await api('/api/processes/list');
+  const tbody = document.getElementById('process-tbody');
+  const procs = d.processes || [];
+  if (!procs.length) {
+    tbody.innerHTML = '<tr><td colspan="6" style="color:var(--text-dim);text-align:center;padding:20px;">No active processes</td></tr>';
+    return;
+  }
+  tbody.innerHTML = procs.map(p => `
+    <tr>
+      <td>${p.pid}</td>
+      <td>${p.name || '-'}</td>
+      <td><span class="badge ${p.status==='running'?'badge-green':p.status==='paused'?'badge-yellow':'badge-red'}">${p.status}</span></td>
+      <td>${p.cpu_percent !== undefined ? p.cpu_percent+'%' : '-'}</td>
+      <td>${p.memory_percent !== undefined ? p.memory_percent.toFixed(1)+'%' : '-'}</td>
+      <td style="display:flex;gap:6px;">
+        <button class="btn btn-secondary" style="padding:3px 8px;font-size:10px;" onclick="terminateProcess(${p.pid})">Kill</button>
+        ${p.status==='running' ? `<button class="btn btn-secondary" style="padding:3px 8px;font-size:10px;" onclick="pauseProcess(${p.pid})">Pause</button>` : ''}
+        ${p.status==='paused' ? `<button class="btn btn-secondary" style="padding:3px 8px;font-size:10px;" onclick="resumeProcess(${p.pid})">Resume</button>` : ''}
+      </td>
+    </tr>
+  `).join('');
+}
+
+async function terminateProcess(pid) {
+  await api(`/api/processes/terminate/${pid}`, 'POST');
+  loadProcesses();
+}
+async function pauseProcess(pid) {
+  await api(`/api/processes/pause/${pid}`, 'POST');
+  loadProcesses();
+}
+async function resumeProcess(pid) {
+  await api(`/api/processes/resume/${pid}`, 'POST');
+  loadProcesses();
+}
+
+// ── Analyze Target ────────────────────────────────────────────────────────────
+async function runAnalyze() {
+  const target = document.getElementById('analyze-target').value.trim();
+  if (!target) return;
+  const btn = document.getElementById('analyze-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Analyzing...';
+  termWrite('analyze-output', `Analyzing ${target}...`, 'line-cmd');
+  try {
+    const d = await api('/api/intelligence/analyze-target', 'POST', {
+      target,
+      context: document.getElementById('analyze-context').value
+    });
+    termWrite('analyze-output', JSON.stringify(d, null, 2), 'line-info');
+  } catch(e) {
+    termWrite('analyze-output', 'Error: ' + e.message, 'line-error');
+  }
+  btn.disabled = false;
+  btn.textContent = 'Analyze';
+}
+
+// ── Smart Scan ────────────────────────────────────────────────────────────────
+async function runSmartScan() {
+  const target = document.getElementById('scan-target').value.trim();
+  if (!target) return;
+  termWrite('scan-output', `Starting smart scan on ${target}...`, 'line-cmd');
+  try {
+    const d = await api('/api/intelligence/smart-scan', 'POST', {
+      target,
+      scan_type: document.getElementById('scan-type').value
+    });
+    termWrite('scan-output', JSON.stringify(d, null, 2), 'line-info');
+  } catch(e) {
+    termWrite('scan-output', 'Error: ' + e.message, 'line-error');
+  }
+}
+
+// ── Attack Chain ──────────────────────────────────────────────────────────────
+async function runAttackChain() {
+  const target = document.getElementById('chain-target').value.trim();
+  if (!target) return;
+  termWrite('chain-output', `Generating attack chain for ${target}...`, 'line-cmd');
+  try {
+    const d = await api('/api/intelligence/create-attack-chain', 'POST', {
+      target,
+      objective: document.getElementById('chain-objective').value
+    });
+    termWrite('chain-output', JSON.stringify(d, null, 2), 'line-info');
+  } catch(e) {
+    termWrite('chain-output', 'Error: ' + e.message, 'line-error');
+  }
+}
+
+// ── Tools ─────────────────────────────────────────────────────────────────────
+const TOOLS = [
+  {name:'nmap', fields:[{id:'target',label:'Target',placeholder:'192.168.1.1'},{id:'ports',label:'Ports',placeholder:'1-1000'},{id:'scan_type',label:'Scan Type',placeholder:'-sV -sC'}]},
+  {name:'gobuster', fields:[{id:'target',label:'URL',placeholder:'http://target.com'},{id:'wordlist',label:'Wordlist',placeholder:'/usr/share/wordlists/dirb/common.txt'},{id:'extensions',label:'Extensions',placeholder:'php,html'}]},
+  {name:'nuclei', fields:[{id:'target',label:'Target',placeholder:'https://target.com'},{id:'templates',label:'Templates',placeholder:'cves/ (optional)'},{id:'severity',label:'Severity',placeholder:'critical,high'}]},
+  {name:'sqlmap', fields:[{id:'target',label:'URL',placeholder:'http://target.com/page?id=1'},{id:'level',label:'Level',placeholder:'1'},{id:'risk',label:'Risk',placeholder:'1'}]},
+  {name:'hydra', fields:[{id:'target',label:'Target',placeholder:'192.168.1.1'},{id:'service',label:'Service',placeholder:'ssh'},{id:'username',label:'Username',placeholder:'admin'},{id:'wordlist',label:'Wordlist',placeholder:'/usr/share/wordlists/rockyou.txt'}]},
+  {name:'ffuf', fields:[{id:'target',label:'URL (use FUZZ)',placeholder:'http://target.com/FUZZ'},{id:'wordlist',label:'Wordlist',placeholder:'/usr/share/wordlists/dirb/common.txt'}]},
+  {name:'subfinder', fields:[{id:'target',label:'Domain',placeholder:'target.com'}]},
+  {name:'amass', fields:[{id:'target',label:'Domain',placeholder:'target.com'},{id:'mode',label:'Mode',placeholder:'enum'}]},
+  {name:'nikto', fields:[{id:'target',label:'Target',placeholder:'http://target.com'}]},
+  {name:'wpscan', fields:[{id:'target',label:'URL',placeholder:'http://wp-site.com'},{id:'enumerate',label:'Enumerate',placeholder:'p,u,t'}]},
+  {name:'hashcat', fields:[{id:'hash',label:'Hash',placeholder:'5f4dcc3b5aa765d61d8327deb882cf99'},{id:'mode',label:'Mode',placeholder:'0'},{id:'wordlist',label:'Wordlist',placeholder:'/usr/share/wordlists/rockyou.txt'}]},
+  {name:'john', fields:[{id:'hash_file',label:'Hash File',placeholder:'/tmp/hashes.txt'},{id:'wordlist',label:'Wordlist',placeholder:'/usr/share/wordlists/rockyou.txt'}]},
+  {name:'dirb', fields:[{id:'target',label:'URL',placeholder:'http://target.com'},{id:'wordlist',label:'Wordlist',placeholder:''}]},
+  {name:'masscan', fields:[{id:'target',label:'Target',placeholder:'192.168.1.0/24'},{id:'ports',label:'Ports',placeholder:'1-65535'},{id:'rate',label:'Rate',placeholder:'1000'}]},
+  {name:'rustscan', fields:[{id:'target',label:'Target',placeholder:'192.168.1.1'},{id:'ports',label:'Ports',placeholder:'1-65535'}]},
+  {name:'feroxbuster', fields:[{id:'target',label:'URL',placeholder:'http://target.com'},{id:'wordlist',label:'Wordlist',placeholder:''},{id:'extensions',label:'Extensions',placeholder:'php,txt'}]},
+  {name:'dalfox', fields:[{id:'target',label:'URL',placeholder:'http://target.com/page?q=test'}]},
+  {name:'httpx', fields:[{id:'targets',label:'Targets (comma)',placeholder:'target.com,sub.target.com'}]},
+  {name:'katana', fields:[{id:'target',label:'URL',placeholder:'https://target.com'},{id:'depth',label:'Depth',placeholder:'3'}]},
+  {name:'enum4linux', fields:[{id:'target',label:'Target IP',placeholder:'192.168.1.10'}]},
+  {name:'smbmap', fields:[{id:'target',label:'Host',placeholder:'192.168.1.10'},{id:'username',label:'Username',placeholder:'anonymous'},{id:'password',label:'Password',placeholder:''}]},
+  {name:'netexec', fields:[{id:'target',label:'Target',placeholder:'192.168.1.0/24'},{id:'protocol',label:'Protocol',placeholder:'smb'},{id:'username',label:'Username',placeholder:'admin'},{id:'password',label:'Password',placeholder:''}]},
+  {name:'binwalk', fields:[{id:'file',label:'File',placeholder:'/tmp/firmware.bin'}]},
+  {name:'exiftool', fields:[{id:'file',label:'File',placeholder:'/tmp/image.jpg'}]},
+  {name:'steghide', fields:[{id:'file',label:'File',placeholder:'/tmp/image.jpg'},{id:'passphrase',label:'Passphrase',placeholder:''}]},
+  {name:'volatility', fields:[{id:'image',label:'Memory Image',placeholder:'/tmp/memory.dmp'},{id:'profile',label:'Profile',placeholder:'Win10x64'},{id:'plugin',label:'Plugin',placeholder:'pslist'}]},
+  {name:'strings', fields:[{id:'file',label:'File',placeholder:'/tmp/binary'},{id:'min_length',label:'Min Length',placeholder:'4'}]},
+  {name:'xxd', fields:[{id:'file',label:'File',placeholder:'/tmp/binary'},{id:'length',label:'Length',placeholder:'256'}]},
+  {name:'wafw00f', fields:[{id:'target',label:'URL',placeholder:'http://target.com'}]},
+  {name:'dnsenum', fields:[{id:'target',label:'Domain',placeholder:'target.com'}]},
+  {name:'theharvester', fields:[{id:'target',label:'Domain',placeholder:'target.com'},{id:'source',label:'Source',placeholder:'google,bing'}]},
+];
+
+let allTools = [...TOOLS];
+
+function populateToolSelect() {
+  const sel = document.getElementById('tool-select');
+  if (sel.options.length > 0) return;
+  allTools.forEach(t => {
+    const opt = document.createElement('option');
+    opt.value = t.name;
+    opt.textContent = t.name;
+    sel.appendChild(opt);
+  });
+}
+
+function filterToolSelect() {
+  const q = document.getElementById('tool-select-search').value.toLowerCase();
+  const sel = document.getElementById('tool-select');
+  sel.innerHTML = '';
+  allTools.filter(t => t.name.includes(q)).forEach(t => {
+    const opt = document.createElement('option');
+    opt.value = t.name;
+    opt.textContent = t.name;
+    sel.appendChild(opt);
+  });
+}
+
+function buildToolForm() {
+  const sel = document.getElementById('tool-select');
+  const name = sel.value;
+  const tool = allTools.find(t => t.name === name);
+  if (!tool) return;
+  const area = document.getElementById('tool-form-area');
+  area.innerHTML = tool.fields.map(f => `
+    <div class="form-group" style="margin-bottom:10px;">
+      <label>${f.label}</label>
+      <input id="tf-${f.id}" type="text" placeholder="${f.placeholder}">
+    </div>
+  `).join('') + `<button class="btn btn-primary" onclick="runTool('${name}')">Run ${name}</button>`;
+}
+
+async function runTool(name) {
+  const tool = allTools.find(t => t.name === name);
+  if (!tool) return;
+  const body = {};
+  tool.fields.forEach(f => {
+    const val = document.getElementById('tf-'+f.id)?.value.trim();
+    if (val) body[f.id] = val;
+  });
+  termWrite('tool-output', `Running ${name}...`, 'line-cmd');
+  try {
+    const d = await api(`/api/tools/${name}`, 'POST', body);
+    termWrite('tool-output', JSON.stringify(d, null, 2), 'line-info');
+  } catch(e) {
+    termWrite('tool-output', 'Error: ' + e.message, 'line-error');
+  }
+}
+
+// ── Bug Bounty ────────────────────────────────────────────────────────────────
+async function runBugBounty() {
+  const target = document.getElementById('bb-target').value.trim();
+  const workflow = document.getElementById('bb-workflow').value;
+  if (!target) return;
+  termWrite('bb-output', `Running ${workflow} on ${target}...`, 'line-cmd');
+  try {
+    const d = await api(`/api/bugbounty/${workflow}`, 'POST', { target });
+    termWrite('bb-output', JSON.stringify(d, null, 2), 'line-info');
+  } catch(e) {
+    termWrite('bb-output', 'Error: ' + e.message, 'line-error');
+  }
+}
+
+// ── CTF ───────────────────────────────────────────────────────────────────────
+async function runCTF() {
+  const target = document.getElementById('ctf-target').value.trim();
+  const action = document.getElementById('ctf-action').value;
+  const category = document.getElementById('ctf-category').value;
+  termWrite('ctf-output', `CTF ${action} [${category}] on ${target || 'challenge'}...`, 'line-cmd');
+  try {
+    const d = await api(`/api/ctf/${action}`, 'POST', { target, category, challenge_type: category });
+    termWrite('ctf-output', JSON.stringify(d, null, 2), 'line-info');
+  } catch(e) {
+    termWrite('ctf-output', 'Error: ' + e.message, 'line-error');
+  }
+}
+
+// ── Payloads ──────────────────────────────────────────────────────────────────
+async function generatePayload() {
+  const payload_type = document.getElementById('payload-type').value;
+  const target_context = document.getElementById('payload-target').value;
+  try {
+    const d = await api('/api/payloads/generate', 'POST', { payload_type, target_context });
+    const out = document.getElementById('payload-output');
+    out.innerHTML = '';
+    const payloads = d.payloads || d.payload || d;
+    if (Array.isArray(payloads)) {
+      payloads.forEach(p => {
+        const div = document.createElement('div');
+        div.style.cssText = 'padding:4px 0;border-bottom:1px solid var(--border);color:var(--green);';
+        div.textContent = typeof p === 'string' ? p : JSON.stringify(p);
+        out.appendChild(div);
+      });
+    } else {
+      out.innerHTML = `<pre style="color:var(--green);font-size:12px;">${JSON.stringify(payloads,null,2)}</pre>`;
+    }
+  } catch(e) {
+    document.getElementById('payload-output').innerHTML = `<span style="color:var(--red-bright);">Error: ${e.message}</span>`;
+  }
+}
+
+// ── Command Exec ──────────────────────────────────────────────────────────────
+async function runCommand() {
+  const command = document.getElementById('cmd-input').value.trim();
+  const cwd = document.getElementById('cmd-cwd').value.trim();
+  if (!command) return;
+  termAppend('cmd-output', `$ ${command}`, 'line-cmd');
+  try {
+    const body = { command };
+    if (cwd) body.cwd = cwd;
+    const d = await api('/api/command', 'POST', body);
+    if (d.stdout) termAppend('cmd-output', d.stdout, 'line-info');
+    if (d.stderr) termAppend('cmd-output', d.stderr, 'line-warn');
+    if (d.error) termAppend('cmd-output', d.error, 'line-error');
+    if (d.output) termAppend('cmd-output', d.output, 'line-info');
+    if (d.return_code !== undefined) termAppend('cmd-output', `[exit ${d.return_code}]`, d.return_code===0?'line-success':'line-error');
+  } catch(e) {
+    termAppend('cmd-output', 'Error: '+e.message, 'line-error');
+  }
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+checkHealth();
+setInterval(checkHealth, 5000);
+</script>
+</body>
+</html>
