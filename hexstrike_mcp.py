@@ -276,6 +276,96 @@ def setup_mcp_server(hexstrike_client: HexStrikeClient) -> FastMCP:
     """
     mcp = FastMCP("hexstrike-ai-mcp")
 
+    # Fetch available tools from the backend server
+    try:
+        health = hexstrike_client.check_health()
+        tools_status = health.get("tools_status", {})
+        backend_reachable = "error" not in health
+    except Exception as e:
+        tools_status = {}
+        backend_reachable = False
+
+    # Store reference to the original FastMCP tool decorator method
+    original_mcp_tool = mcp.tool
+
+    # Sort tool names by length descending to match longest tool name first
+    sorted_tool_names = sorted(tools_status.keys(), key=len, reverse=True)
+
+    def find_associated_tool(func_name: str) -> Optional[str]:
+        normalized = func_name.replace("_", "-").lower()
+        for tool in sorted_tool_names:
+            # Exclude false positives for volatility/vol/file helpers unless exact match/word boundary
+            if tool in ["vol", "file"] and f"-{tool}-" not in f"-{normalized}-":
+                continue
+            if tool in normalized:
+                return tool
+        return None
+
+    EXEMPT_FUNCTIONS = {
+        # Core & planning
+        "server_health", "get_cache_stats", "clear_cache", "get_telemetry", 
+        "list_active_processes", "get_process_status", "terminate_process", 
+        "pause_process", "resume_process", "get_process_dashboard", "execute_command",
+        "error_handling_statistics", "test_error_recovery", "get_live_dashboard",
+        "display_system_metrics", "analyze_target_intelligence", "select_optimal_tools_ai",
+        "optimize_tool_parameters_ai", "create_attack_chain_ai", "intelligent_smart_scan",
+        "detect_technologies_ai", "ai_reconnaissance_workflow", "ai_vulnerability_assessment",
+        
+        # Bug Bounty AI workflows
+        "bugbounty_reconnaissance_workflow", "bugbounty_vulnerability_hunting",
+        "bugbounty_business_logic_testing", "bugbounty_osint_gathering", 
+        "bugbounty_file_upload_testing", "bugbounty_comprehensive_assessment", 
+        "bugbounty_authentication_bypass_testing",
+        
+        # Threat Intel / CVE / Zero-day
+        "monitor_cve_feeds", "generate_exploit_from_cve", "discover_attack_chains",
+        "research_zero_day_opportunities", "correlate_threat_intelligence",
+        "advanced_payload_generation", "vulnerability_intelligence_dashboard",
+        "threat_hunting_assistant",
+        
+        # File operations
+        "create_file", "modify_file", "delete_file", "list_files", "download_file", "upload_file",
+        
+        # Python / Payloads / Custom AI
+        "install_python_packages", "execute_python_code", "generate_ai_payload", "test_ai_payload",
+        
+        # Visuals & Reports
+        "create_vulnerability_report", "format_tool_output_visual", "create_scan_summary",
+        
+        # HTTP / Repeater / Intruder / Proxy / Burp
+        "http_framework_test", "browser_agent_inspect", "http_set_rules", "http_set_scope",
+        "http_repeater", "http_intruder", "burpsuite_alternative_scan",
+        
+        # CTF Automation
+        "create_ctf_challenge_workflow", "auto_solve_ctf_challenge", "ctf_team_strategy",
+        "suggest_ctf_tools", "ctf_cryptography_solver", "ctf_forensics_analyzer", "ctf_binary_analyzer"
+    }
+
+    def custom_mcp_tool(*args, **kwargs):
+        """Custom decorator override to filter tools based on OS binary availability."""
+        def decorator(func):
+            # Exempt helper functions from filtering
+            if func.__name__ in EXEMPT_FUNCTIONS:
+                return original_mcp_tool(*args, **kwargs)(func)
+            
+            # Find associated binary
+            associated_tool = find_associated_tool(func.__name__)
+            
+            is_available = True
+            if backend_reachable and associated_tool:
+                is_available = tools_status.get(associated_tool, False)
+            
+            if is_available:
+                # Register tool with the original decorator
+                return original_mcp_tool(*args, **kwargs)(func)
+            else:
+                logger.info(f"🚫 Omitted registering tool: {func.__name__} (binary '{associated_tool}' not available)")
+                return func
+        return decorator
+
+    # Override the mcp.tool decorator dynamically!
+    mcp.tool = custom_mcp_tool
+
     # ============================================================================
     # CORE NETWORK SCANNING TOOLS
     # ============================================================================
