@@ -67,6 +67,16 @@ dev = [
 
 [tool.uv]
 package = false
+# Transitive constraints for known-broken upstream releases:
+# - unicorn==2.1.1: only version with a macOS arm64 wheel inside pwntools'
+#   allowed range (`!=2.1.3,!=2.1.4,>=2.0.1`); older 2.0.x fails to build
+#   under cmake >= 4.0.
+# - pycparser<3.0: pycparser 3.0 dropped its PLY-based parser and broke
+#   `angr.sim_type` (CLexer.filename became read-only -> AttributeError).
+constraint-dependencies = [
+    "unicorn==2.1.1",
+    "pycparser<3.0",
+]
 
 [tool.ruff]
 line-length = 120

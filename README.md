@@ -607,13 +607,28 @@ AI Agent: "Thank you for clarifying ownership and intent. To proceed with a pene
 
 ### Common Issues
 
-1. **MCP Connection Failed**:
+1. **MCP Connection Failed** (e.g. `MCP error -32000: Connection closed`):
    ```bash
-   # Check if server is running
-   netstat -tlnp | grep 8888
-   
+   # The -32000 "Connection closed" error means the MCP client (Claude Desktop,
+   # Cursor, VS Code, etc.) launched hexstrike_mcp.py but the process exited
+   # before completing the JSON-RPC handshake. Almost always one of:
+   #   a) Wrong absolute path or wrong Python interpreter in the client config.
+   #      Use the uv-managed interpreter:  ./.venv/bin/python  (after `uv sync`)
+   #   b) The HTTP API server (port 8888) is not running yet — start it first.
+   #   c) Dependencies are missing — run `uv sync` again.
+
+   # Check if the API server is running
+   lsof -iTCP:8888 -sTCP:LISTEN     # macOS
+   netstat -tlnp | grep 8888        # Linux
+
    # Restart server
    uv run python hexstrike_server.py
+
+   # Verify health
+   curl -s http://127.0.0.1:8888/health | python -m json.tool
+
+   # Smoke-test the MCP bridge directly (it should print server banner and stay alive)
+   uv run python hexstrike_mcp.py --debug
    ```
 
 2. **Security Tools Not Found**:
