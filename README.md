@@ -112,20 +112,23 @@ graph TD
 
 ### Quick Setup to Run the hexstrike MCPs Server
 
+> Dependencies are managed with [**uv**](https://docs.astral.sh/uv/), a fast Python package and project manager. It replaces the traditional `python -m venv` + `pip install -r requirements.txt` workflow with a single, reproducible step backed by `pyproject.toml` and `uv.lock`.
+
 ```bash
-# 1. Clone the repository
+# 1. Install uv (skip if already installed)
+curl -LsSf https://astral.sh/uv/install.sh | sh
+# Windows (PowerShell): powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+# macOS (Homebrew):     brew install uv
+
+# 2. Clone the repository
 git clone https://github.com/0x4m4/hexstrike-ai.git
 cd hexstrike-ai
 
-# 2. Create virtual environment
-python3 -m venv hexstrike-env
-source hexstrike-env/bin/activate  # Linux/Mac
-# hexstrike-env\Scripts\activate   # Windows
-
-# 3. Install Python dependencies
-pip3 install -r requirements.txt
-
+# 3. Install Python dependencies (uv creates the virtual environment automatically)
+uv sync
 ```
+
+After `uv sync`, run any project command with `uv run` (for example `uv run python hexstrike_server.py`) and uv will use the managed virtual environment for you. If you prefer the classic flow you can still activate it manually with `source .venv/bin/activate` (Linux/macOS) or `.venv\Scripts\activate` (Windows).
 
 ### Installation and Setting Up Guide for various AI Clients:
 
@@ -188,14 +191,14 @@ sudo apt update && sudo apt install google-chrome-stable
 ### Start the Server
 
 ```bash
-# Start the MCP server
-python3 hexstrike_server.py
+# Start the MCP server (uv run uses the managed virtual environment)
+uv run python hexstrike_server.py
 
 # Optional: Start with debug mode
-python3 hexstrike_server.py --debug
+uv run python hexstrike_server.py --debug
 
 # Optional: Custom port configuration
-python3 hexstrike_server.py --port 8888
+uv run python hexstrike_server.py --port 8888
 ```
 
 ### Verify Installation
@@ -610,7 +613,7 @@ AI Agent: "Thank you for clarifying ownership and intent. To proceed with a pene
    netstat -tlnp | grep 8888
    
    # Restart server
-   python3 hexstrike_server.py
+   uv run python hexstrike_server.py
    ```
 
 2. **Security Tools Not Found**:
@@ -625,15 +628,15 @@ AI Agent: "Thank you for clarifying ownership and intent. To proceed with a pene
    ```bash
    # Verify MCP configuration paths
    # Check server logs for connection attempts
-   python3 hexstrike_mcp.py --debug
+   uv run python hexstrike_mcp.py --debug
    ```
 
 ### Debug Mode
 
 Enable debug mode for detailed logging:
 ```bash
-python3 hexstrike_server.py --debug
-python3 hexstrike_mcp.py --debug
+uv run python hexstrike_server.py --debug
+uv run python hexstrike_mcp.py --debug
 ```
 
 ---
@@ -672,15 +675,11 @@ We welcome contributions from the cybersecurity and AI community!
 git clone https://github.com/0x4m4/hexstrike-ai.git
 cd hexstrike-ai
 
-# 2. Create development environment
-python3 -m venv hexstrike-dev
-source hexstrike-dev/bin/activate
+# 2. Install dependencies with uv (creates .venv automatically)
+uv sync
 
-# 3. Install development dependencies
-pip install -r requirements.txt
-
-# 4. Start development server
-python3 hexstrike_server.py --port 8888 --debug
+# 3. Start the development server
+uv run python hexstrike_server.py --port 8888 --debug
 ```
 
 ### Priority Areas for Contribution

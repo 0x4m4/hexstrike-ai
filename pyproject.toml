@@ -1,0 +1,73 @@
+[project]
+name = "hexstrike-ai"
+version = "6.0.0"
+description = "HexStrike AI MCP Agents - AI-powered offensive security framework with 150+ integrated tools"
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.10,<3.13"
+authors = [
+    { name = "0x4m4" },
+]
+keywords = [
+    "security",
+    "offensive-security",
+    "mcp",
+    "ai-agents",
+    "pentesting",
+    "red-team",
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Information Technology",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Security",
+]
+
+dependencies = [
+    # Core framework
+    "flask>=2.3.0,<4.0.0",
+    "requests>=2.31.0,<3.0.0",
+    "psutil>=5.9.0,<6.0.0",
+    "fastmcp>=0.2.0,<1.0.0",
+
+    # Web scraping & automation
+    "beautifulsoup4>=4.12.0,<5.0.0",
+    "selenium>=4.15.0,<5.0.0",
+    "webdriver-manager>=4.0.0,<5.0.0",
+
+    # Async & networking
+    "aiohttp>=3.8.0,<4.0.0",
+
+    # Proxy & testing
+    "mitmproxy>=9.0.0,<11.0.0",
+
+    # Binary analysis (conditionally used)
+    "pwntools>=4.10.0,<5.0.0",
+    "angr>=9.2.0,<10.0.0",
+    # Pin bcrypt for passlib compatibility (fixes pwntools dependency issue)
+    "bcrypt==4.0.1",
+]
+
+[project.urls]
+Homepage = "https://github.com/0x4m4/hexstrike-ai"
+Repository = "https://github.com/0x4m4/hexstrike-ai"
+Issues = "https://github.com/0x4m4/hexstrike-ai/issues"
+
+[dependency-groups]
+dev = [
+    "pytest>=7.0.0",
+    "ruff>=0.1.0",
+]
+
+[tool.uv]
+package = false
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
