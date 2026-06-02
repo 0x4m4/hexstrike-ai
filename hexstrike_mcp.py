@@ -4663,7 +4663,7 @@ def setup_mcp_server(hexstrike_client: HexStrikeClient) -> FastMCP:
 
         try:
             context_dict = json.loads(context) if context != "{}" else {}
-        except:
+        except Exception:
             context_dict = {}
 
         data = {
