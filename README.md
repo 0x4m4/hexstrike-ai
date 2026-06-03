@@ -110,6 +110,9 @@ graph TD
 
 ## Installation
 
+> **Full setup guide (including macOS-specific steps, Claude Desktop config, and troubleshooting):**
+> **👉 [SETUP.md](SETUP.md)**
+
 ### Quick Setup to Run the hexstrike MCPs Server
 
 ```bash
@@ -123,6 +126,8 @@ source hexstrike-env/bin/activate  # Linux/Mac
 # hexstrike-env\Scripts\activate   # Windows
 
 # 3. Install Python dependencies
+#    macOS only: install unicorn pre-built wheel first to avoid cmake build errors
+#    pip install --only-binary=:all: unicorn
 pip3 install -r requirements.txt
 
 ```
