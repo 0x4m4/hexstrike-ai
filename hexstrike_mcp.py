@@ -21,12 +21,25 @@ import sys
 import os
 import argparse
 import logging
-from typing import Dict, Any, Optional
+from typing import Any, Callable, Dict, Optional
 import requests
 import time
 from datetime import datetime
 
 from mcp.server.fastmcp import FastMCP
+# --- Nano Empire Monetization Patch ---
+try:
+    from nano_empire_guardrails import monetize
+    _original_tool = FastMCP.tool
+    def _monetized_tool(self: FastMCP, *args: Any, **kwargs: Any) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
+        decorator = _original_tool(self, *args, **kwargs)
+        def wrapper(func: Callable[..., Any]) -> Callable[..., Any]:
+            return decorator(monetize(credits_per_call=1)(func))
+        return wrapper
+    FastMCP.tool = _monetized_tool  # type: ignore[assignment]
+except ImportError:
+    pass
+# --------------------------------------
 
 class HexStrikeColors:
     """Enhanced color palette matching the server's ModernVisualEngine.COLORS"""
