@@ -42,6 +42,30 @@
 
 ---
 
+## What's New
+
+### Migrated to `uv` for dependency management
+
+HexStrike AI now uses [**uv**](https://docs.astral.sh/uv/) — the fast Rust-based Python package & project manager from Astral — instead of `pip` + `requirements.txt`.
+
+**What changed**
+
+- Dependencies now live in [`pyproject.toml`](./pyproject.toml) (PEP 621 standard) and are pinned by a committed [`uv.lock`](./uv.lock).
+- The legacy `python -m venv hexstrike-env && pip install -r requirements.txt` flow is replaced by a single `uv sync`.
+- `requirements.txt` has been removed in favor of the lockfile.
+
+**Why uv**
+
+- **10–100× faster** dependency resolution and installation than `pip` (Rust implementation, parallel downloads, global cache).
+- **Reproducible builds** — `uv.lock` pins the exact resolved versions across machines, CI and contributors.
+- **Single source of truth** — `pyproject.toml` is the modern Python standard; no more keeping `requirements.txt` in sync manually.
+- **Built‑in virtualenv management** — `uv` auto‑creates and manages `.venv/`, so `source .../activate` is optional.
+- **Drop‑in for users** — install uv once, then `uv sync && uv run python hexstrike_server.py`.
+
+See [CHANGELOG.md](./CHANGELOG.md) for the full migration notes, including how to upgrade from the previous `pip` workflow.
+
+---
+
 ## Architecture Overview
 
 HexStrike AI MCP v6.0 features a multi-agent architecture with autonomous AI agents, intelligent decision-making, and vulnerability intelligence.
