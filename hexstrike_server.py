@@ -8147,11 +8147,12 @@ if __name__ == "__main__":
 
     def _generate_xxe_exploit(self, cve_data, target_info, details):
         """Generate XXE exploit based on CVE details"""
-        cve_id = cve_data.get("cve_id", "")
+        cve_id_comment = self._escape_comment_string(cve_data.get("cve_id", ""))
+        description = self._escape_comment_string(cve_data.get("description", "")[:100])
         
         return f'''#!/usr/bin/env python3
-# XXE (XML External Entity) Exploit for {cve_id}
-# Vulnerability: {cve_data.get("description", "")[:100]}...
+# XXE (XML External Entity) Exploit for {cve_id_comment}
+# Vulnerability: {description}...
 
 import requests
 import sys
@@ -8320,11 +8321,12 @@ if __name__ == "__main__":
 
     def _generate_auth_bypass_exploit(self, cve_data, target_info, details):
         """Generate authentication bypass exploit"""
-        cve_id = cve_data.get("cve_id", "")
+        cve_id_comment = self._escape_comment_string(cve_data.get("cve_id", ""))
+        description = self._escape_comment_string(cve_data.get("description", "")[:100])
         
         return f'''#!/usr/bin/env python3
-# Authentication Bypass Exploit for {cve_id}
-# Vulnerability: {cve_data.get("description", "")[:100]}...
+# Authentication Bypass Exploit for {cve_id_comment}
+# Vulnerability: {description}...
 
 import requests
 import sys
@@ -8433,13 +8435,14 @@ if __name__ == "__main__":
 
     def _generate_buffer_overflow_exploit(self, cve_data, target_info, details):
         """Generate buffer overflow exploit"""
-        cve_id = cve_data.get("cve_id", "")
-        arch = target_info.get("target_arch", "x64")
+        cve_id_comment = self._escape_comment_string(cve_data.get("cve_id", ""))
+        arch = self._escape_comment_string(target_info.get("target_arch", "x64"))
+        description = self._escape_comment_string(cve_data.get("description", "")[:100])
         
         return f'''#!/usr/bin/env python3
-# Buffer Overflow Exploit for {cve_id}
+# Buffer Overflow Exploit for {cve_id_comment}
 # Architecture: {arch}
-# Vulnerability: {cve_data.get("description", "")[:100]}...
+# Vulnerability: {description}...
 
 import struct
 import socket
