@@ -158,6 +158,20 @@ class HexStrikeClient:
         self.server_url = server_url.rstrip("/")
         self.timeout = timeout
         self.session = requests.Session()
+        
+        # Load API Key for authentication
+        api_key = os.environ.get("HEXSTRIKE_API_KEY")
+        key_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".hexstrike_key")
+        if not api_key and os.path.exists(key_file):
+            try:
+                with open(key_file, "r") as f:
+                    api_key = f.read().strip()
+            except Exception as e:
+                logger.error(f"Error reading local key file: {e}")
+        
+        if api_key:
+            self.session.headers["X-API-Key"] = api_key
+            logger.info("🔑 API Key authentication configured")
 
         # Try to connect to server with retries
         connected = False
