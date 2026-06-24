@@ -98,6 +98,43 @@ app.config['JSON_SORT_KEYS'] = False
 API_PORT = int(os.environ.get('HEXSTRIKE_PORT', 8888))
 API_HOST = os.environ.get('HEXSTRIKE_HOST', '127.0.0.1')
 
+# API Authentication Setup
+HEXSTRIKE_API_KEY = os.environ.get("HEXSTRIKE_API_KEY")
+KEY_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".hexstrike_key")
+
+if not HEXSTRIKE_API_KEY:
+    if os.path.exists(KEY_FILE):
+        try:
+            with open(KEY_FILE, "r") as f:
+                HEXSTRIKE_API_KEY = f.read().strip()
+        except Exception as e:
+            logger.error(f"Error reading local key file: {e}")
+            
+    if not HEXSTRIKE_API_KEY:
+        import secrets
+        HEXSTRIKE_API_KEY = secrets.token_hex(32)
+        try:
+            with open(KEY_FILE, "w") as f:
+                f.write(HEXSTRIKE_API_KEY)
+            os.chmod(KEY_FILE, 0o600)
+            logger.info("🔑 Generated and saved new HEXSTRIKE_API_KEY locally")
+        except Exception as e:
+            logger.error(f"Error saving generated key file: {e}")
+
+@app.before_request
+def verify_api_key():
+    # Enforce API Key authentication for all endpoints
+    api_key = request.headers.get("X-API-Key")
+    if not api_key:
+        auth_header = request.headers.get("Authorization")
+        if auth_header and auth_header.startswith("Bearer "):
+            api_key = auth_header[7:]
+            
+    if not api_key or api_key != HEXSTRIKE_API_KEY:
+        logger.warning(f"🔒 Unauthorized request to {request.path} from {request.remote_addr}")
+        return jsonify({"error": "Unauthorized: Invalid or missing API Key"}), 401
+
+
 # ============================================================================
 # MODERN VISUAL ENGINE (v2.0 ENHANCEMENT)
 # ============================================================================
@@ -7027,6 +7064,26 @@ class EnhancedCommandExecutor:
 class AIExploitGenerator:
     """AI-powered exploit development and enhancement system"""
 
+    def _escape_template_string(self, val: Any) -> str:
+        """Escape special characters to prevent template injection and code execution in generated scripts"""
+        if val is None:
+            return ""
+        s = str(val)
+        s = s.replace("\\", "\\\\")
+        s = s.replace("'", "\\'")
+        s = s.replace('"', '\\"')
+        s = s.replace("\n", "\\n").replace("\r", "\\r")
+        return s
+
+    def _escape_comment_string(self, val: Any) -> str:
+        """Escape special characters to prevent comment breaking or triple-quote escaping"""
+        if val is None:
+            return ""
+        s = str(val)
+        s = s.replace("\n", " ").replace("\r", " ")
+        s = s.replace("'''", "\\'\\'\\'").replace('"""', '\\"\\"\\"')
+        return s
+
     def __init__(self):
         # Extend existing payload templates
         self.exploit_templates = {
@@ -7376,14 +7433,17 @@ exec(base64.b64decode('{base64.b64encode(code.encode()).decode()}'))
 
     def _generate_sql_injection_exploit(self, cve_data, target_info, details):
         """Generate specific SQL injection exploit based on CVE details"""
-        cve_id = cve_data.get("cve_id", "")
-        endpoint = details.get("endpoints", ["/vulnerable.php"])[0] if details.get("endpoints") else "/vulnerable.php"
-        parameter = details.get("parameters", ["id"])[0] if details.get("parameters") else "id"
+        cve_id = self._escape_comment_string(cve_data.get("cve_id", ""))
+        description = self._escape_comment_string(cve_data.get("description", "")[:100])
+        software = self._escape_comment_string(details.get("software", "Unknown"))
+        version = self._escape_comment_string(details.get("version", ""))
+        endpoint = self._escape_template_string(details.get("endpoints", ["/vulnerable.php"])[0] if details.get("endpoints") else "/vulnerable.php")
+        parameter = self._escape_template_string(details.get("parameters", ["id"])[0] if details.get("parameters") else "id")
         
         return f'''#!/usr/bin/env python3
 # SQL Injection Exploit for {cve_id}
-# Vulnerability: {cve_data.get("description", "")[:100]}...
-# Target: {details.get("software", "Unknown")} {details.get("version", "")}
+# Vulnerability: {description}...
+# Target: {software} {version}
 
 import requests
 import sys
@@ -7507,13 +7567,15 @@ if __name__ == "__main__":
 
     def _generate_xss_exploit(self, cve_data, target_info, details):
         """Generate specific XSS exploit based on CVE details"""
-        cve_id = cve_data.get("cve_id", "")
-        xss_type = details.get("xss_type", "reflected")
+        cve_id_comment = self._escape_comment_string(cve_data.get("cve_id", ""))
+        cve_id_escaped = self._escape_template_string(cve_data.get("cve_id", ""))
+        description = self._escape_comment_string(cve_data.get("description", "")[:100])
+        xss_type = self._escape_comment_string(details.get("xss_type", "reflected"))
         
         return f'''#!/usr/bin/env python3
-# Cross-Site Scripting (XSS) Exploit for {cve_id}
+# Cross-Site Scripting (XSS) Exploit for {cve_id_comment}
 # Type: {xss_type.title()} XSS
-# Vulnerability: {cve_data.get("description", "")[:100]}...
+# Vulnerability: {description}...
 
 import requests
 import sys
@@ -7528,14 +7590,14 @@ class XSSExploit:
         """Generate XSS payloads for testing"""
         payloads = [
             # Basic XSS
-            "<script>alert('XSS-{cve_id}')</script>",
-            "<img src=x onerror=alert('XSS-{cve_id}')>",
-            "<svg onload=alert('XSS-{cve_id}')>",
+            "<script>alert('XSS-{cve_id_escaped}')</script>",
+            "<img src=x onerror=alert('XSS-{cve_id_escaped}')>",
+            "<svg onload=alert('XSS-{cve_id_escaped}')>",
             
             # Bypass attempts
             "<script>alert(String.fromCharCode(88,83,83))</script>",
-            "javascript:alert('XSS-{cve_id}')",
-            "<iframe src=javascript:alert('XSS-{cve_id}')></iframe>",
+            "javascript:alert('XSS-{cve_id_escaped}')",
+            "<iframe src=javascript:alert('XSS-{cve_id_escaped}')></iframe>",
             
             # Advanced payloads
             "<script>fetch('/admin').then(r=>r.text()).then(d=>alert(d.substr(0,100)))</script>",
@@ -7625,15 +7687,17 @@ if __name__ == "__main__":
 
     def _generate_file_read_exploit(self, cve_data, target_info, details):
         """Generate file read/directory traversal exploit"""
-        cve_id = cve_data.get("cve_id", "")
-        parameter = details.get("parameters", ["portal_type"])[0] if details.get("parameters") else "portal_type"
-        traversal_type = details.get("traversal_type", "file_read")
+        cve_id_comment = self._escape_comment_string(cve_data.get("cve_id", ""))
+        description = self._escape_comment_string(cve_data.get("description", "")[:100])
+        parameter_comment = self._escape_comment_string(details.get("parameters", ["portal_type"])[0] if details.get("parameters") else "portal_type")
+        parameter_escaped = self._escape_template_string(details.get("parameters", ["portal_type"])[0] if details.get("parameters") else "portal_type")
+        traversal_type_comment = self._escape_comment_string(details.get("traversal_type", "file_read"))
         
         return f'''#!/usr/bin/env python3
-# Local File Inclusion (LFI) Exploit for {cve_id}
-# Vulnerability: {cve_data.get("description", "")[:100]}...
-# Parameter: {parameter}
-# Type: {traversal_type}
+# Local File Inclusion (LFI) Exploit for {cve_id_comment}
+# Vulnerability: {description}...
+# Parameter: {parameter_comment}
+# Type: {traversal_type_comment}
 
 import requests
 import sys
@@ -7671,7 +7735,7 @@ class FileReadExploit:
         
         return payloads
     
-    def test_file_read(self, parameter="{parameter}"):
+    def test_file_read(self, parameter="{parameter_escaped}"):
         """Test LFI vulnerability on WordPress"""
         print(f"[+] Testing LFI on parameter: {{parameter}}")
         
@@ -7772,11 +7836,15 @@ if __name__ == "__main__":
 
     def _generate_intelligent_generic_exploit(self, cve_data, target_info, details):
         """Generate intelligent generic exploit based on CVE analysis"""
-        cve_id = cve_data.get("cve_id", "")
-        description = cve_data.get("description", "")
+        cve_id_comment = self._escape_comment_string(cve_data.get("cve_id", ""))
+        cve_id_escaped = self._escape_template_string(cve_data.get("cve_id", ""))
+        description = self._escape_comment_string(cve_data.get("description", ""))
+        description_escaped = self._escape_template_string(cve_data.get("description", ""))
+        software_escaped = self._escape_template_string(details.get("software", ""))
+        version_escaped = self._escape_template_string(details.get("version", ""))
         
         return f'''#!/usr/bin/env python3
-# Generic Exploit for {cve_id}
+# Generic Exploit for {cve_id_comment}
 # Vulnerability: {description[:150]}...
 # Generated based on CVE analysis
 
@@ -7788,11 +7856,11 @@ class GenericExploit:
     def __init__(self, target_url):
         self.target_url = target_url.rstrip('/')
         self.session = requests.Session()
-        self.cve_id = "{cve_id}"
+        self.cve_id = "{cve_id_escaped}"
         
     def analyze_target(self):
         """Analyze target for vulnerability indicators"""
-        print(f"[+] Analyzing target for {cve_id}")
+        print(f"[+] Analyzing target for {cve_id_escaped}")
         
         try:
             response = self.session.get(self.target_url)
@@ -7806,8 +7874,8 @@ class GenericExploit:
             
             # Check for software indicators
             software_indicators = [
-                "{details.get('software', '').lower()}",
-                "version {details.get('version', '')}",
+                "{software_escaped.lower()}",
+                "version {version_escaped}",
             ]
             
             for indicator in software_indicators:
@@ -7822,7 +7890,7 @@ class GenericExploit:
     
     def test_vulnerability(self):
         """Test for vulnerability presence"""
-        print(f"[+] Testing for {cve_id} vulnerability...")
+        print(f"[+] Testing for {cve_id_escaped} vulnerability...")
         
         # Based on CVE description, generate test cases
         test_endpoints = [
@@ -7848,14 +7916,14 @@ class GenericExploit:
     
     def exploit(self):
         """Attempt exploitation based on CVE details"""
-        print(f"[+] Attempting exploitation of {cve_id}")
+        print(f"[+] Attempting exploitation of {cve_id_escaped}")
         
         # This would be customized based on the specific CVE
-        print(f"[!] Manual exploitation required for {cve_id}")
-        print(f"[!] Vulnerability details: {{'{description[:200]}...'}}")
+        print(f"[!] Manual exploitation required for {cve_id_escaped}")
+        print(f"[!] Vulnerability details: {{'{description_escaped[:200]}...'}}")
         
         return False
-
+ 
 def main():
     if len(sys.argv) != 2:
         print(f"Usage: python3 {{sys.argv[0]}} <target_url>")
@@ -7865,7 +7933,7 @@ def main():
     target_url = sys.argv[1]
     exploit = GenericExploit(target_url)
     
-    print(f"[+] Generic Exploit for {cve_id}")
+    print(f"[+] Generic Exploit for {cve_id_escaped}")
     print(f"[+] Target: {{target_url}}")
     
     if exploit.analyze_target():
@@ -7874,7 +7942,7 @@ def main():
         exploit.exploit()
     else:
         print("[-] Target does not appear to match vulnerability profile")
-
+ 
 if __name__ == "__main__":
     main()
 '''
@@ -8079,11 +8147,12 @@ if __name__ == "__main__":
 
     def _generate_xxe_exploit(self, cve_data, target_info, details):
         """Generate XXE exploit based on CVE details"""
-        cve_id = cve_data.get("cve_id", "")
+        cve_id_comment = self._escape_comment_string(cve_data.get("cve_id", ""))
+        description = self._escape_comment_string(cve_data.get("description", "")[:100])
         
         return f'''#!/usr/bin/env python3
-# XXE (XML External Entity) Exploit for {cve_id}
-# Vulnerability: {cve_data.get("description", "")[:100]}...
+# XXE (XML External Entity) Exploit for {cve_id_comment}
+# Vulnerability: {description}...
 
 import requests
 import sys
@@ -8252,11 +8321,12 @@ if __name__ == "__main__":
 
     def _generate_auth_bypass_exploit(self, cve_data, target_info, details):
         """Generate authentication bypass exploit"""
-        cve_id = cve_data.get("cve_id", "")
+        cve_id_comment = self._escape_comment_string(cve_data.get("cve_id", ""))
+        description = self._escape_comment_string(cve_data.get("description", "")[:100])
         
         return f'''#!/usr/bin/env python3
-# Authentication Bypass Exploit for {cve_id}
-# Vulnerability: {cve_data.get("description", "")[:100]}...
+# Authentication Bypass Exploit for {cve_id_comment}
+# Vulnerability: {description}...
 
 import requests
 import sys
@@ -8365,13 +8435,14 @@ if __name__ == "__main__":
 
     def _generate_buffer_overflow_exploit(self, cve_data, target_info, details):
         """Generate buffer overflow exploit"""
-        cve_id = cve_data.get("cve_id", "")
-        arch = target_info.get("target_arch", "x64")
+        cve_id_comment = self._escape_comment_string(cve_data.get("cve_id", ""))
+        arch = self._escape_comment_string(target_info.get("target_arch", "x64"))
+        description = self._escape_comment_string(cve_data.get("description", "")[:100])
         
         return f'''#!/usr/bin/env python3
-# Buffer Overflow Exploit for {cve_id}
+# Buffer Overflow Exploit for {cve_id_comment}
 # Architecture: {arch}
-# Vulnerability: {cve_data.get("description", "")[:100]}...
+# Vulnerability: {description}...
 
 import struct
 import socket
@@ -17286,4 +17357,4 @@ if __name__ == "__main__":
         if line.strip():
             logger.info(line)
 
-    app.run(host="0.0.0.0", port=API_PORT, debug=DEBUG_MODE)
+    app.run(host=API_HOST, port=API_PORT, debug=DEBUG_MODE)
