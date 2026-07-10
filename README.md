@@ -255,6 +255,16 @@ Configure VS Code settings in `.vscode/settings.json`:
 }
 ```
 
+### Autohand Code Integration
+
+With `hexstrike_server.py` running, add the local MCP bridge from the command line:
+
+```bash
+autohand mcp add hexstrike-ai python3 /absolute/path/to/hexstrike-ai/hexstrike_mcp.py --server http://localhost:8888
+```
+
+Add `--scope project` after `add` to keep the server configuration in the current project. See [Autohand Code](https://github.com/autohandai/code-cli/) for current installation and CLI details.
+
 ---
 
 ## Features
