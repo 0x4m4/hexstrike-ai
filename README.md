@@ -60,24 +60,24 @@ HexStrike AI MCP v6.0 features a multi-agent architecture with autonomous AI age
 }}}%%
 graph TD
     A[AI Agent - Claude/GPT/Copilot] -->|MCP Protocol| B[HexStrike MCP Server v6.0]
-    
+
     B --> C[Intelligent Decision Engine]
     B --> D[12+ Autonomous AI Agents]
     B --> E[Modern Visual Engine]
-    
+
     C --> F[Tool Selection AI]
     C --> G[Parameter Optimization]
     C --> H[Attack Chain Discovery]
-    
+
     D --> I[BugBounty Agent]
     D --> J[CTF Solver Agent]
     D --> K[CVE Intelligence Agent]
     D --> L[Exploit Generator Agent]
-    
+
     E --> M[Real-time Dashboards]
     E --> N[Progress Visualization]
     E --> O[Vulnerability Cards]
-    
+
     B --> P[150+ Security Tools]
     P --> Q[Network Tools - 25+]
     P --> R[Web App Tools - 40+]
@@ -85,12 +85,12 @@ graph TD
     P --> T[Binary Tools - 25+]
     P --> U[CTF Tools - 20+]
     P --> V[OSINT Tools - 20+]
-    
+
     B --> W[Advanced Process Management]
     W --> X[Smart Caching]
     W --> Y[Resource Optimization]
     W --> Z[Error Recovery]
-    
+
     style A fill:#b71c1c,stroke:#ff5252,stroke-width:3px,color:#fffde7
     style B fill:#ff5252,stroke:#b71c1c,stroke-width:4px,color:#fffde7
     style C fill:#ff8a80,stroke:#b71c1c,stroke-width:2px,color:#fffde7
@@ -608,7 +608,7 @@ AI Agent: "Thank you for clarifying ownership and intent. To proceed with a pene
    ```bash
    # Check if server is running
    netstat -tlnp | grep 8888
-   
+
    # Restart server
    python3 hexstrike_server.py
    ```
@@ -617,7 +617,7 @@ AI Agent: "Thank you for clarifying ownership and intent. To proceed with a pene
    ```bash
    # Check tool availability
    which nmap gobuster nuclei
-   
+
    # Install missing tools from their official sources
    ```
 
