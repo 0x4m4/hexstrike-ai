@@ -13755,7 +13755,7 @@ class BrowserAgent:
             name = ck.get('name','')
             # Selenium cookie dict may lack flags; attempt JS check if not present
             # (we keep lightweight – deeper flag detection requires CDP)
-            if name.lower() in ('sessionid','phpseSSID','jsessionid') and len(ck.get('value','')) < 16:
+            if name.lower() in ('sessionid','phpsessid','jsessionid') and len(ck.get('value','')) < 16:
                 issues.append({'type':'weak_session_cookie','severity':'medium','description':f'Session cookie {name} appears short'})
         return issues
 
