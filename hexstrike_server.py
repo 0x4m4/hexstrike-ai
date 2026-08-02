@@ -17286,4 +17286,8 @@ if __name__ == "__main__":
         if line.strip():
             logger.info(line)
 
-    app.run(host="0.0.0.0", port=API_PORT, debug=DEBUG_MODE)
+    # PATCH LOCAL (2026-08-02): upstream hardcodea host="0.0.0.0" e ignora
+    # HEXSTRIKE_HOST/API_HOST (el banner decía "Server starting on API_HOST"
+    # pero el bind real era 0.0.0.0 → RCE sin auth expuesta a la LAN).
+    # Fix: respetar API_HOST (default 127.0.0.1). Verificar: ss -tln | grep 8888
+    app.run(host=API_HOST, port=API_PORT, debug=DEBUG_MODE)
