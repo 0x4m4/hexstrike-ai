@@ -695,6 +695,54 @@ python3 hexstrike_server.py --port 8888 --debug
 
 ---
 
+## Community Documentation
+
+A community-maintained, hands-on guide covering HexStrike AI installation, LLM integrations, authorized lab workflows, and end-to-end assessment examples.
+
+📖 **[HexStrike AI Lab Guide](https://1200km.com/Hexstrike-AI-guide/)** · [Source](https://github.com/anpa1200/Hexstrike-AI-guide) · maintained by [@anpa1200](https://github.com/anpa1200)
+
+### Getting Started
+
+- [Overview and architecture](https://1200km.com/Hexstrike-AI-guide/docs/getting-started/overview)
+- [Installation on Kali Linux](https://1200km.com/Hexstrike-AI-guide/docs/getting-started/installation)
+- [HexStrike AI compared with other AI security tools](https://1200km.com/Hexstrike-AI-guide/docs/getting-started/vs-other-tools)
+
+### LLM and MCP Integrations
+
+- [Integration overview](https://1200km.com/Hexstrike-AI-guide/docs/llm-integrations/overview)
+- [Gemini CLI](https://1200km.com/Hexstrike-AI-guide/docs/llm-integrations/gemini)
+- [OpenAI Codex](https://1200km.com/Hexstrike-AI-guide/docs/llm-integrations/openai-codex)
+- [Cursor MCP](https://1200km.com/Hexstrike-AI-guide/docs/llm-integrations/cursor-mcp)
+- [Local Ollama orchestration](https://1200km.com/Hexstrike-AI-guide/docs/llm-integrations/ollama-local)
+
+### Reconnaissance and Authorized Attack Labs
+
+- [Shodan reconnaissance](https://1200km.com/Hexstrike-AI-guide/docs/recon-osint/shodan)
+- [Email OSINT and exposure mapping](https://1200km.com/Hexstrike-AI-guide/docs/recon-osint/email-osint)
+- [Network discovery](https://1200km.com/Hexstrike-AI-guide/docs/attack-techniques/network-discovery)
+- [Web application testing](https://1200km.com/Hexstrike-AI-guide/docs/attack-techniques/web-application)
+- [Wireless and Wi-Fi testing](https://1200km.com/Hexstrike-AI-guide/docs/attack-techniques/wireless-wifi)
+- [SSH credential auditing](https://1200km.com/Hexstrike-AI-guide/docs/attack-techniques/ssh-brute-force)
+- [SMB credential auditing](https://1200km.com/Hexstrike-AI-guide/docs/attack-techniques/smb-brute-force)
+- [Active Directory assessment](https://1200km.com/Hexstrike-AI-guide/docs/attack-techniques/active-directory)
+- [AD CS ESC8 lab](https://1200km.com/Hexstrike-AI-guide/docs/attack-techniques/adcs-esc8)
+- [Web and cloud assessment](https://1200km.com/Hexstrike-AI-guide/docs/attack-techniques/web-cloud)
+
+### Password Recovery and Full Walkthroughs
+
+- [Modern password recovery](https://1200km.com/Hexstrike-AI-guide/docs/password-recovery/modern-cracking)
+- [ZIP recovery](https://1200km.com/Hexstrike-AI-guide/docs/password-recovery/zip)
+- [PDF recovery](https://1200km.com/Hexstrike-AI-guide/docs/password-recovery/pdf)
+- [Office document recovery](https://1200km.com/Hexstrike-AI-guide/docs/password-recovery/office-documents)
+- [Full penetration-testing methodology](https://1200km.com/Hexstrike-AI-guide/docs/full-pt-walkthroughs/full-pt-guide)
+- [Isolated vulnerable lab setup](https://1200km.com/Hexstrike-AI-guide/docs/full-pt-walkthroughs/lab-setup)
+- [Full-subnet assessment walkthrough](https://1200km.com/Hexstrike-AI-guide/docs/full-pt-walkthroughs/full-subnet)
+- [Black-box Active Directory walkthrough](https://1200km.com/Hexstrike-AI-guide/docs/full-pt-walkthroughs/black-box-ad)
+
+> All walkthroughs are documented for isolated labs and explicitly authorized security assessments.
+
+---
+
 ## License
 
 MIT License - see LICENSE file for details.
