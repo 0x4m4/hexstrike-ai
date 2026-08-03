@@ -144,6 +144,89 @@ DEFAULT_HEXSTRIKE_SERVER = "http://127.0.0.1:8888"  # Default HexStrike server U
 DEFAULT_REQUEST_TIMEOUT = 300  # 5 minutes default timeout for API requests
 MAX_RETRIES = 3  # Maximum number of retries for connection attempts
 
+# #138 — MCP clients (Cline/Kilo/Roo) OOM on tools/list when all 151 tools + long
+# docstrings/schemas are advertised at once (~400K tokens). Default to a lean surface.
+DEFAULT_TOOL_TIER = "core"
+CORE_TOOL_NAMES = frozenset({
+    # Core network / web recon (most common bug-bounty path)
+    "nmap_scan", "rustscan_fast_scan", "masscan_high_speed", "gobuster_scan",
+    "feroxbuster_scan", "ffuf_scan", "nuclei_scan", "nikto_scan", "sqlmap_scan",
+    "subfinder_scan", "amass_scan", "httpx_probe", "httpx_probe_batch",
+    "wpscan_analyze", "dirsearch_scan", "katana_crawl",
+    # API / auth testing
+    "jwt_analyzer", "api_fuzzer", "graphql_scanner",
+    # Bug-bounty workflows (self-contained; avoid AI pickers that reference pruned tools)
+    "bugbounty_reconnaissance_workflow", "bugbounty_comprehensive_assessment",
+    # Ops / reporting (small schemas)
+    "server_health", "execute_command", "get_process_dashboard",
+    "create_scan_summary", "format_tool_output_visual", "create_vulnerability_report",
+    "list_files", "create_file",
+})
+
+
+def _compact_description(text: str, max_len: int = 120) -> str:
+    """First-line summary for tools/list — keeps MCP init payloads small (#138)."""
+    line = (text or "").strip().split("\n")[0].strip()
+    if len(line) > max_len:
+        return line[: max_len - 1] + "…"
+    return line
+
+
+def _strip_schema_property_descriptions(schema: dict) -> None:
+    """Drop parameter descriptions from JSON Schema (major tools/list bloat)."""
+    if not isinstance(schema, dict):
+        return
+    schema.pop("description", None)
+    props = schema.get("properties")
+    if isinstance(props, dict):
+        for prop in props.values():
+            if isinstance(prop, dict):
+                prop.pop("description", None)
+                _strip_schema_property_descriptions(prop)
+    items = schema.get("items")
+    if isinstance(items, dict):
+        _strip_schema_property_descriptions(items)
+    elif isinstance(items, list):
+        for item in items:
+            _strip_schema_property_descriptions(item)
+    for key in ("allOf", "anyOf", "oneOf"):
+        branch = schema.get(key)
+        if isinstance(branch, list):
+            for sub in branch:
+                _strip_schema_property_descriptions(sub)
+    for key in ("$defs", "definitions"):
+        defs = schema.get(key)
+        if isinstance(defs, dict):
+            for sub in defs.values():
+                _strip_schema_property_descriptions(sub)
+
+
+def apply_tool_surface(mcp: "FastMCP", tier: str, compact: bool) -> None:
+    """
+    Shrink tools/list payload for MCP hosts with tight context limits (#138).
+
+    tier=core (default): expose ~35 essential tools instead of 151.
+    tier=full: register everything (legacy behaviour).
+    compact=True: one-line descriptions + strip parameter schema descriptions.
+    """
+    tm = mcp._tool_manager
+    if tier != "full":
+        for name in list(tm._tools.keys()):
+            if name not in CORE_TOOL_NAMES:
+                tm.remove_tool(name)
+    if compact:
+        for name in list(tm._tools.keys()):
+            tool = tm.get_tool(name)
+            if not tool:
+                continue
+            tool.description = _compact_description(tool.description)
+            _strip_schema_property_descriptions(tool.parameters)
+    logger.info(
+        f"📦 MCP tool surface: tier={tier} compact={compact} "
+        f"tools={len(tm._tools)} (use --tool-tier full for all 151 tools)"
+    )
+
+
 class HexStrikeClient:
     """Enhanced client for communicating with the HexStrike AI API Server"""
 
@@ -3389,9 +3472,9 @@ def setup_mcp_server(hexstrike_client: HexStrikeClient) -> FastMCP:
         return result
 
     @mcp.tool()
-    def httpx_probe(targets: str = "", target_file: str = "", ports: str = "", methods: str = "GET", status_code: str = "", content_length: bool = False, output_file: str = "", additional_args: str = "") -> Dict[str, Any]:
+    def httpx_probe_batch(targets: str = "", target_file: str = "", ports: str = "", methods: str = "GET", status_code: str = "", content_length: bool = False, output_file: str = "", additional_args: str = "") -> Dict[str, Any]:
         """
-        Execute HTTPx for HTTP probing with enhanced logging.
+        Execute HTTPx batch probing (multi-target / file input).
 
         Args:
             targets: Target URLs or IPs
@@ -5421,6 +5504,18 @@ def parse_args():
     parser.add_argument("--timeout", type=int, default=DEFAULT_REQUEST_TIMEOUT,
                       help=f"Request timeout in seconds (default: {DEFAULT_REQUEST_TIMEOUT})")
     parser.add_argument("--debug", action="store_true", help="Enable debug logging")
+    parser.add_argument(
+        "--tool-tier",
+        choices=("core", "full"),
+        default=os.environ.get("HEXSTRIKE_MCP_TOOL_TIER", DEFAULT_TOOL_TIER),
+        help="MCP tools/list surface: core (~35 essential tools, default, fixes #138 token bloat) or full (all tools)",
+    )
+    parser.add_argument(
+        "--compact-descriptions",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="One-line tool descriptions + lean JSON schemas for tools/list (default: on)",
+    )
     return parser.parse_args()
 
 def main():
@@ -5457,6 +5552,7 @@ def main():
 
         # Set up and run the MCP server
         mcp = setup_mcp_server(hexstrike_client)
+        apply_tool_surface(mcp, args.tool_tier, args.compact_descriptions)
         logger.info("🚀 Starting HexStrike AI MCP server")
         logger.info("🤖 Ready to serve AI agents with enhanced cybersecurity capabilities")
         mcp.run()
