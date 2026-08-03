@@ -16,6 +16,8 @@
 
 **Advanced AI-powered penetration testing MCP framework with 150+ security tools and 12+ autonomous AI agents**
 
+**Owned & developed by [OTT Cybersecurity LLC](https://overthetop.ae/)**
+
 [📋 What's New](#whats-new-in-v60) • [🏗️ Architecture](#architecture-overview) • [🚀 Installation](#installation) • [🛠️ Features](#features) • [🤖 AI Agents](#ai-agents) • [📡 API Reference](#api-reference)
 
 </div>
@@ -702,6 +704,26 @@ MIT License - see LICENSE file for details.
 ## Author
 
 **m0x4m4** - [www.0x4m4.com](https://www.0x4m4.com) | [HexStrike](https://www.hexstrike.com)
+
+---
+
+## Owned & Developed By
+
+<p align="center">
+  <strong>HexStrike AI is owned and developed by OTT Cybersecurity LLC</strong>
+</p>
+
+<p align="center">
+  <a href="https://overthetop.ae/">
+    <img src="assets/ott-logo.png" alt="OTT Cybersecurity LLC Logo" width="150" />
+  </a>
+</p>
+
+<p align="center">
+  <a href="https://overthetop.ae/">
+    <img src="https://img.shields.io/badge/Visit-overthetop.ae-E11D2E?style=for-the-badge&logo=shield&logoColor=white" alt="Visit overthetop.ae" />
+  </a>
+</p>
 
 ---
 
