@@ -5928,18 +5928,23 @@ class CVEIntelligenceManager:
     @staticmethod
     def create_summary_report(results: Dict[str, Any]) -> str:
         """Generate a beautiful summary report"""
+        from hexstrike_report_utils import normalize_summary_report_inputs
 
-        total_vulns = len(results.get('vulnerabilities', []))
-        critical_vulns = len([v for v in results.get('vulnerabilities', []) if v.get('severity') == 'critical'])
-        high_vulns = len([v for v in results.get('vulnerabilities', []) if v.get('severity') == 'high'])
-        execution_time = results.get('execution_time', 0)
-        tools_used = results.get('tools_used', [])
+        normalized = normalize_summary_report_inputs(results)
+        vulnerabilities = normalized["vulnerabilities"]
+        tools_used = normalized["tools_used"]
+        execution_time = normalized["execution_time"]
+        target = normalized["target"]
+
+        total_vulns = len(vulnerabilities)
+        critical_vulns = len([v for v in vulnerabilities if v.get("severity") == "critical"])
+        high_vulns = len([v for v in vulnerabilities if v.get("severity") == "high"])
 
         report = f"""
 {ModernVisualEngine.COLORS['MATRIX_GREEN']}{ModernVisualEngine.COLORS['BOLD']}╔══════════════════════════════════════════════════════════════════════════════╗
 ║                              📊 SCAN SUMMARY REPORT                          ║
 ╠══════════════════════════════════════════════════════════════════════════════╣{ModernVisualEngine.COLORS['RESET']}
-{ModernVisualEngine.COLORS['BOLD']}║{ModernVisualEngine.COLORS['RESET']} {ModernVisualEngine.COLORS['NEON_BLUE']}🎯 Target:{ModernVisualEngine.COLORS['RESET']} {results.get('target', 'Unknown')[:60]}
+{ModernVisualEngine.COLORS['BOLD']}║{ModernVisualEngine.COLORS['RESET']} {ModernVisualEngine.COLORS['NEON_BLUE']}🎯 Target:{ModernVisualEngine.COLORS['RESET']} {target}
 {ModernVisualEngine.COLORS['BOLD']}║{ModernVisualEngine.COLORS['RESET']} {ModernVisualEngine.COLORS['CYBER_ORANGE']}⏱️  Duration:{ModernVisualEngine.COLORS['RESET']} {execution_time:.2f} seconds
 {ModernVisualEngine.COLORS['BOLD']}║{ModernVisualEngine.COLORS['RESET']} {ModernVisualEngine.COLORS['WARNING']}🛠️  Tools Used:{ModernVisualEngine.COLORS['RESET']} {len(tools_used)} tools
 {ModernVisualEngine.COLORS['BOLD']}╠──────────────────────────────────────────────────────────────────────────────╣{ModernVisualEngine.COLORS['RESET']}
@@ -9493,9 +9498,8 @@ def create_summary_report():
         if not data:
             return jsonify({"error": "No data provided"}), 400
 
-        # Create summary report
-        visual_engine = ModernVisualEngine()
-        report = visual_engine.create_summary_report(data)
+        # Create summary report (implementation lives on CVEIntelligenceManager)
+        report = CVEIntelligenceManager.create_summary_report(data)
 
         return jsonify({
             "success": True,
