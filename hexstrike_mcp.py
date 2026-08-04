@@ -324,7 +324,7 @@ def setup_mcp_server(hexstrike_client: HexStrikeClient) -> FastMCP:
         return result
 
     @mcp.tool()
-    def gobuster_scan(url: str, mode: str = "dir", wordlist: str = "/usr/share/wordlists/dirb/common.txt", additional_args: str = "") -> Dict[str, Any]:
+    def gobuster_scan(url: str, mode: str = "dir", wordlist: str = "./wordlists/dirb/common.txt", additional_args: str = "") -> Dict[str, Any]:
         """
         Execute Gobuster to find directories, DNS subdomains, or virtual hosts with enhanced logging.
 
@@ -998,7 +998,7 @@ def setup_mcp_server(hexstrike_client: HexStrikeClient) -> FastMCP:
     # ============================================================================
 
     @mcp.tool()
-    def dirb_scan(url: str, wordlist: str = "/usr/share/wordlists/dirb/common.txt", additional_args: str = "") -> Dict[str, Any]:
+    def dirb_scan(url: str, wordlist: str = "./wordlists/dirb/common.txt", additional_args: str = "") -> Dict[str, Any]:
         """
         Execute Dirb for directory brute forcing with enhanced logging.
 
@@ -1142,7 +1142,7 @@ def setup_mcp_server(hexstrike_client: HexStrikeClient) -> FastMCP:
     @mcp.tool()
     def john_crack(
         hash_file: str,
-        wordlist: str = "/usr/share/wordlists/rockyou.txt",
+        wordlist: str = "./wordlists/rockyou.txt",
         format_type: str = "",
         additional_args: str = ""
     ) -> Dict[str, Any]:
@@ -1221,7 +1221,7 @@ def setup_mcp_server(hexstrike_client: HexStrikeClient) -> FastMCP:
         return result
 
     @mcp.tool()
-    def ffuf_scan(url: str, wordlist: str = "/usr/share/wordlists/dirb/common.txt", mode: str = "directory", match_codes: str = "200,204,301,302,307,401,403", additional_args: str = "") -> Dict[str, Any]:
+    def ffuf_scan(url: str, wordlist: str = "./wordlists/dirb/common.txt", mode: str = "directory", match_codes: str = "200,204,301,302,307,401,403", additional_args: str = "") -> Dict[str, Any]:
         """
         Execute FFuf for web fuzzing with enhanced logging.
 
@@ -1311,7 +1311,7 @@ def setup_mcp_server(hexstrike_client: HexStrikeClient) -> FastMCP:
         return result
 
     @mcp.tool()
-    def hashcat_crack(hash_file: str, hash_type: str, attack_mode: str = "0", wordlist: str = "/usr/share/wordlists/rockyou.txt", mask: str = "", additional_args: str = "") -> Dict[str, Any]:
+    def hashcat_crack(hash_file: str, hash_type: str, attack_mode: str = "0", wordlist: str = "./wordlists/rockyou.txt", mask: str = "", additional_args: str = "") -> Dict[str, Any]:
         """
         Execute Hashcat for advanced password cracking with enhanced logging.
 
@@ -2262,7 +2262,7 @@ def setup_mcp_server(hexstrike_client: HexStrikeClient) -> FastMCP:
         return result
 
     @mcp.tool()
-    def feroxbuster_scan(url: str, wordlist: str = "/usr/share/wordlists/dirb/common.txt", threads: int = 10, additional_args: str = "") -> Dict[str, Any]:
+    def feroxbuster_scan(url: str, wordlist: str = "./wordlists/dirb/common.txt", threads: int = 10, additional_args: str = "") -> Dict[str, Any]:
         """
         Execute Feroxbuster for recursive content discovery with enhanced logging.
 
@@ -2342,7 +2342,7 @@ def setup_mcp_server(hexstrike_client: HexStrikeClient) -> FastMCP:
         return result
 
     @mcp.tool()
-    def wfuzz_scan(url: str, wordlist: str = "/usr/share/wordlists/dirb/common.txt", additional_args: str = "") -> Dict[str, Any]:
+    def wfuzz_scan(url: str, wordlist: str = "./wordlists/dirb/common.txt", additional_args: str = "") -> Dict[str, Any]:
         """
         Execute Wfuzz for web application fuzzing with enhanced logging.
 
@@ -2373,7 +2373,7 @@ def setup_mcp_server(hexstrike_client: HexStrikeClient) -> FastMCP:
 
     @mcp.tool()
     def dirsearch_scan(url: str, extensions: str = "php,html,js,txt,xml,json",
-                      wordlist: str = "/usr/share/wordlists/dirsearch/common.txt",
+                      wordlist: str = "./wordlists/dirsearch/common.txt",
                       threads: int = 30, recursive: bool = False, additional_args: str = "") -> Dict[str, Any]:
         """
         Execute Dirsearch for advanced directory and file discovery with enhanced logging.
@@ -2569,7 +2569,7 @@ def setup_mcp_server(hexstrike_client: HexStrikeClient) -> FastMCP:
         return result
 
     @mcp.tool()
-    def x8_parameter_discovery(url: str, wordlist: str = "/usr/share/wordlists/x8/params.txt",
+    def x8_parameter_discovery(url: str, wordlist: str = "./wordlists/x8/params.txt",
                               method: str = "GET", body: str = "", headers: str = "",
                               additional_args: str = "") -> Dict[str, Any]:
         """
@@ -2938,7 +2938,7 @@ def setup_mcp_server(hexstrike_client: HexStrikeClient) -> FastMCP:
     # ============================================================================
 
     @mcp.tool()
-    def api_fuzzer(base_url: str, endpoints: str = "", methods: str = "GET,POST,PUT,DELETE", wordlist: str = "/usr/share/wordlists/api/api-endpoints.txt") -> Dict[str, Any]:
+    def api_fuzzer(base_url: str, endpoints: str = "", methods: str = "GET,POST,PUT,DELETE", wordlist: str = "./wordlists/api/api-endpoints.txt") -> Dict[str, Any]:
         """
         Advanced API endpoint fuzzing with intelligent parameter discovery.
 
@@ -3389,12 +3389,12 @@ def setup_mcp_server(hexstrike_client: HexStrikeClient) -> FastMCP:
         return result
 
     @mcp.tool()
-    def httpx_probe(targets: str = "", target_file: str = "", ports: str = "", methods: str = "GET", status_code: str = "", content_length: bool = False, output_file: str = "", additional_args: str = "") -> Dict[str, Any]:
+    def httpx_advanced_scan(targets: str = "", target_file: str = "", ports: str = "", methods: str = "GET", status_code: str = "", content_length: bool = False, output_file: str = "", additional_args: str = "") -> Dict[ Any, Any]:
         """
-        Execute HTTPx for HTTP probing with enhanced logging.
+        Execute HTTPx for advanced HTTP probing with enhanced logging and multi-target support.
 
         Args:
-            targets: Target URLs or IPs
+            targets: Target URLs or IPs (comma-separated)
             target_file: File containing targets
             ports: Ports to probe
             methods: HTTP methods to use
@@ -3416,8 +3416,13 @@ def setup_mcp_server(hexstrike_client: HexStrikeClient) -> FastMCP:
             "output_file": output_file,
             "additional_args": additional_args
         }
-        logger.info(f"🌐 Starting HTTPx probing")
+        logger.info(f"🌐 Starting advanced HTTPx scan")
         result = hexstrike_client.safe_post("api/tools/httpx", data)
+        if result.get("success"):
+            logger.info(f"✅ HTTPx advanced scan completed")
+        else:
+            logger.error(f"❌ HTTPx advanced scan failed")
+        return result
         if result.get("success"):
             logger.info(f"✅ HTTPx probing completed")
         else:
