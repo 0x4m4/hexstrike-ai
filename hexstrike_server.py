@@ -9698,6 +9698,7 @@ def intelligent_smart_scan():
             "execution_summary": {},
             "combined_output": ""
         }
+        combined_output_parts = []
 
         def execute_single_tool(tool_name, target, profile):
             """Execute a single tool and return results"""
@@ -9736,8 +9737,9 @@ def intelligent_smart_scan():
                     if result.get('success') and result.get('stdout'):
                         # Simple vulnerability detection based on common patterns
                         output = result.get('stdout', '')
+                        output_lower = output.lower()
                         vuln_indicators = ['CRITICAL', 'HIGH', 'MEDIUM', 'VULNERABILITY', 'EXPLOIT', 'SQL injection', 'XSS', 'CSRF']
-                        vuln_count = sum(1 for indicator in vuln_indicators if indicator.lower() in output.lower())
+                        vuln_count = sum(1 for indicator in vuln_indicators if indicator.lower() in output_lower)
 
                     return {
                         "tool": tool_name,
@@ -9791,9 +9793,11 @@ def intelligent_smart_scan():
 
                 # Combine outputs
                 if tool_result.get("stdout"):
-                    scan_results["combined_output"] += f"\n=== {tool_result['tool'].upper()} OUTPUT ===\n"
-                    scan_results["combined_output"] += tool_result["stdout"]
-                    scan_results["combined_output"] += "\n" + "="*50 + "\n"
+                    combined_output_parts.append(f"\n=== {tool_result['tool'].upper()} OUTPUT ===\n")
+                    combined_output_parts.append(tool_result["stdout"])
+                    combined_output_parts.append("\n" + "="*50 + "\n")
+
+        scan_results["combined_output"] = "".join(combined_output_parts)
 
         # Create execution summary
         successful_tools = [t for t in scan_results["tools_executed"] if t.get("success")]

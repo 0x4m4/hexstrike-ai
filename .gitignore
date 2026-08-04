@@ -1,0 +1,51 @@
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+
+# Virtual environments
+venv/
+env/
+hexstrike-env/
+hexstrike_env/
+.venv/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*.orig
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs and local output
+*.log
+logs/
+*.tmp
+tmp/
+
+# Python packaging / build
+build/
+dist/
+*.egg-info/
+
+# Tool outputs and cache
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+
+# Docker artifacts
+.docker/
+
+# Security tool outputs (generic)
+output/
+results/
+reports/
+
