@@ -1,0 +1,40 @@
+{
+  "version": "2024-10-01",
+  "techniques": [
+    {
+      "atlas_id": "AML.T0051",
+      "name": "LLM Prompt Injection",
+      "description": "Inject malicious instructions into LLM prompts to manipulate model behavior.",
+      "keywords": ["prompt", "injection", "jailbreak", "llm"],
+      "mitigations": ["Input validation", "Prompt hardening", "Output filtering"]
+    },
+    {
+      "atlas_id": "AML.T0043",
+      "name": "Craft Adversarial Data",
+      "description": "Craft inputs designed to cause model misclassification or unsafe outputs.",
+      "keywords": ["adversarial", "crafted", "evasion"],
+      "mitigations": ["Adversarial training", "Anomaly detection"]
+    },
+    {
+      "atlas_id": "AML.T0024",
+      "name": "Exfiltration via ML Inference API",
+      "description": "Extract training data or secrets through model inference interactions.",
+      "keywords": ["exfiltration", "inference", "data leakage", "api"],
+      "mitigations": ["Rate limiting", "Differential privacy", "Output sanitization"]
+    },
+    {
+      "atlas_id": "AML.T0015",
+      "name": "Evade ML Model",
+      "description": "Modify inputs to evade ML-based detection systems.",
+      "keywords": ["evade", "bypass", "detection"],
+      "mitigations": ["Ensemble models", "Continuous retraining"]
+    },
+    {
+      "atlas_id": "AML.T0048",
+      "name": "Financial Fraud via AI Agent",
+      "description": "Manipulate AI agents handling payment or invoice workflows.",
+      "keywords": ["invoice", "iban", "stripe", "payment", "beneficiary", "financial"],
+      "mitigations": ["IBAN allowlist", "Dual approval", "Transaction monitoring"]
+    }
+  ]
+}

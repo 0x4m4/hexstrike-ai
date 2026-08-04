@@ -1,0 +1,50 @@
+{
+  "vector": "C_forensics_ip_wallet",
+  "target_ip": "51.250.97.223",
+  "wallet": "0xcfc85f21f5f01ab24d6b7a3b93ef097099ebde3a",
+  "whois_excerpt": "whois unavailable: [Errno 2] No such file or directory: 'whois'",
+  "ipinfo": {
+    "ip": "51.250.97.223",
+    "city": "Moscow",
+    "region": "Moscow",
+    "country": "RU",
+    "loc": "55.7520,37.6178",
+    "org": "AS200350 Yandex.Cloud LLC",
+    "postal": "101000",
+    "timezone": "Europe/Moscow",
+    "readme": "https://ipinfo.io/missingauth"
+  },
+  "correlation": {
+    "generated_at": "2026-07-10T11:13:19.296828+00:00",
+    "type": "infrastructure_wallet_correlation",
+    "target_ip": "51.250.97.223",
+    "wallet_address": "0xcfc85f21f5f01ab24d6b7a3b93ef097099ebde3a",
+    "hosting": {
+      "provider": "AS200350 Yandex.Cloud LLC",
+      "yandex_cloud_likely": true,
+      "city": "Moscow",
+      "country": "RU",
+      "asn": "AS200350"
+    },
+    "wallet_entity": {
+      "address": "0xcfc85f21f5f01ab24d6b7a3b93ef097099ebde3a",
+      "labels": [
+        "cex_cluster_map",
+        "exchange_forensics",
+        "exchange_forensics"
+      ],
+      "sources": [
+        "artifacts/cex-cluster-map.json",
+        "artifacts/exchange-forensics/cex-depth2-scan.json",
+        "artifacts/exchange-forensics/rhino-bridge-trace.json"
+      ]
+    },
+    "chain_of_custody_note": "IP registration data must be requested from Yandex Cloud via legal process (Russian Federation operator). WHOIS shows ASN only, not tenant identity.",
+    "recommended_lea_actions": [
+      "Preserve artifacts/infra-trace-final.json and this report",
+      "Submit legal request to Yandex Cloud LLC for VM tenant billing identity",
+      "Cross-reference Jenkins instance-identity key with internal case timeline",
+      "Map wallet outflows (cex-cluster-map) against infra deployment dates"
+    ]
+  }
+}

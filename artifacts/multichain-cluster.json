@@ -1,0 +1,145 @@
+{
+  "generated_at": "2026-07-09T21:14:32Z",
+  "agent": "Agent-OSINT-03",
+  "task": "blockscan-cluster",
+  "mode": "read-only_passive",
+  "target": "0x4943f5e7f4e450d48ae82026163ecde8a52c53da",
+  "blockscan": {
+    "url": "https://blockscan.com/address/0x4943F5E7F4e450d48Ae82026163ecDe8A52C53dA",
+    "basescan": "https://basescan.org/address/0x4943F5E7F4e450d48Ae82026163ecDe8A52C53dA",
+    "bscscan": "https://bscscan.com/address/0x4943F5E7F4e450d48Ae82026163ecDe8A52C53dA",
+    "multichain_net_worth_usd": 1122486.21,
+    "first_seen_days": "~21-23 (Blockscan/BscScan public UI)",
+    "tx_volume": {
+      "bsc": 59035,
+      "base": 57345
+    }
+  },
+  "portfolio_allocation": {
+    "base_usdc": {
+      "amount": 634904.18,
+      "usd": 634794.97,
+      "pct": 56.55
+    },
+    "bsc_bsc_usd": {
+      "amount": 487781.22,
+      "usd": 487408.07,
+      "pct": 43.42
+    },
+    "note": "BSC-USD = Binance-Peg USDT at 0x55d398... (same contract)"
+  },
+  "onchain_balances_live": {
+    "bsc_usdt": 487438.25,
+    "base_usdc": "see Blockscan \u2014 Base RPC blocked from agent IP"
+  },
+  "bsc_recent_outflows": [
+    {
+      "address": "0x93517b816b8abb44f3081df55fb2111a85a603d9",
+      "label": null,
+      "usdt_total": 4457.0
+    },
+    {
+      "address": "0x2f1f774e3d2259f1ba7ee76639829b66ff2741da",
+      "label": null,
+      "usdt_total": 4350.36
+    },
+    {
+      "address": "0xf7027e8139072dd6f43110ada8614369810cc56f",
+      "label": null,
+      "usdt_total": 4000.0
+    },
+    {
+      "address": "0x07d2ae82c1e0797154b9331f38344274403dae9f",
+      "label": null,
+      "usdt_total": 2536.45
+    },
+    {
+      "address": "0xa0615373398909e6826178442077514c10f9a3f6",
+      "label": null,
+      "usdt_total": 2500.0
+    },
+    {
+      "address": "0x64187fc84a8623eb1a89f70a8dd8bd627bd29faf",
+      "label": null,
+      "usdt_total": 2050.0
+    },
+    {
+      "address": "0xb2f75f400ded320a2158a483c3e4014cab1400bb",
+      "label": null,
+      "usdt_total": 2000.0
+    },
+    {
+      "address": "0xd0b5b1fa9122696bcab0cc5d5f4421e6d94a9e52",
+      "label": null,
+      "usdt_total": 2000.0
+    },
+    {
+      "address": "0xab97c79db7a772c7deba481c7cc7a4e4aa63a242",
+      "label": null,
+      "usdt_total": 1991.0
+    },
+    {
+      "address": "0x342784079a5b42e014c466f996b202f682b95724",
+      "label": null,
+      "usdt_total": 1990.0
+    },
+    {
+      "address": "0x2a3cba35c2b427850c2047b2d79164a6227ebe7b",
+      "label": null,
+      "usdt_total": 1972.97
+    },
+    {
+      "address": "0x139bd51ee343a9b9781cb8a1ba66f9eca0523b95",
+      "label": null,
+      "usdt_total": 1660.0
+    },
+    {
+      "address": "0x8b17e59829ed545d9147edc863087f1cf871d228",
+      "label": null,
+      "usdt_total": 1580.0
+    },
+    {
+      "address": "0x1bb8088d6f7b5e864a2817c190375d5ba335eb39",
+      "label": null,
+      "usdt_total": 1500.0
+    },
+    {
+      "address": "0x50d68d7bd2380168c63d22d63beb9bcdbcf41736",
+      "label": null,
+      "usdt_total": 1492.5
+    }
+  ],
+  "labeled_counterparties": [
+    {
+      "address": "0x161ba15a5f335c9f06bb5bbb0a9ce14076fbb645",
+      "label": "Binance Hot Wallet 11",
+      "role": "primary treasury funding"
+    },
+    {
+      "address": "0xb80a582fa430645a043bb4f6135321ee01005fef",
+      "label": "Rhino.fi Bridge",
+      "role": "cross-chain exit sink"
+    },
+    {
+      "address": "0x730ea0231808f42a20f8921ba7fbc788226768f5",
+      "label": null,
+      "role": "EIP-7702 authority delegate"
+    }
+  ],
+  "entity_signals": {
+    "multichain_treasury": true,
+    "payroll_pattern_bsc": "high-frequency small/medium USDT outflows",
+    "base_usdc_cluster": "634k USDC \u2014 parallel rail to BSC BSC-USD",
+    "spam_airdrops": "100+ worthless tokens on BSC and BASE (common for active EOAs)",
+    "public_name_tag": null
+  },
+  "arkham": {
+    "manual_url": "https://platform.arkhamintelligence.com/explorer/address/0x4943F5E7F4e450d48Ae82026163ecDe8A52C53dA",
+    "status": "UI lookup recommended \u2014 no API key"
+  },
+  "entity_resolution_update": {
+    "status": "UNIDENTIFIED",
+    "confidence": "low-medium",
+    "new_evidence": "Confirmed ~$1.12M multichain stablecoin treasury (BASE+BSC), Binance-funded, 115k+ total txs across chains"
+  }
+}

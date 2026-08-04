@@ -1,0 +1,43 @@
+hexstrike-env/
+scripts/sandbox/.venv/
+scripts/sandbox/anvil.env
+.env
+*.env.local
+
+# Go OSINT agent
+*.exe
+/osint-agent
+artifacts/
+# Generated GLOBAL GO evidence (may contain env-specific IDs)
+docs/ops/evidence/*.json
+!docs/ops/evidence/README.md
+tmp/
+__pycache__/
+scripts/__pycache__/
+*.pyc
+hexstrike.log
+artifacts/master_context.json
+artifacts/exchange-forensics/
+artifacts/crypto-rpc/
+artifacts/monitor/
+artifacts/alerts.log
+artifacts/duty.log
+artifacts/pending_action.json
+artifacts/alerts_feedback.txt
+rag-storage/
+
+# Sandbox files
+scripts/sandbox/.venv/
+scripts/sandbox/anvil.env
+scripts/sandbox/mainnet.env
+bin/hexstrike-agent
+artifacts/sandbox/
+config/samson/scope.bulk-overlay.yaml
+
+# Samson runtime recon / guardrail artifacts (generated during audits)
+samson/rag/docs/emulation/*.md
+samson/redteam/guardrail/configs/*.json
+
+# local VPS bootstrap secrets (never commit)
+.vps-bootstrap-*
+*.vps-password

@@ -1,0 +1,55 @@
+{
+  "primary": "http://51.222.42.220:8545",
+  "fallbacks": [
+    "https://bsc-dataseed.binance.org"
+  ],
+  "rpc_endpoints": {
+    "primary": {
+      "url": "http://51.222.42.220:8545",
+      "status": "active",
+      "verified": true,
+      "risk": "low",
+      "notes": "Geth v1.7.3 — dangerous personal/admin methods blocked"
+    },
+    "fallback_1": {
+      "url": "https://bsc-dataseed.binance.org",
+      "status": "active",
+      "verified": true,
+      "risk": "low",
+      "notes": "Public BSC seed — read-only, hardened"
+    },
+    "fallback_2": {
+      "url": "REMOVED",
+      "status": "disabled",
+      "reason": "CRITICAL exposure — eth_accounts + personal_unlockAccount on legacy Geth v1.8.4"
+    }
+  },
+  "removed_endpoints": [
+    {
+      "url": "http://45.33.17.6:8545",
+      "reason": "eth_accounts EXPOSED (1 account), personal_unlockAccount EXISTS, Geth v1.8.4-unstable, chainId null",
+      "risk_score": 9.8,
+      "removed_at": "2026-07-15T22:06:00Z",
+      "audit_ref": "artifacts/rpc-security-audit.json"
+    },
+    {
+      "url": "http://173.255.192.47:8545",
+      "reason": "eth_accounts EXPOSED (1 account), personal_unlockAccount EXISTS, Geth v1.8.4-unstable, chainId null",
+      "risk_score": 9.8,
+      "removed_at": "2026-07-15T22:06:00Z",
+      "audit_ref": "artifacts/rpc-security-audit.json"
+    }
+  ],
+  "monitoring": {
+    "target_contracts": [
+      "0x4943F5E7F4e450d48Ae82026163ecDe8A52C53dA",
+      "0x730ea0231808f42a20f8921ba7fbc788226768f5"
+    ],
+    "poll_interval_seconds": 1
+  },
+  "cex_cluster_map": "config/cex-cluster-map.json",
+  "hexstrike_api": {
+    "server": "http://127.0.0.1:8888",
+    "api_key_env": "HEXSTRIKE_API_KEY"
+  }
+}

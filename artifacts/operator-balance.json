@@ -1,0 +1,25 @@
+{
+  "generated_at": "2026-07-10T08:19:28Z",
+  "agent": "Agent-Report-06",
+  "task": "operator-balance-check",
+  "operator": "0x85dB346BE1d9d5D8ec4F57acf0067FbE53a6E846",
+  "bsc_rpc": "https://bsc-dataseed.binance.org/",
+  "balances": {
+    "bnb": 0.015054312,
+    "usdt": 0.0
+  },
+  "checks": {
+    "gas_ok": true,
+    "usdt_ok": false,
+    "ready_for_send_proof": false
+  },
+  "next_action": {
+    "step": "manual_binance_withdraw",
+    "what": "USDT",
+    "amount_suggested": "10-20 USDT",
+    "network": "BSC (BEP-20)",
+    "address": "0x85dB346BE1d9d5D8ec4F57acf0067FbE53a6E846",
+    "note": "Orchestrator cannot withdraw from Binance \u2014 user action required"
+  },
+  "bscscan": "https://bscscan.com/address/0x85dB346BE1d9d5D8ec4F57acf0067FbE53a6E846"
+}

@@ -1,0 +1,67 @@
+{
+  "run_id": "437bc9d22d9a",
+  "workflow": "operator-lab",
+  "success": true,
+  "finished_at": "2026-07-10T08:19:30Z",
+  "findings": {
+    "artifacts": {
+      "artifacts/operator-balance.json": {
+        "generated_at": "2026-07-10T08:19:28Z",
+        "agent": "Agent-Report-06",
+        "task": "operator-balance-check",
+        "operator": "0x85dB346BE1d9d5D8ec4F57acf0067FbE53a6E846",
+        "bsc_rpc": "https://bsc-dataseed.binance.org/",
+        "balances": {
+          "bnb": 0.015054312,
+          "usdt": 0.0
+        },
+        "checks": {
+          "gas_ok": true,
+          "usdt_ok": false,
+          "ready_for_send_proof": false
+        },
+        "next_action": {
+          "step": "manual_binance_withdraw",
+          "what": "USDT",
+          "amount_suggested": "10-20 USDT",
+          "network": "BSC (BEP-20)",
+          "address": "0x85dB346BE1d9d5D8ec4F57acf0067FbE53a6E846",
+          "note": "Orchestrator cannot withdraw from Binance — user action required"
+        },
+        "bscscan": "https://bscscan.com/address/0x85dB346BE1d9d5D8ec4F57acf0067FbE53a6E846"
+      },
+      "artifacts/defensive-audit-template.md": {
+        "_markdown_preview": "# Defensive Audit Template — Crypto Ops Infrastructure\n\nGenerated: 2026-07-10 08:19 UTC  \nAgent: Agent-Report-06  \nPurpose: Responsible disclosure / owner hardening (no exploitation steps)\n\n---\n\n## Scope\n\n| Asset | Observed | Notes |\n|-------|----------|-------|\n| Jenkins | 2.375.3 @ :8080 | Yandex Cloud; 403 unauthenticated |\n| Geth JSON-RPC | :8545 | Co-located; RST from external IP (allowlist likely) |\n| SSH | :22 | Open; ensure key-only + fail2ban |\n| BSC node (OVH) | 51.222.42.220:8545 | Read-only; no `personal_*` |\n\n---\n\n## Jenkins Hardening\n\n- [ ] Upgrade LTS **≥ 2.375.4** (prefer current LTS 2026)\n- [ ] Bind `:8080` to VPN / internal IP only (not public Internet)\n- [ ] Enforce SSO or strong MFA for admin accounts\n- [ ] Disable anonymous read if enabled\n- [ ] Audit installed plugins; remove unused\n- [ ] Restrict update sites to `https://updates.jenkins.io/` only\n- [ ] Set `java.io.tmpdir` to private directory (0700)\n- [ ] Enable audit log / access log retention\n- [ ] Secrets: migrate to Vault / Jenkins Credentials with folder ACLs\n- [ ] No `.env`, keystores, or `credentials.xml` in job workspaces/git\n\n**Known CVEs (2.375.3):** see `artifacts/jenkins-cve-report.json`\n\n---\n\n## Geth / RPC Hardening\n\n- [ ] Never expose `personal_*`, `admin_*`, or unlock APIs\n- [ ] Firewall `:8545` to application subnets only\n- [ ] Run without wallet keys on node filesystem\n- [ ] Use separate signer service (HSM / remote signer)\n- [ ] Monitor for unexpected `eth_sendRawTransaction` sources\n"
+      }
+    },
+    "highlights": [
+      {
+        "file": "artifacts/operator-balance.json",
+        "agent": "Agent-Report-06",
+        "task": "operator-balance-check",
+        "lines": [
+          "agent: Agent-Report-06",
+          "task: operator-balance-check",
+          "operator: 0x85dB346BE1d9d5D8ec4F57acf0067FbE53a6E846",
+          "bsc_rpc: https://bsc-dataseed.binance.org/"
+        ]
+      },
+      {
+        "file": "artifacts/operator-crypto-audit.txt",
+        "agent": "Agent-Report-06",
+        "task": "operator-crypto-audit",
+        "lines": [
+          "File: operator-crypto-audit.txt"
+        ]
+      },
+      {
+        "file": "artifacts/defensive-audit-template.md",
+        "agent": "Agent-Report-06",
+        "task": "generate-defensive-checklist",
+        "lines": [
+          "Markdown report: defensive-audit-template.md (2866 chars)"
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,198 @@
+{
+  "operation": "trace-infra",
+  "mode": "deep-osint",
+  "target_ip": "51.250.97.223",
+  "started_at": "2026-07-10T11:08:05.501467+00:00",
+  "finished_at": "2026-07-10T11:09:20.453548+00:00",
+  "policy": "read_only_osint_no_cve_exploit",
+  "port_scan": [
+    {
+      "port": 22,
+      "open": true,
+      "latency_ms": 0.7
+    },
+    {
+      "port": 80,
+      "open": true,
+      "latency_ms": 0.4
+    },
+    {
+      "port": 443,
+      "open": true,
+      "latency_ms": 0.3
+    },
+    {
+      "port": 8080,
+      "open": true,
+      "latency_ms": 0.2
+    },
+    {
+      "port": 8545,
+      "open": true,
+      "latency_ms": 0.4
+    },
+    {
+      "port": 8546,
+      "open": true,
+      "latency_ms": 0.5
+    },
+    {
+      "port": 30303,
+      "open": true,
+      "latency_ms": 0.1
+    }
+  ],
+  "jenkins": {
+    "probes": [
+      {
+        "url": "http://51.250.97.223:8080",
+        "error": "HTTP Error 403: Forbidden",
+        "headers": {}
+      },
+      {
+        "url": "http://51.250.97.223:8080/login",
+        "status": 200,
+        "headers": {
+          "date": "Fri, 10 Jul 2026 11:08:08 GMT",
+          "connection": "close",
+          "x-content-type-options": "nosniff",
+          "content-type": "text/html;charset=utf-8",
+          "expires": "0",
+          "cache-control": "no-cache,no-store,must-revalidate",
+          "x-hudson": "1.395",
+          "x-jenkins": "2.375.3",
+          "x-jenkins-session": "a47b840c",
+          "x-frame-options": "sameorigin",
+          "x-instance-identity": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAhEcKRJUCWL7hOk1f6KQSSpLFIvNCKO2xBAK+a/hhIBI1uTyPVVpmC/srvPHIOcxBEBxvwFS4pPAi8OBDsxk6Dq6yvb2MeZsRhtVS5dtTlHCBBPLBXPo1faiFOnbb01rv0HLYM7B58TkZ7a+87JUG3xkXCt8kn4JaOp8JpyiEMt9oJEs+zlmGlMT+ZT1LHR2SqPMoUofNk9D5ODLmP/QRXfcqNow12h7eYf2yFW3cNGaBi1+whHDI2h3SKg2e0LNtMjDO9jO7lPfhr6XR9bxWrkj4tSFpTc/6GRQJ1CPk4mAe5iZm0Zuydqd0uSj/uPq0qysOwv/MRyGKdjxSJPSJKwIDAQAB",
+          "set-cookie": "JSESSIONID.c1a6a05e=node0n0w7hcosivs2iwcy42mfuh4m95.node0; Path=/; HttpOnly",
+          "x-hudson-theme": "default",
+          "referrer-policy": "same-origin",
+          "cross-origin-opener-policy": "same-origin",
+          "content-length": "5316",
+          "server": "Jetty(10.0.12)"
+        },
+        "proxy_hints": {
+          "x-content-type-options": "nosniff",
+          "x-hudson": "1.395",
+          "x-jenkins": "2.375.3",
+          "x-jenkins-session": "a47b840c",
+          "x-frame-options": "sameorigin",
+          "x-instance-identity": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAhEcKRJUCWL7hOk1f6KQSSpLFIvNCKO2xBAK+a/hhIBI1uTyPVVpmC/srvPHIOcxBEBxvwFS4pPAi8OBDsxk6Dq6yvb2MeZsRhtVS5dtTlHCBBPLBXPo1faiFOnbb01rv0HLYM7B58TkZ7a+87JUG3xkXCt8kn4JaOp8JpyiEMt9oJEs+zlmGlMT+ZT1LHR2SqPMoUofNk9D5ODLmP/QRXfcqNow12h7eYf2yFW3cNGaBi1+whHDI2h3SKg2e0LNtMjDO9jO7lPfhr6XR9bxWrkj4tSFpTc/6GRQJ1CPk4mAe5iZm0Zuydqd0uSj/uPq0qysOwv/MRyGKdjxSJPSJKwIDAQAB",
+          "x-hudson-theme": "default",
+          "server": "Jetty(10.0.12)"
+        },
+        "jenkins_suspected": true,
+        "body_snippet": "\n    \n    \n  \n  \n  <!DOCTYPE html><html lang=\"en-US\"><head resURL=\"/static/a47b840c\" data-rooturl=\"\" data-resurl=\"/static/a47b840c\" data-imagesurl=\"/static/a47b840c/images\"><title>Sign in [Jenkins]</title><meta name=\"ROBOTS\" content=\"NOFOLLOW\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><link rel=\"stylesheet\" href=\"/static/a47b840c/jsbundles/simple-page.css\" type=\"text/css\""
+      },
+      {
+        "url": "http://51.250.97.223:8080/manage",
+        "error": "HTTP Error 403: Forbidden",
+        "headers": {}
+      },
+      {
+        "url": "https://51.250.97.223:443",
+        "error": "<urlopen error [Errno 104] Connection reset by peer>",
+        "headers": {}
+      },
+      {
+        "url": "https://51.250.97.223:443/login",
+        "error": "<urlopen error [Errno 104] Connection reset by peer>",
+        "headers": {}
+      },
+      {
+        "url": "https://51.250.97.223:443/manage",
+        "error": "<urlopen error [Errno 104] Connection reset by peer>",
+        "headers": {}
+      }
+    ],
+    "cve_assessment": {
+      "cve_id": "CVE-2024-23897",
+      "exploitation": "NOT_PERFORMED",
+      "reason": "Read-only OSINT policy — arbitrary file read requires authorized pentest scope",
+      "paths_of_interest": [
+        "/credentials.xml",
+        "/config.xml",
+        "/script",
+        "/manage"
+      ],
+      "surface_exposed": true,
+      "credential_file_access": false,
+      "operator_gate": "mcp_execution_gate required for any credential retrieval"
+    }
+  },
+  "geth_peering": {
+    "endpoint": "http://51.250.97.223:8545",
+    "methods": {
+      "web3_clientVersion": {
+        "ok": false,
+        "error": "('Connection aborted.', ConnectionResetError(104, 'Connection reset by peer'))"
+      },
+      "eth_chainId": {
+        "ok": false,
+        "error": "('Connection aborted.', ConnectionResetError(104, 'Connection reset by peer'))"
+      },
+      "net_peerCount": {
+        "ok": false,
+        "error": "('Connection aborted.', ConnectionResetError(104, 'Connection reset by peer'))"
+      },
+      "admin_nodeInfo": {
+        "ok": false,
+        "error": "('Connection aborted.', ConnectionResetError(104, 'Connection reset by peer'))"
+      },
+      "admin_peers": {
+        "ok": false,
+        "error": "('Connection aborted.', ConnectionResetError(104, 'Connection reset by peer'))"
+      }
+    },
+    "peer_ips": [],
+    "cluster_hint": false
+  },
+  "reverse_proxy": {
+    "probes": [
+      {
+        "url": "http://51.250.97.223/",
+        "error": "[Errno 104] Connection reset by peer",
+        "headers": {}
+      },
+      {
+        "url": "http://51.250.97.223:8080/",
+        "error": "HTTP Error 403: Forbidden",
+        "headers": {}
+      },
+      {
+        "url": "https://51.250.97.223/",
+        "error": "<urlopen error [Errno 104] Connection reset by peer>",
+        "headers": {}
+      }
+    ],
+    "stealth_recommendations": []
+  },
+  "forensics_correlation": {
+    "wallet": "0xcfc85f21f5f01ab24d6b7a3b93ef097099ebde3a",
+    "entity": {
+      "address": "0xcfc85f21f5f01ab24d6b7a3b93ef097099ebde3a",
+      "labels": [
+        "cex_cluster_map",
+        "exchange_forensics",
+        "exchange_forensics"
+      ],
+      "sources": [
+        "artifacts/cex-cluster-map.json",
+        "artifacts/exchange-forensics/cex-depth2-scan.json",
+        "artifacts/exchange-forensics/rhino-bridge-trace.json"
+      ]
+    },
+    "labels": [
+      "cex_cluster_map",
+      "exchange_forensics",
+      "exchange_forensics"
+    ],
+    "rag_hits": 3
+  },
+  "operator_watchlist": {
+    "jenkins_credentials_found": false,
+    "jenkins_config_found": false,
+    "peer_cluster_detected": false,
+    "proxy_headers_detected": false
+  }
+}

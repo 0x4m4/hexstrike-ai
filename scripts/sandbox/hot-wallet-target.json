@@ -1,0 +1,66 @@
+{
+  "generated_at": "2026-07-12T00:00:00Z",
+  "exclusive": true,
+  "purpose": "Primary hot wallet — dedicated ops target (read-only)",
+  "primary_target": {
+    "role": "hot_wallet",
+    "address": "0x4943F5E7F4e450d48Ae82026163ecDe8A52C53dA",
+    "chain": "BSC",
+    "chain_id": 56,
+    "priority": 1,
+    "labels": {
+      "risk": "high",
+      "multichain_net_usd": 2114305.07,
+      "classification": "signing_bot_ops_wallet"
+    },
+    "context": {
+      "bsc_usdt": 1650373.67,
+      "base_usdc": 463931.4,
+      "tx_volume_approx": 56000,
+      "signing": "automated_bot_key_off_node",
+      "primary_sink": "0xb80a582fa430645a043bb4f6135321ee01005fef",
+      "authority": "0x730ea0231808f42a20f8921ba7fbc788226768f5",
+      "infra_correlated": "0xcfc85f21f5f01ab24d6b7a3b93ef097099ebde3a",
+      "infra_ip": "51.250.97.223",
+      "note": "Payroll rail ~977 recipients; key NOT on BSC RPC node"
+    },
+    "linked_infra": [
+      {"ip": "51.250.97.223", "org": "Yandex.Cloud", "service": "jenkins:8080"},
+      {"ip": "51.222.42.220", "org": "OVH", "service": "geth:8545"}
+    ],
+    "out_of_scope": {
+      "operator_proof_wallet": "0x85dB346BE1d9d5D8ec4F57acf0067FbE53a6E846",
+      "note": "Operator PoC wallet — NOT this target"
+    }
+  },
+  "wallets": [
+    {
+      "role": "hot_wallet",
+      "address": "0x4943F5E7F4e450d48Ae82026163ecDe8A52C53dA",
+      "chain": "BSC",
+      "chain_id": 56,
+      "priority": 1
+    },
+    {
+      "role": "authority",
+      "address": "0x730ea0231808f42a20f8921ba7fbc788226768f5",
+      "chain": "BSC",
+      "chain_id": 56,
+      "priority": 2
+    },
+    {
+      "role": "primary_sink_hub",
+      "address": "0xb80a582fa430645a043bb4f6135321ee01005fef",
+      "chain": "BSC",
+      "chain_id": 56,
+      "priority": 3
+    },
+    {
+      "role": "infra_correlated_wallet",
+      "address": "0xcfc85f21f5f01ab24d6b7a3b93ef097099ebde3a",
+      "chain": "BSC",
+      "chain_id": 56,
+      "priority": 4
+    }
+  ]
+}

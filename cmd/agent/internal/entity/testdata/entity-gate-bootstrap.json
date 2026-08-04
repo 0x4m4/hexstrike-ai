@@ -1,0 +1,22 @@
+{
+  "0x730ea0231808f42a20f8921ba7fbc788226768f5": {
+    "name": "authority",
+    "is_safe": true,
+    "tags": ["ALLOWLIST", "EIP-7702"]
+  },
+  "0xb80a582fa430645a043bb4f6135321ee01005fef": {
+    "name": "primary_sink_hub",
+    "is_safe": true,
+    "tags": ["ALLOWLIST", "RHINO_FI_BRIDGE"]
+  },
+  "0x4943f5e7f4e450d48ae82026163ecde8a52c53da": {
+    "name": "hot_wallet",
+    "is_safe": true,
+    "tags": ["MONITORED", "HIGH_ACTIVITY"]
+  },
+  "0x000000000000000000000000000000000000dead": {
+    "name": "COMPROMISED_SINK",
+    "is_safe": false,
+    "tags": ["COMPROMISED", "BLOCKED"]
+  }
+}

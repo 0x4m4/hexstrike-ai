@@ -1,0 +1,17 @@
+[
+  {
+    "addr": "0x730ea0231808f42a20f8921ba7fbc788226768f5",
+    "type": "CONTRACT",
+    "bnb": 0.0
+  },
+  {
+    "addr": "0x55ed7fcd17b93fbcd5186cda01af6fed4ec78e08",
+    "type": "CONTRACT",
+    "bnb": 0.0
+  },
+  {
+    "addr": "0xcfc85f21f5f01ab24d6b7a3b93ef097099ebde3a",
+    "type": "CONTRACT",
+    "bnb": 0.0
+  }
+]

@@ -1,0 +1,8 @@
+{
+  "workflow": "entity-id-pipeline",
+  "env": {
+    "TARGET": "0x4943F5E7F4e450d48Ae82026163ecDe8A52C53dA"
+  },
+  "requested_by": "manual",
+  "note": "Drop in agents/queue/ or: hexstrike-orchestrator enqueue agents/queue/example-entity-id.json"
+}

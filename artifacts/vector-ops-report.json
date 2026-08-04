@@ -1,0 +1,102 @@
+{
+  "operation": "ops_vectors",
+  "target_ip": "51.250.97.223",
+  "wallet": "0xcfc85f21f5f01ab24d6b7a3b93ef097099ebde3a",
+  "vector_a": {
+    "status": "SKIPPED",
+    "reason": "CVE-2024-23897 file-read exploitation not executed — requires explicit authorized pentest scope and mcp_execution_gate approval",
+    "jenkins_version_observed": "2.375.3",
+    "surface": "exposed_login_8080"
+  },
+  "vector_b": {
+    "vector": "B_network_recon",
+    "target_ip": "51.250.97.223",
+    "policy": "passive_tcp_probe_no_rlpx_injection",
+    "probes": [
+      {
+        "ip": "51.250.97.223",
+        "port": 30303,
+        "protocol": "devp2p",
+        "tcp_open": true,
+        "connect_ms": 0.7,
+        "initial_bytes_hex": "",
+        "note": "TCP open — devp2p handshake requires RLPx initiator (use geth devp2p tools for peer list)"
+      },
+      {
+        "ip": "51.250.97.223",
+        "port": 30304,
+        "protocol": "devp2p",
+        "tcp_open": true,
+        "connect_ms": 0.6,
+        "initial_bytes_hex": "",
+        "note": "TCP open — devp2p handshake requires RLPx initiator (use geth devp2p tools for peer list)"
+      },
+      {
+        "ip": "51.250.97.223",
+        "port": 8545,
+        "protocol": "devp2p",
+        "tcp_open": true,
+        "connect_ms": 0.4,
+        "initial_bytes_hex": "",
+        "note": "TCP open — devp2p handshake requires RLPx initiator (use geth devp2p tools for peer list)"
+      }
+    ],
+    "cluster_hint": true,
+    "peer_ips_discovered": [],
+    "limitation": "Full enode peer list requires authorized devp2p dial (geth devp2p discv4). Not executed automatically to avoid IDS triggers.",
+    "next_steps": [
+      "Run discv4 ping from authorized lab with rate limit",
+      "Cross-reference discovered enodes with chain analytics"
+    ]
+  },
+  "vector_c": {
+    "vector": "C_forensics_ip_wallet",
+    "target_ip": "51.250.97.223",
+    "wallet": "0xcfc85f21f5f01ab24d6b7a3b93ef097099ebde3a",
+    "whois_excerpt": "whois unavailable: [Errno 2] No such file or directory: 'whois'",
+    "ipinfo": {
+      "ip": "51.250.97.223",
+      "city": "Moscow",
+      "region": "Moscow",
+      "country": "RU",
+      "loc": "55.7520,37.6178",
+      "org": "AS200350 Yandex.Cloud LLC",
+      "postal": "101000",
+      "timezone": "Europe/Moscow",
+      "readme": "https://ipinfo.io/missingauth"
+    },
+    "correlation": {
+      "generated_at": "2026-07-10T11:13:19.296828+00:00",
+      "type": "infrastructure_wallet_correlation",
+      "target_ip": "51.250.97.223",
+      "wallet_address": "0xcfc85f21f5f01ab24d6b7a3b93ef097099ebde3a",
+      "hosting": {
+        "provider": "AS200350 Yandex.Cloud LLC",
+        "yandex_cloud_likely": true,
+        "city": "Moscow",
+        "country": "RU",
+        "asn": "AS200350"
+      },
+      "wallet_entity": {
+        "address": "0xcfc85f21f5f01ab24d6b7a3b93ef097099ebde3a",
+        "labels": [
+          "cex_cluster_map",
+          "exchange_forensics",
+          "exchange_forensics"
+        ],
+        "sources": [
+          "artifacts/cex-cluster-map.json",
+          "artifacts/exchange-forensics/cex-depth2-scan.json",
+          "artifacts/exchange-forensics/rhino-bridge-trace.json"
+        ]
+      },
+      "chain_of_custody_note": "IP registration data must be requested from Yandex Cloud via legal process (Russian Federation operator). WHOIS shows ASN only, not tenant identity.",
+      "recommended_lea_actions": [
+        "Preserve artifacts/infra-trace-final.json and this report",
+        "Submit legal request to Yandex Cloud LLC for VM tenant billing identity",
+        "Cross-reference Jenkins instance-identity key with internal case timeline",
+        "Map wallet outflows (cex-cluster-map) against infra deployment dates"
+      ]
+    }
+  }
+}

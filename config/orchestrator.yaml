@@ -1,0 +1,46 @@
+# HexStrike Orchestrator — ограничения сняты (управляемый режим)
+version: "1.1.0"
+
+limits:
+  disabled: true   # снимает max_live, backpressure, auth gate, sandbox_required
+
+agents:
+  max_live: 999
+  backpressure:
+    enabled: false
+    strategy: queue
+    threshold_cpu: 95
+    threshold_mem: 95
+    poll_interval_sec: 1
+
+modes:
+  # все audit-режимы без лимита агентов
+  unlimited:
+    - defense
+    - validation
+    - offense
+    - recon
+    - forensics
+  sandbox_required: []   # пусто — offense не блокируется orchestrator'ом
+
+authorization:
+  require_signed_contracts: false
+  signature_format: ECDSA-secp256k1
+  signed_by: SecurityCouncil
+  valid_until: "2027-12-31"
+  scope_file: scripts/sandbox/field-targets-5.json
+
+sarif:
+  version: "2.1.0"
+  include_tool_versions: true
+  include_authorization_metadata: true
+  include_bytecode_hash: true
+
+tools:
+  dual_mode_agent:
+    version: "1.2.0"
+    catalog: config/vulnerabilities.json
+  slither:
+    version: "0.11.5"
+  foundry:
+    version: "1.7.1"

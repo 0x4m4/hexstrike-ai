@@ -1,0 +1,23 @@
+# HexStrike On-Chain Forensics — Правила оператора
+# Только read-only защитный анализ. Без взаимодействия с кошельками и без эксплойтов.
+
+## Путь запуска
+- Все 3 прогона: `bash scripts/run-three-progons.sh`
+- Forensics-модули: `source scripts/forensics-env-mac.sh && ./scripts/run-all-forensics.sh`
+- Тест 5 кошельков: `python3 scripts/hexstrike-orchestrator.py run field-targets-5`
+- Аудит оператора: `python3 scripts/hexstrike-orchestrator.py run operator-lab`
+- Комbined workflow: `python3 scripts/hexstrike-orchestrator.py run operator-targets-3progon`
+
+## Источники целей (2026-07-07)
+- TARGETS-REPORT-20260707.md — набор из 5 кошельков
+- DAILY-REPORT-20260707.md — снимок ежедневных операций
+- operator-audit.txt — локальный crypto-аудит оператора
+
+## Переменные Eva/Mac (авто в forensics-env-mac.sh)
+- TRX_DRAINER_REPO, EVM_DRAINER_REPO, APETERMINAL_REPO, SOLANA_DRAINER_REPO
+- CREATE2_SCAN_ROOTS, VANILLA_INTEL_DIR
+
+## Ограничения
+- Read-only on-chain (Etherscan/BscScan/BaseScan) и OSINT
+- Артефакты → artifacts/recon/, artifacts/forensics/, artifacts/orchestrator/
+- Desktop mirror → ~/Desktop/on-chain-forensics/artifacts/

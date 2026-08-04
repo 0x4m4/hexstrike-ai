@@ -1,0 +1,62 @@
+{
+  "agent": "Agent-Recon-04",
+  "task": "verify-erc20 + flash-token check",
+  "official_usdt_bsc": {
+    "address": "0x55d398326f99059fF775485246999027B3197955",
+    "name": "Tether USD",
+    "symbol": "USDT",
+    "decimals": 18,
+    "total_supply": 9184992128.67383,
+    "is_contract": true,
+    "code_bytes": 4413,
+    "expected": "0x55d398326f99059fF775485246999027B3197955",
+    "matches_binance_peg_usdt": true,
+    "pancake_v2_pair_with_wbnb": "0x16b9a82891338f9ba80e2d6970fdda79d1eb0dae",
+    "has_liquidity_pool": true
+  },
+  "hot_wallet_holding": {
+    "address": "0x4943f5e7f4e450d48ae82026163ecde8a52c53da",
+    "token_contract_used": "0x55d398326f99059fF775485246999027B3197955",
+    "balance_raw": 521050502693811736644000,
+    "balance_usdt": 521050.5026938117,
+    "is_official_contract_balance": true
+  },
+  "binance_1_1m_transfer_tx": {
+    "tx": "0x8f56f5e9c9a194202ff21f1002774eb0a8fb746c45cf519321cf0ceb1083e407",
+    "log_token_address": "0x55d398326f99059ff775485246999027b3197955",
+    "matches_official_usdt": true,
+    "amount_usdt": 1100000.0
+  },
+  "flash_token_verdict": {
+    "is_flash_fake_token": false,
+    "reason": [
+      "Contract is official Binance-Peg BSC-USD (USDT) 0x55d398...",
+      "PancakeSwap V2 pair with WBNB exists",
+      "1.1M inbound tx log emits from official USDT contract",
+      "Balance query on official contract returns ~530k+ USDT",
+      "NOT a zero-liquidity airdrop spam token"
+    ],
+    "note": "Spam tokens in wallet are separate junk airdrops; core USDT balance is on official contract"
+  },
+  "authority_balances": {
+    "auth_usdt": 0.000392,
+    "bridge_usdt": 1459427.2966768881
+  },
+  "agent_defi_05": {
+    "authority_type": "EIP-7702 delegated EOA",
+    "implementation": "0x314c01e758a7911e7339aa4f960c7749e8947775",
+    "dex_marker_hits_in_bytecode": {
+      "authority_impl_pancake_factory": false,
+      "bridge_pancake_factory": false,
+      "authority_impl_pancake_router_v2": false,
+      "bridge_pancake_router_v2": false,
+      "authority_impl_aave_pool_v3": false,
+      "bridge_aave_pool_v3": false
+    },
+    "flash_loan_oracle_exposure": {
+      "authority_uses_dex_oracle": false,
+      "bridge_uses_dex_oracle": false,
+      "verdict": "Authority itself is signature-gated delegate account, not a lending/oracle consumer. Primary sink is Rhino.fi bridge (known protocol). Flash-loan price oracle attack on Authority is NOT applicable at this layer."
+    }
+  }
+}

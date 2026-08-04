@@ -1,0 +1,37 @@
+project: samson-sbm
+environment: dev
+operator_ids:
+  - operator-alpha
+  - operator-beta
+allowed_external_egress: false
+allowed_doc_types:
+  - markdown
+  - json
+  - pdf_derived
+  - report
+  - playbook
+  - finding
+  - pyrit_report
+  - garak_report
+  - atlas_technique
+  - emulation_result
+targets:
+  - target_id: arena-default
+    base_url: http://127.0.0.1:8080
+    allowed_techniques:
+      - persistence
+      - data_access
+      - lateral_movement
+      - invoice_substitution
+      - payment_api_abuse
+      - beneficiary_swap
+      - llm_payment_injection
+    allowed_agents:
+      - impact_simulation
+      - financial_sandbox
+      - garak
+    network_cidrs:
+      - 127.0.0.0/8
+      - 10.0.0.0/8
+    metadata:
+      type: arena

@@ -1,0 +1,10 @@
+{
+  "verdict_type": "STAGING_GO",
+  "staging_go": true,
+  "production_global_go": false,
+  "global_go_eligible": false,
+  "reason": "staging_go_formalized_production_still_nogo",
+  "recorded_at": "2026-07-17T16:26:00Z",
+  "see": "docs/ops/STAGING-GO-VERDICT.md",
+  "note": "Operator staging live collect was GO on operator host; this workspace verdict.json remains demo until COLLECT_MODE=live is re-run with creds."
+}

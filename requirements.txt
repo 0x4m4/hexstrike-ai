@@ -81,4 +81,10 @@ bcrypt==4.0.1                   # Pin bcrypt version for passlib compatibility (
 # 4. Cloud tools require API keys and authentication configuration
 # 5. Browser Agent requires Chrome/Chromium and ChromeDriver installation
 #
-# For complete installation instructions and setup guides, see README.md
+# ============================================================================
+# RAG / FORENSIC MEMORY (OPTIONAL — requires secondary disk on operator Mac)
+# ============================================================================
+lancedb>=0.6.0,<1.0.0
+sentence-transformers>=2.2.0,<4.0.0
+torch>=2.0.0,<3.0.0
+cryptography>=41.0.0,<44.0.0    # AES-256 vault (core.vault)

@@ -1,0 +1,81 @@
+{
+  "version": "1.1.0",
+  "description": "Dual-Mode agent toolchain — defense + sandbox offense",
+  "limits": {
+    "disabled": true
+  },
+  "modes": {
+    "defense": {
+      "description": "Static/dynamic audit, remediation, on-chain monitoring",
+      "allowed_skills": [
+        "skill.contract_toolchain",
+        "skill.dual_mode",
+        "skill.vulnerability_scanner",
+        "core.forensics"
+      ],
+      "forbidden": ["mainnet_exploit", "remote_execution"]
+    },
+    "offense": {
+      "description": "PoC simulation in local Foundry sandbox only",
+      "allowed_skills": ["skill.contract_toolchain", "skill.dual_mode"],
+      "requires_env": ["HEXSTRIKE_SANDBOX=1"],
+      "forbidden": ["mainnet_exploit", "unauthorized_targets"]
+    },
+    "forensics": {
+      "description": "Read-only drainer/malware IOC pipeline (default)",
+      "inherits": "defense"
+    }
+  },
+  "tools": {
+    "slither": {
+      "binary": "slither",
+      "install": "pip install slither-analyzer",
+      "defense": true,
+      "offense": false
+    },
+    "mythril": {
+      "binary": "myth",
+      "install": "pip install mythril",
+      "defense": true,
+      "offense": false
+    },
+    "echidna": {
+      "binary": "echidna-test",
+      "install": "https://github.com/crytic/echidna",
+      "defense": true,
+      "offense": true
+    },
+    "foundry": {
+      "binary": "forge",
+      "install": "curl -L https://foundry.paradigm.xyz | bash && foundryup",
+      "defense": true,
+      "offense": true,
+      "sandbox_only": true
+    },
+    "brownie": {
+      "binary": "brownie",
+      "install": "pip install eth-brownie",
+      "defense": false,
+      "offense": true,
+      "sandbox_only": true
+    },
+    "manticore": {
+      "binary": "manticore",
+      "install": "pip install manticore",
+      "defense": true,
+      "offense": true
+    },
+    "cast": {
+      "binary": "cast",
+      "install": "foundryup",
+      "defense": true,
+      "offense": false
+    }
+  },
+  "defaults": {
+    "mode": "defense",
+    "artifact_dir": "artifacts/dual-mode",
+    "sandbox_dir": "scripts/sandbox",
+    "timeout_sec": 300
+  }
+}

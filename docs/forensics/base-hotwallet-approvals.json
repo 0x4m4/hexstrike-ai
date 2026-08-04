@@ -1,0 +1,81 @@
+{
+  "generated_at": "2026-07-14T17:34:50Z",
+  "chain": "base",
+  "hot_wallet": "0x4943f5e7f4e450d48ae82026163ecde8a52c53da",
+  "token": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+  "balance_raw": 830432157876,
+  "balance_usdc": 830432.157876,
+  "eoa": true,
+  "nonce": 72943,
+  "approval_log_scan": {
+    "rpc": "https://base.gateway.tenderly.co",
+    "window_blocks_approx": 500000,
+    "events_found": 0,
+    "note": "No USDC Approval events from hot wallet in ~500k blocks (~11 days). Public RPCs rate-limited before multi-month backfill. Full archive history needs ETHERSCAN_API_KEY (V2 chainid=8453)."
+  },
+  "current_allowances": [
+    {
+      "spender": "0x4752ba5dbc23f44d87826276bf6fd6b1c372ad24",
+      "label": "UniswapV2Router02",
+      "allowance": 0,
+      "allowance_usdc": 0.0,
+      "non_zero": false
+    },
+    {
+      "spender": "0xcf77a3ba9a5ca399b7c97c74d54e5b1beb874e43",
+      "label": "AerodromeRouter",
+      "allowance": 0,
+      "allowance_usdc": 0.0,
+      "non_zero": false
+    },
+    {
+      "spender": "0x3154cf16ccdb4c6d922629664174b904d80f2c35",
+      "label": "BaseBridge",
+      "allowance": 0,
+      "allowance_usdc": 0.0,
+      "non_zero": false
+    },
+    {
+      "spender": "0x000000000022d473030f116ddee9f6b43ac78ba3",
+      "label": "Permit2",
+      "allowance": 0,
+      "allowance_usdc": 0.0,
+      "non_zero": false
+    },
+    {
+      "spender": "0x111111125421ca6dc452d289314280a0f8842a65",
+      "label": "1inchAggregationRouterV6",
+      "allowance": 0,
+      "allowance_usdc": 0.0,
+      "non_zero": false
+    },
+    {
+      "spender": "0x3fc91a3afd70395cd496c647d5a6cc9d4b2b7fad",
+      "label": "UniswapUniversalRouter",
+      "allowance": 0,
+      "allowance_usdc": 0.0,
+      "non_zero": false
+    },
+    {
+      "spender": "0x2626664c2603336e57b271c5c0b26f421741e481",
+      "label": "UniswapSwapRouter02",
+      "allowance": 0,
+      "allowance_usdc": 0.0,
+      "non_zero": false
+    },
+    {
+      "spender": "0x0000000000001ff3684f28c67538d4d072c22734",
+      "label": "0xSettler",
+      "allowance": 0,
+      "allowance_usdc": 0.0,
+      "non_zero": false
+    }
+  ],
+  "current_nonzero_allowances": [],
+  "verdict": "NO_CURRENT_USDC_ALLOWANCES \u2014 checked DEX/bridge/Permit2 spenders all zero; no Approval events in recent ~11d window",
+  "remediation": [
+    "Keep allowances at 0; revoke immediately if any non-zero appears",
+    "Set ETHERSCAN_API_KEY for full historical Approval backfill via api.etherscan.io/v2/api?chainid=8453",
+    "Continue mempool/allowance monitor on this hot wallet"
+  ]
+}

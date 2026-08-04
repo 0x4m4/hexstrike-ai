@@ -1,0 +1,30 @@
+{
+  "rpc": "http://51.222.42.220:8545",
+  "chainId": 56,
+  "client": "Geth/v1.7.3-3cf90434-20260422/linux-amd64/go1.25.9",
+  "puissant": {
+    "address": "0x4848489f0b2bedd788c696e2d79b6b69d7484848",
+    "bnb": 67.85074281418319,
+    "nonce": 39230213,
+    "is_contract": false,
+    "usdt": 1.0539332518571543
+  },
+  "hot": {
+    "address": "0x4943F5E7F4e450d48Ae82026163ecDe8A52C53dA",
+    "bnb": 0.1109776147502932,
+    "nonce": 58882,
+    "is_contract": false,
+    "usdt": 568847.2973158117
+  },
+  "operator": {
+    "address": "0x85dB346BE1d9d5D8ec4F57acf0067FbE53a6E846",
+    "bnb": 0.015055362,
+    "nonce": 6,
+    "is_contract": false,
+    "usdt": 0.0
+  },
+  "allowances": {
+    "hot_to_operator_usdt": 0.0,
+    "puissant_to_operator_usdt": 0.0
+  }
+}

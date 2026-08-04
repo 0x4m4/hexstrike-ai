@@ -1,0 +1,84 @@
+{
+  "generated_at": "2026-07-14T14:15:00Z",
+  "purpose": "Merged batch — all 10 unique field targets (batch1 + batch2)",
+  "wallets": [
+    {
+      "role": "hot_wallet",
+      "address": "0x4943F5E7F4e450d48Ae82026163ecDe8A52C53dA",
+      "chain": "BSC",
+      "batch": 1
+    },
+    {
+      "role": "authority",
+      "address": "0x730ea0231808f42a20f8921ba7fbc788226768f5",
+      "chain": "BSC",
+      "batch": 1
+    },
+    {
+      "role": "primary_sink_hub",
+      "address": "0xb80a582fa430645a043bb4f6135321ee01005fef",
+      "chain": "BSC",
+      "batch": 1
+    },
+    {
+      "role": "puissant_validator",
+      "address": "0x4848489f0b2bedd788c696e2d79b6b69d7484848",
+      "chain": "BSC",
+      "batch": 1
+    },
+    {
+      "role": "infra_correlated_wallet",
+      "address": "0xcfc85f21f5f01ab24d6b7a3b93ef097099ebde3a",
+      "chain": "BSC",
+      "batch": 1
+    },
+    {
+      "role": "eip7702_implementation",
+      "address": "0x314C01e758a7911e7339aa4F960C7749E8947775",
+      "chain": "BSC",
+      "batch": "derived"
+    },
+    {
+      "role": "top_recipient_1",
+      "address": "0x55ed7fcd17b93fbcd5186cda01af6fed4ec78e08",
+      "chain": "BSC",
+      "batch": 2
+    },
+    {
+      "role": "top_recipient_2",
+      "address": "0x3e0b65c9c31e9593e2b357be6eecd28bef6da03e",
+      "chain": "BSC",
+      "batch": 2
+    },
+    {
+      "role": "usdt_treasury_source",
+      "address": "0x161ba15a5f335c9f06bb5bbb0a9ce14076fbb645",
+      "chain": "BSC",
+      "batch": 2
+    },
+    {
+      "role": "bridge_implementation",
+      "address": "0x5ab2790be0ade18af686f38c5321af1d8daa3192",
+      "chain": "BSC",
+      "batch": 2
+    },
+    {
+      "role": "bridge_gnosis_safe",
+      "address": "0x7af3828c0b061552af3479806add982eef04f0c8",
+      "chain": "BSC",
+      "batch": 2
+    },
+    {
+      "role": "bridge_impl_owner",
+      "address": "0xc38a2eb3aa44f52b0516d5c171114815bc2f28fa",
+      "chain": "BSC",
+      "batch": "derived"
+    },
+    {
+      "role": "bridge_proxy_admin",
+      "address": "0xb8ee2cd0e210fac991e441dba767082d9cdceec3",
+      "chain": "BSC",
+      "batch": "derived"
+    }
+  ]
+}

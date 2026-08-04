@@ -1,0 +1,35 @@
+{
+  "test_id": "hexstrike_attack_stress_01",
+  "session": "attack",
+  "run": 1,
+  "run_id": "6a2edab9f619",
+  "mode": "ATTACK_SIMULATION",
+  "recon_ip": "51.250.97.223",
+  "started_at": "2026-07-11T16:18:54.666472+00:00",
+  "overall_score": 100.0,
+  "wall_clock_sec": 47.38,
+  "stress_test": {
+    "exit_code": 0,
+    "overall_score": 100.0,
+    "elapsed_sec": 43.847
+  },
+  "amount_simulation": {
+    "pass": true,
+    "elapsed_sec": 2.573
+  },
+  "fees1559": {
+    "pass": true,
+    "elapsed_sec": 0.342
+  },
+  "entity_gate": {
+    "pass": true,
+    "elapsed_sec": 0.212
+  },
+  "go_test": "PASS",
+  "hot_path": {
+    "pipeline_latency_ms": 43847.0,
+    "amount_sim_ms": 2573.0
+  },
+  "monitor_duration_config": 60,
+  "finished_at": "2026-07-11T16:18:54.666497+00:00"
+}

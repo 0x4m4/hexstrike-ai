@@ -1,0 +1,77 @@
+=== CRYPTO KEY SURFACE AUDIT ===
+Fri Jul 10 11:19:28 EEST 2026
+User: mufasaai
+
+--- Key files ---
+lrwxr-xr-x  1 mufasaai  staff  34 Jul 10 01:17 /Users/mufasaai/proof-key.txt -> /Volumes/Eva/secrets/proof-key.txt
+proof-key.txt permissions: 755
+
+--- Operator signing scripts (home) ---
+-rw-r--r--  1 mufasaai  staff  1374 Jul  9 21:14 /Users/mufasaai/create-proof-wallet.js
+-rw-r--r--  1 mufasaai  staff  3362 Jul  9 21:14 /Users/mufasaai/send-proof.js
+
+--- Symlinks to Eva ---
+lrwxr-xr-x  1 mufasaai  staff  34 Jul 10 01:17 /Users/mufasaai/proof-key.txt -> /Volumes/Eva/secrets/proof-key.txt
+
+/Users/mufasaai/Desktop/redteam:
+total 1920
+drwxr-xr-x  29 mufasaai  staff     928 Jul  9 09:43 .
+drwx------  58 mufasaai  staff    1856 Jul 10 01:12 ..
+-rw-r--r--   1 mufasaai  staff    4385 Jul  9 21:14 AGGRESSIVE_PHASE.md
+-rw-r--r--   1 mufasaai  staff    3142 Jul  9 15:48 ATTACK_PLAN_PHASE2.md
+-rw-r--r--   1 mufasaai  staff    5652 Jul  9 21:14 CONTRACT_VECTORS_ANALYSIS.md
+-rw-r--r--   1 mufasaai  staff    2420 Jul  9 21:14 GYM_API_FINDINGS.md
+-rw-r--r--   1 mufasaai  staff   12935 Jul  9 21:14 KEY_HUNT.md
+-rw-r--r--   1 mufasaai  staff    4076 Jul  9 21:14 KEY_HUNT_PHASE3.md
+-rw-r--r--   1 mufasaai  staff    1829 Jul  9 21:14 MCP_PENTEST_MAP.md
+-rw-r--r--   1 mufasaai  staff    4869 Jul  9 21:14 PASSWORD_HINTS.md
+-rw-r--r--   1 mufasaai  staff    9024 Jul  9 21:14 PENTEST_REPORT.md
+-rw-r--r--   1 mufasaai  staff    3569 Jul  9 21:14 PHASE4_EXECUTION.md
+-rw-r--r--   1 mufasaai  staff    2037 Jul  9 21:14 PHASE5_EXECUTION.md
+-rw-r--r--   1 mufasaai  staff    2107 Jul  8 23:06 PRIVESC_ATTEMPTS.md
+-rw-r--r--   1 mufasaai  staff    3644 Jul  9 21:14 SHADOW_HUNT.md
+-rw-r--r--   1 mufasaai  staff    5389 Jul  9 21:14 TEST_OUTPUT.md
+-rw-r--r--   1 mufasaai  staff    2613 Jul  9 21:14 WALLET_FINDINGS.md
+-rw-r--r--   1 mufasaai  staff    6454 Jul  9 12:39 allowance-watch.log
+drwxr-xr-x  11 mufasaai  staff     352 Jul  9 08:47 brute-toolkit
+-rw-r--r--   1 mufasaai  staff   14111 Jul  7 14:06 crypto_findings.md
+drwxr-xr-x  22 mufasaai  staff     704 Jul  8 22:15 evidence
+-rw-r--r--   1 mufasaai  staff     257 Jul  8 19:19 evidence.sha256
+-rw-r--r--   1 mufasaai  staff   12033 Jul  7 14:06 exchanges_gateways.md
+drwxr-xr-x   2 mufasaai  staff      64 Jul  8 19:27 logs
+-rw-r--r--   1 mufasaai  staff  782123 Jul  9 12:47 mempool-watch.log
+-rw-r--r--   1 mufasaai  staff   56442 Jul  7 14:06 shodan_findings.md
+drwxr-xr-x  11 mufasaai  staff     352 Jul  9 09:44 subnet-scan
+drwxr-xr-x  18 mufasaai  staff     576 Jul  8 22:20 tools
+-rw-r--r--   1 mufasaai  staff    1124 Jul  9 21:14 wallets-found.json
+
+--- Grep PRIVATE_KEY (operator paths only, no venv noise) ---
+/Users/mufasaai/Desktop/redteam/tools/validate-key.py
+/Users/mufasaai/Desktop/redteam/tools/test-drain-poc.py
+/Users/mufasaai/Desktop/redteam/MCP_PENTEST_MAP.md
+/Users/mufasaai/Desktop/redteam/KEY_HUNT.md
+/Users/mufasaai/create-proof-wallet.js
+/Users/mufasaai/send-proof.js
+
+--- Cursor MCP config (no secrets dump) ---
+no mcp.json
+
+--- npm/pip crypto deps (top) ---
+eth_abi                                  6.0.0b1
+eth-account                              0.13.7
+eth-hash                                 0.8.0
+eth-keyfile                              0.8.1
+eth-keys                                 0.7.0
+eth-rlp                                  2.2.0
+eth-typing                               6.0.0
+eth-utils                                6.0.0
+web3                                     7.16.0
+
+--- Warnings ---
+  CRITICAL: proof-key.txt is 755 (world/group readable) — run: chmod 600 /Users/mufasaai/proof-key.txt
+
+--- Recommendations ---
+1. proof-key.txt: chmod 600, store on Eva (/Volumes/Eva/secrets/), symlink to ~
+2. redteam/tools/test-drain-poc.py: quarantine — operator lab only, never third-party treasury
+3. No signing tools in MCP; no mcp.json env secrets
+4. pip-audit / npm audit on projects that touch web3

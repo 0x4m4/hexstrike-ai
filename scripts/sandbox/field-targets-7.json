@@ -1,0 +1,87 @@
+{
+  "generated_at": "2026-07-13T00:00:00Z",
+  "exclusive": true,
+  "purpose": "Cross-chain Phase-3: Base USDC + BSC USDT correlation via Rhino.fi hub",
+  "source_reports": [
+    "docs/recon/SWEEP-PHASE2-AUDIT-20260713.json",
+    "docs/recon/SWEEP-CLUSTER-FORENSICS-20260713.md",
+    "artifacts/multichain-cluster.json"
+  ],
+  "selection_rationale": {
+    "coverage": [
+      "hot wallet on BSC (USDT payroll rail)",
+      "hot wallet on Base (USDC parallel treasury)",
+      "Rhino.fi bridge hub (BSC cross-chain sink)",
+      "primary sweep router (EIP-7702 delegate)",
+      "shared EIP-7702 implementation"
+    ],
+    "hypothesis": "Rhino.fi hub BSC inflows correlate with Base USDC treasury — multichain exit rail"
+  },
+  "wallets": [
+    {
+      "role": "hot_wallet_bsc",
+      "address": "0x4943F5E7F4e450d48Ae82026163ecDe8A52C53dA",
+      "chain": "BSC",
+      "chain_id": 56,
+      "priority": 1,
+      "labels": {"report": "recon-master", "token": "USDT"},
+      "context": {
+        "token_contract": "0x55d398326f99059fF775485246999027B3197955",
+        "token_symbol": "USDT",
+        "token_decimals": 18
+      }
+    },
+    {
+      "role": "hot_wallet_base",
+      "address": "0x4943F5E7F4e450d48Ae82026163ecDe8A52C53dA",
+      "chain": "BASE",
+      "chain_id": 8453,
+      "priority": 2,
+      "labels": {"report": "multichain-cluster", "token": "USDC"},
+      "context": {
+        "token_contract": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+        "token_symbol": "USDC",
+        "token_decimals": 6,
+        "basescan": "https://basescan.org/address/0x4943F5E7F4e450d48Ae82026163ecDe8A52C53dA"
+      }
+    },
+    {
+      "role": "rhino_hub_bsc",
+      "address": "0xb80a582fa430645a043bb4f6135321ee01005fef",
+      "chain": "BSC",
+      "chain_id": 56,
+      "priority": 3,
+      "labels": {"bscscan_label": "Rhino.fi: Bridge", "token": "USDT"},
+      "context": {
+        "token_contract": "0x55d398326f99059fF775485246999027B3197955",
+        "token_symbol": "USDT",
+        "token_decimals": 18,
+        "role": "cross-chain exit sink"
+      }
+    },
+    {
+      "role": "sweep_router_primary",
+      "address": "0x55ed7fcd17b93fbcd5186cda01af6fed4ec78e08",
+      "chain": "BSC",
+      "chain_id": 56,
+      "priority": 4,
+      "labels": {"classification": "EIP-7702 sweep delegate"},
+      "context": {
+        "eip7702_impl": "0x314C01e758a7911e7339aa4F960C7749E8947775",
+        "usdt_from_hot": 12268.34
+      }
+    },
+    {
+      "role": "eip7702_implementation",
+      "address": "0x314C01e758a7911e7339aa4F960C7749E8947775",
+      "chain": "BSC",
+      "chain_id": 56,
+      "priority": 5,
+      "labels": {"classification": "shared payment delegate"},
+      "context": {
+        "delegated_count": 4,
+        "rbac": "ECDSA signature-gated"
+      }
+    }
+  ]
+}

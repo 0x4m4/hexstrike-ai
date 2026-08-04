@@ -1,0 +1,5 @@
+{
+  "workflow": "sweep-phase-2",
+  "env": {},
+  "note": "EIP-7702 impl bytecode audit + Rhino.fi hub trace — read-only phase 2"
+}

@@ -147,17 +147,29 @@ MAX_RETRIES = 3  # Maximum number of retries for connection attempts
 class HexStrikeClient:
     """Enhanced client for communicating with the HexStrike AI API Server"""
 
-    def __init__(self, server_url: str, timeout: int = DEFAULT_REQUEST_TIMEOUT):
+    def __init__(self, server_url: str, timeout: int = DEFAULT_REQUEST_TIMEOUT, api_key: str | None = None):
         """
         Initialize the HexStrike AI Client
 
         Args:
             server_url: URL of the HexStrike AI API Server
             timeout: Request timeout in seconds
+            api_key: Optional API key (defaults to HEXSTRIKE_API_KEY env / .env)
         """
         self.server_url = server_url.rstrip("/")
         self.timeout = timeout
         self.session = requests.Session()
+
+        key = api_key or os.environ.get("HEXSTRIKE_API_KEY", "")
+        if not key:
+            env_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), ".env")
+            if os.path.isfile(env_path):
+                for line in open(env_path, encoding="utf-8"):
+                    if line.strip().startswith("HEXSTRIKE_API_KEY="):
+                        key = line.strip().split("=", 1)[1].strip().strip('"').strip("'")
+                        break
+        if key:
+            self.session.headers["X-API-KEY"] = key
 
         # Try to connect to server with retries
         connected = False

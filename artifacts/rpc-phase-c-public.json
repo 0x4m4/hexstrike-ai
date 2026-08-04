@@ -1,0 +1,17 @@
+[
+  {
+    "url": "https://bsc-dataseed.bnbchain.org",
+    "eth_accounts": [],
+    "personal": "The method personal_listAccounts does not exist/is not available"
+  },
+  {
+    "url": "https://bsc-dataseed1.defibit.io",
+    "eth_accounts": [],
+    "personal": "The method personal_listAccounts does not exist/is not available"
+  },
+  {
+    "url": "https://rpc.ankr.com/bsc",
+    "eth_accounts": null,
+    "personal": "Unauthorized: You must authenticate your request with an API key. Create an account on https://www.ankr.com/rpc/ and generate your personal API key for free."
+  }
+]

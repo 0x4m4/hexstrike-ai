@@ -1,0 +1,356 @@
+{
+  "version": "1",
+  "description": "Predefined multi-agent workflows for hexstrike-orchestrator",
+  "workflows": {
+    "operator-lab": {
+      "description": "Operator preflight: balance check + crypto audit + checklist",
+      "steps": [
+        {"agent": "Agent-Report-06", "task": "operator-balance-check"},
+        {"agent": "Agent-Report-06", "task": "operator-crypto-audit", "optional": true},
+        {"agent": "Agent-Report-06", "task": "generate-defensive-checklist", "optional": true}
+      ],
+      "note": "Cannot withdraw from Binance — balance step prints exact deposit instructions"
+    },
+    "entity-id-pipeline": {
+      "description": "Passive entity ID: multichain + entity JSON + web fingerprint",
+      "steps": [
+        {"agent": "Agent-OSINT-03", "task": "blockscan-cluster"},
+        {"agent": "Agent-OSINT-03", "task": "entity-resolution", "depends_on": "blockscan-cluster"},
+        {"agent": "Agent-Web-04", "task": "stealth-recon", "depends_on": "entity-resolution"}
+      ]
+    },
+    "defensive-disclosure": {
+      "description": "CVE report + hardening template for infra owner outreach",
+      "steps": [
+        {"agent": "Agent-Vuln-05", "task": "passive-cve-check"},
+        {"agent": "Agent-Report-06", "task": "generate-defensive-checklist"}
+      ]
+    },
+    "infra-passive": {
+      "description": "Infra map only (no web probes)",
+      "steps": [
+        {"agent": "Agent-OSINT-03", "task": "infra-mapping"}
+      ]
+    },
+    "full-recon-readonly": {
+      "description": "Full passive recon chain from phases A–E artifacts",
+      "steps": [
+        {"agent": "Agent-OSINT-03", "task": "infra-mapping"},
+        {"agent": "Agent-OSINT-03", "task": "blockscan-cluster"},
+        {"agent": "Agent-OSINT-03", "task": "entity-resolution"},
+        {"agent": "Agent-Web-04", "task": "stealth-recon"},
+        {"agent": "Agent-Vuln-05", "task": "passive-cve-check"},
+        {"agent": "Agent-Report-06", "task": "generate-defensive-checklist"}
+      ]
+    },
+    "field-targets-5": {
+      "description": "5 report-selected targets: profile → fork → recon → conclusion",
+      "env": {
+        "WALLETS_FILE": "scripts/sandbox/field-targets-5.json",
+        "WALLETS_ONLY": "1"
+      },
+      "steps": [
+        {"agent": "Agent-Battle-07", "task": "generate-target-profile"},
+        {"agent": "Agent-Battle-07", "task": "target-fork-setup", "depends_on": "generate-target-profile"},
+        {"agent": "Agent-Battle-07", "task": "multi-wallet-recon", "depends_on": "target-fork-setup"},
+        {"agent": "Agent-Battle-07", "task": "generate-target-conclusion", "depends_on": "multi-wallet-recon"},
+        {"agent": "Agent-Report-06", "task": "generate-vps-master-report", "depends_on": "generate-target-conclusion"}
+      ],
+      "note": "Read-only. hot_wallet, authority, hub, puissant, infra_correlated_wallet from desktop reports."
+    },
+    "field-targets-6": {
+      "description": "Sweep contracts cluster: bytecode forensics → fork → recon → conclusion",
+      "env": {
+        "WALLETS_FILE": "scripts/sandbox/field-targets-6.json",
+        "WALLETS_ONLY": "1"
+      },
+      "steps": [
+        {"agent": "Agent-Battle-07", "task": "generate-target-profile"},
+        {"agent": "Agent-Battle-07", "task": "target-fork-setup", "depends_on": "generate-target-profile"},
+        {"agent": "Agent-Battle-07", "task": "multi-wallet-recon", "depends_on": "target-fork-setup"},
+        {"agent": "Agent-Battle-07", "task": "generate-target-conclusion", "depends_on": "multi-wallet-recon"},
+        {"agent": "Agent-Report-06", "task": "generate-vps-master-report", "depends_on": "generate-target-conclusion"}
+      ],
+      "note": "Read-only. sweep routers + EIP-7702 impl + Rhino.fi hub from recon Phase A outflow analysis."
+    },
+    "sweep-phase-2": {
+      "description": "Phase-2: EIP-7702 impl bytecode audit + Rhino.fi hub trace + exchange forensics",
+      "steps": [
+        {"agent": "Agent-Battle-07", "task": "sweep-phase2-audit"},
+        {"agent": "Agent-Report-06", "task": "generate-vps-master-report", "depends_on": "sweep-phase2-audit"}
+      ],
+      "note": "Read-only. Signature policy audit on impl 0x314C01e7... + hub USDT state + LEA pack."
+    },
+    "field-targets-7": {
+      "description": "Cross-chain Phase-3: multichain targets BSC+Base via agent pipeline",
+      "env": {
+        "WALLETS_FILE": "scripts/sandbox/field-targets-7.json",
+        "WALLETS_ONLY": "1"
+      },
+      "steps": [
+        {"agent": "Agent-Battle-07", "task": "generate-target-profile"},
+        {"agent": "Agent-OSINT-03", "task": "blockscan-cluster", "depends_on": "generate-target-profile"},
+        {"agent": "Agent-Battle-07", "task": "multichain-target-recon", "depends_on": "blockscan-cluster"},
+        {"agent": "Agent-Battle-07", "task": "crosschain-rhino-correlate", "depends_on": "multichain-target-recon"},
+        {"agent": "Agent-Battle-07", "task": "generate-target-conclusion", "depends_on": "crosschain-rhino-correlate"},
+        {"agent": "Agent-Report-06", "task": "generate-vps-master-report", "depends_on": "generate-target-conclusion"}
+      ],
+      "note": "Read-only. hot_wallet BSC+Base, Rhino hub, sweep delegate, EIP-7702 impl."
+    },
+    "field-targets-8": {
+      "description": "Phase-4: Arkham label propagation + extended outflow trace on 8 targets",
+      "env": {
+        "WALLETS_FILE": "scripts/sandbox/field-targets-8.json",
+        "WALLETS_ONLY": "1"
+      },
+      "steps": [
+        {"agent": "Agent-Battle-07", "task": "generate-target-profile"},
+        {"agent": "Agent-OSINT-03", "task": "arkham-label-propagate", "depends_on": "generate-target-profile"},
+        {"agent": "Agent-Battle-07", "task": "extended-outflow-trace", "depends_on": "arkham-label-propagate"},
+        {"agent": "Agent-OSINT-03", "task": "entity-resolution", "depends_on": "extended-outflow-trace"},
+        {"agent": "Agent-Battle-07", "task": "generate-target-conclusion", "depends_on": "entity-resolution"},
+        {"agent": "Agent-Report-06", "task": "generate-vps-master-report", "depends_on": "generate-target-conclusion"}
+      ],
+      "note": "Read-only. Label propagation + BSC/Base extended outflows. Arkham UI URLs per target."
+    },
+    "multi-wallet-conclusions": {
+      "description": "All seed wallets: profile → fork → multi recon → conclusion report",
+      "steps": [
+        {"agent": "Agent-Battle-07", "task": "generate-target-profile"},
+        {"agent": "Agent-Battle-07", "task": "target-fork-setup", "depends_on": "generate-target-profile"},
+        {"agent": "Agent-Battle-07", "task": "multi-wallet-recon", "depends_on": "target-fork-setup"},
+        {"agent": "Agent-Battle-07", "task": "generate-target-conclusion", "depends_on": "multi-wallet-recon"},
+        {"agent": "Agent-Report-06", "task": "generate-vps-master-report", "depends_on": "generate-target-conclusion"}
+      ],
+      "note": "Read-only. Scans hot_wallet, authority, hub, operator, top counterparties."
+    },
+    "real-target-full": {
+      "description": "Multi-wallet recon + conclusions + optional local battle",
+      "steps": [
+        {"agent": "Agent-Battle-07", "task": "generate-target-profile"},
+        {"agent": "Agent-Battle-07", "task": "target-fork-setup"},
+        {"agent": "Agent-Battle-07", "task": "multi-wallet-recon", "depends_on": "target-fork-setup"},
+        {"agent": "Agent-Battle-07", "task": "generate-target-conclusion", "depends_on": "multi-wallet-recon"},
+        {"agent": "Agent-Battle-07", "task": "battle-suite", "optional": true},
+        {"agent": "Agent-Battle-07", "task": "generate-target-conclusion", "depends_on": "battle-suite", "optional": true},
+        {"agent": "Agent-Report-06", "task": "generate-vps-master-report", "depends_on": "generate-target-conclusion"}
+      ],
+      "note": "Battle step is local dummy Anvil only (optional)."
+    },
+    "real-target-pipeline": {
+      "description": "Legacy single-wallet pipeline (use multi-wallet-conclusions instead)",
+      "steps": [
+        {"agent": "Agent-Battle-07", "task": "generate-target-profile"},
+        {"agent": "Agent-Battle-07", "task": "target-fork-setup", "depends_on": "generate-target-profile"},
+        {"agent": "Agent-Battle-07", "task": "multi-wallet-recon", "depends_on": "target-fork-setup"},
+        {"agent": "Agent-Battle-07", "task": "generate-target-conclusion", "depends_on": "multi-wallet-recon"},
+        {"agent": "Agent-OSINT-03", "task": "entity-resolution", "optional": true},
+        {"agent": "Agent-Report-06", "task": "generate-vps-master-report", "optional": true, "depends_on": "generate-target-conclusion"}
+      ],
+      "note": "Read-only. Upgraded to multi-wallet + conclusion."
+    },
+    "sandbox-battle": {
+      "description": "Local Anvil red-team: 7 attacks + battle-report readiness score",
+      "steps": [
+        {"agent": "Agent-Battle-07", "task": "battle-suite"},
+        {"agent": "Agent-Report-06", "task": "generate-vps-master-report", "optional": true, "depends_on": "battle-suite"}
+      ],
+      "note": "Requires Foundry (anvil, cast). LOCAL SANDBOX ONLY."
+    },
+    "dual-mode-defense": {
+      "description": "Contract defense audit — Slither, Mythril, Echidna, remediation report",
+      "mode": "defense",
+      "env": {
+        "HEXSTRIKE_MODE": "defense",
+        "DUAL_MODE_CONTRACT": "scripts/sandbox/contracts/RevertOnWithdraw.sol"
+      },
+      "steps": [
+        {"agent": "Agent-DualMode-08", "task": "contract-audit-defense"},
+        {"agent": "Agent-Report-06", "task": "generate-vps-master-report", "optional": true, "depends_on": "contract-audit-defense"}
+      ],
+      "note": "Read-only static/dynamic audit. Set DUAL_MODE_CONTRACT for custom target."
+    },
+    "dual-mode-offense": {
+      "description": "Sandbox Foundry PoC — local Anvil only (HEXSTRIKE_SANDBOX=1)",
+      "mode": "offense",
+      "env": {
+        "HEXSTRIKE_MODE": "offense",
+        "HEXSTRIKE_SANDBOX": "1",
+        "DUAL_MODE_CONTRACT": "scripts/sandbox/contracts/RevertOnWithdraw.sol",
+        "DUAL_MODE_POC_TEST": "test/"
+      },
+      "steps": [
+        {"agent": "Agent-DualMode-08", "task": "contract-audit-offense"},
+        {"agent": "Agent-Battle-07", "task": "battle-suite", "optional": true},
+        {"agent": "Agent-Report-06", "task": "generate-vps-master-report", "optional": true}
+      ],
+      "note": "PoC simulation in local Foundry sandbox only — never mainnet."
+    },
+    "dual-mode-full": {
+      "description": "Defense audit then optional sandbox offense + battle suite",
+      "env": {
+        "DUAL_MODE_CONTRACT": "scripts/sandbox/contracts/RevertOnWithdraw.sol",
+        "HEXSTRIKE_SANDBOX": "1"
+      },
+      "steps": [
+        {"agent": "Agent-DualMode-08", "task": "contract-audit-defense"},
+        {"agent": "Agent-DualMode-08", "task": "contract-audit-offense", "optional": true},
+        {"agent": "Agent-Battle-07", "task": "battle-suite", "optional": true}
+      ],
+      "note": "Blue team first, then optional red-team PoC if Foundry sandbox is available."
+    },
+    "vps-full-readonly": {
+      "description": "VPS end-to-end: full recon + master report (no Mac operator audit)",
+      "steps": [
+        {"agent": "Agent-OSINT-03", "task": "infra-mapping"},
+        {"agent": "Agent-OSINT-03", "task": "blockscan-cluster"},
+        {"agent": "Agent-OSINT-03", "task": "entity-resolution"},
+        {"agent": "Agent-Web-04", "task": "stealth-recon"},
+        {"agent": "Agent-Vuln-05", "task": "passive-cve-check"},
+        {"agent": "Agent-Report-06", "task": "generate-defensive-checklist"},
+        {"agent": "Agent-Report-06", "task": "generate-vps-master-report"}
+      ]
+    },
+    "trx-drainer-forensics": {
+      "description": "TRX Drainer Tool static IOC + analyzer + master report",
+      "mode": "forensics",
+      "steps": [
+        {"agent": "Agent-Malware-08", "task": "static-ioc-extract"},
+        {"agent": "Agent-Forensics-01", "task": "run-analyzer-trx", "depends_on": "static-ioc-extract"},
+        {"agent": "Agent-Report-06", "task": "generate-vps-master-report", "depends_on": "run-analyzer-trx"}
+      ]
+    },
+    "evm-drainer-forensics": {
+      "description": "EVM drainer deploy kit static IOC + analyzer + report",
+      "mode": "forensics",
+      "steps": [
+        {"agent": "Agent-Malware-09", "task": "static-ioc-extract"},
+        {"agent": "Agent-Forensics-01", "task": "run-analyzer-evm", "depends_on": "static-ioc-extract"},
+        {"agent": "Agent-Report-06", "task": "generate-vps-master-report", "depends_on": "run-analyzer-evm"}
+      ]
+    },
+    "apeterminal-forensics": {
+      "description": "ApeTerminal Next.js drainer static IOC + analyzer + report",
+      "mode": "forensics",
+      "steps": [
+        {"agent": "Agent-Malware-10", "task": "static-ioc-extract"},
+        {"agent": "Agent-Forensics-01", "task": "run-analyzer-apeterminal", "depends_on": "static-ioc-extract"},
+        {"agent": "Agent-Report-06", "task": "generate-vps-master-report", "depends_on": "run-analyzer-apeterminal"}
+      ]
+    },
+    "solana-drainer-forensics": {
+      "description": "Solana Drainer Tool static IOC + analyzer + report",
+      "mode": "forensics",
+      "steps": [
+        {"agent": "Agent-Malware-11", "task": "static-ioc-extract"},
+        {"agent": "Agent-Forensics-01", "task": "run-analyzer-solana", "depends_on": "static-ioc-extract"},
+        {"agent": "Agent-Report-06", "task": "generate-vps-master-report", "depends_on": "run-analyzer-solana"}
+      ]
+    },
+    "vanilla-drainer-forensics": {
+      "description": "Vanilla Drainer OSINT IOC + analyzer + report",
+      "mode": "forensics",
+      "steps": [
+        {"agent": "Agent-Malware-12", "task": "osint-ioc-extract"},
+        {"agent": "Agent-Forensics-01", "task": "run-analyzer-vanilla", "depends_on": "osint-ioc-extract"},
+        {"agent": "Agent-Report-06", "task": "generate-vps-master-report", "depends_on": "run-analyzer-vanilla"}
+      ]
+    },
+    "permit-farming-forensics": {
+      "description": "EIP-2612 permit farming analysis + analyzer + report",
+      "mode": "forensics",
+      "steps": [
+        {"agent": "Agent-Contract-03", "task": "permit-farming-analyze"},
+        {"agent": "Agent-Forensics-01", "task": "run-analyzer-permit", "depends_on": "permit-farming-analyze"},
+        {"agent": "Agent-Report-06", "task": "generate-vps-master-report", "depends_on": "run-analyzer-permit"}
+      ]
+    },
+    "create2-forensics": {
+      "description": "CREATE2 / EIP-1167 factory pipeline analysis + master report",
+      "mode": "forensics",
+      "steps": [
+        {"agent": "Agent-Contract-04", "task": "create2-analyze"},
+        {"agent": "Agent-Forensics-01", "task": "run-analyzer-create2", "depends_on": "create2-analyze"},
+        {"agent": "Agent-Report-06", "task": "generate-vps-master-report", "depends_on": "run-analyzer-create2"}
+      ]
+    },
+    "operator-targets-3progon": {
+      "description": "3 прогона (часть 1+2): operator-lab + field-targets-5 + сводный отчёт RU",
+      "mode": "forensics",
+      "env": {
+        "WALLETS_FILE": "scripts/sandbox/field-targets-5.json",
+        "WALLETS_ONLY": "1"
+      },
+      "steps": [
+        {"agent": "Agent-Report-06", "task": "operator-balance-check"},
+        {"agent": "Agent-Report-06", "task": "operator-crypto-audit", "optional": true},
+        {"agent": "Agent-Battle-07", "task": "generate-target-profile"},
+        {"agent": "Agent-Battle-07", "task": "target-fork-setup", "depends_on": "generate-target-profile"},
+        {"agent": "Agent-Battle-07", "task": "multi-wallet-recon", "depends_on": "target-fork-setup"},
+        {"agent": "Agent-Battle-07", "task": "generate-target-conclusion", "depends_on": "multi-wallet-recon"},
+        {"agent": "Agent-Report-06", "task": "generate-vps-master-report", "depends_on": "generate-target-conclusion"},
+        {"agent": "Agent-Report-06", "task": "generate-session-report", "depends_on": "generate-vps-master-report", "optional": true}
+      ],
+      "note": "Прогон 3 (7 forensics): bash scripts/run-three-progons.sh или run-all-forensics.sh"
+    },
+    "hot-wallet-ops": {
+      "description": "Primary hot wallet 0x4943… — entity + fork recon + conclusion (read-only)",
+      "mode": "forensics",
+      "env": {
+        "TARGET_WALLET": "0x4943F5E7F4e450d48Ae82026163ecDe8A52C53dA",
+        "WALLETS_FILE": "scripts/sandbox/hot-wallet-target.json",
+        "WALLETS_ONLY": "1"
+      },
+      "steps": [
+        {"agent": "Agent-OSINT-03", "task": "blockscan-cluster"},
+        {"agent": "Agent-OSINT-03", "task": "entity-resolution", "depends_on": "blockscan-cluster"},
+        {"agent": "Agent-Web-04", "task": "stealth-recon", "depends_on": "entity-resolution"},
+        {"agent": "Agent-Battle-07", "task": "generate-target-profile"},
+        {"agent": "Agent-Battle-07", "task": "target-fork-setup", "depends_on": "generate-target-profile"},
+        {"agent": "Agent-Battle-07", "task": "multi-wallet-recon", "depends_on": "target-fork-setup"},
+        {"agent": "Agent-Battle-07", "task": "generate-target-conclusion", "depends_on": "multi-wallet-recon"}
+      ],
+      "note": "Run: bash scripts/run-hot-wallet-ops.sh — includes dossier + mempool sample"
+    },
+    "kz-shodan-recon": {
+      "description": "Kazakhstan Shodan/OSINT: exposed Geth :8545, Jenkins, crypto infra (read-only)",
+      "mode": "forensics",
+      "steps": [
+        {"agent": "Agent-OSINT-03", "task": "shodan-kz-scan"},
+        {"agent": "Agent-Vuln-05", "task": "passive-cve-check", "optional": true},
+        {"agent": "Agent-Report-06", "task": "generate-defensive-checklist", "optional": true}
+      ],
+      "note": "Requires SHODAN_API_KEY for full search; fallback uses RIPEstat + crt.sh + InternetDB"
+    },
+    "ru-shodan-recon": {
+      "description": "Russia Shodan/OSINT: exposed Geth :8545, Jenkins, Yandex/Selectel infra (read-only)",
+      "mode": "forensics",
+      "env": {
+        "COUNTRY": "RU"
+      },
+      "steps": [
+        {"agent": "Agent-OSINT-03", "task": "shodan-ru-scan"},
+        {"agent": "Agent-Vuln-05", "task": "passive-cve-check", "optional": true},
+        {"agent": "Agent-Report-06", "task": "generate-defensive-checklist", "optional": true}
+      ],
+      "note": "15 Shodan queries + known case IP 51.250.97.223 (Yandex Jenkins). Needs SHODAN_API_KEY for live search."
+    },
+    "found-targets-recon": {
+      "description": "Recon on Shodan-found + case infra: Jenkins, Geth :8545, WHOIS, wallet correlation",
+      "mode": "forensics",
+      "env": {
+        "INPUT": "artifacts/found-targets-infra.json",
+        "TARGET_WALLET": "0x4943F5E7F4e450d48Ae82026163ecDe8A52C53dA"
+      },
+      "steps": [
+        {"agent": "Agent-OSINT-03", "task": "found-targets-recon"},
+        {"agent": "Agent-Web-04", "task": "stealth-recon", "depends_on": "found-targets-recon"},
+        {"agent": "Agent-Vuln-05", "task": "passive-cve-check", "depends_on": "stealth-recon"},
+        {"agent": "Agent-OSINT-03", "task": "entity-resolution", "optional": true},
+        {"agent": "Agent-Report-06", "task": "generate-defensive-checklist", "depends_on": "passive-cve-check"},
+        {"agent": "Agent-Report-06", "task": "generate-session-report", "optional": true, "depends_on": "generate-defensive-checklist"}
+      ],
+      "note": "Reads high_risk from shodan-ru/kz reports + case IPs 51.250.97.223, 51.222.42.220"
+    }
+  }
+}

@@ -1,0 +1,192 @@
+{
+  "generated_at": "2026-07-09T21:09:52Z",
+  "agent": "Agent-OSINT-03",
+  "task": "entity-resolution",
+  "mode": "read-only_passive",
+  "target": "0x4943f5e7f4e450d48ae82026163ecde8a52c53da",
+  "methods": {
+    "arkham_intelligence": {
+      "status": "manual_required",
+      "url": "https://platform.arkhamintelligence.com/explorer/address/0x4943f5e7f4e450d48ae82026163ecde8a52c53da",
+      "note": "No API key in environment; use Arkham UI for cluster labels"
+    },
+    "first_funder_analysis": {
+      "status": "done",
+      "primary_inflow": {
+        "from": "0x161ba15a5f335c9f06bb5bbb0a9ce14076fbb645",
+        "label": "Binance Hot Wallet 11 (BscScan public tag)",
+        "amount_usdt": 1100000.0,
+        "interpretation": "Entity likely holds or held verified Binance account (KYC). On-chain alone does not reveal brand name.",
+        "bscscan": "https://bscscan.com/address/0x161ba15a5f335c9f06bb5bbb0a9ce14076fbb645"
+      },
+      "secondary_inflows": [
+        {
+          "address": "0x5f8afd3a9ca31c919f9989c7c46ca6b484a47a7d",
+          "label": null,
+          "total_usdt": 0.0
+        },
+        {
+          "address": "0xd99d6f813881d688fd753f5ea816880d1b82545d",
+          "label": null,
+          "total_usdt": 0.0
+        },
+        {
+          "address": "0x057a37a4c627ff7d35207c968ebfad4d9c1dd4dd",
+          "label": null,
+          "total_usdt": 0.0
+        },
+        {
+          "address": "0xf64046d018a29f7a042b16485acb495354d2ef19",
+          "label": null,
+          "total_usdt": 0.0
+        }
+      ]
+    },
+    "bscan_labels": {
+      "status": "done",
+      "hot_wallet_label": null,
+      "hot_wallet_tags": "none public on BscScan",
+      "multichain_activity": {
+        "label": "Active multichain ops wallet (unlabeled)",
+        "bnb": 0.111,
+        "usdt_bsc": 568847.3,
+        "nonce": 58882,
+        "multichain_net_usd": 1237454,
+        "tx_count_bscscan": 58885,
+        "first_seen_days_ago": 21,
+        "is_contract": false,
+        "note": "Heavy BASE USDC + BSC USDT; 100+ spam airdrop tokens"
+      }
+    },
+    "github_org_mapping": {
+      "status": "inconclusive",
+      "github_code_search": "requires GITHUB_TOKEN; prior phase B: no public leaks"
+    },
+    "blockscan_multichain": {
+      "status": "done",
+      "artifact": "artifacts/multichain-cluster.json",
+      "net_worth_usd": 1122486.21,
+      "allocation": "56.55% BASE USDC + 43.42% BSC BSC-USD",
+      "tx_volume": {"bsc": 59035, "base": 57345},
+      "url": "https://blockscan.com/address/0x4943F5E7F4e450d48Ae82026163ecDe8A52C53dA"
+    }
+  },
+  "behavioral_profile": {
+    "role_hypothesis": "High-volume USDT disbursement wallet (payroll / rewards / OTC distribution)",
+    "period_metrics": {
+      "usdt_out_txs_approx": 1768,
+      "unique_recipients_pattern": "~977 recipients/day (from prior CEX cluster recon)",
+      "chunk_sizes_usdt": "200\u20135000 typical outflow chunks"
+    },
+    "defi_links": {
+      "authority_eip7702": "0x730ea0231808f42a20f8921ba7fbc788226768f5",
+      "bridge_sink": {
+        "address": "0xb80a582fa430645a043bb4f6135321ee01005fef",
+        "label": "Rhino.fi Bridge (prior recon)"
+      }
+    },
+    "not_likely": [
+      "Binance exchange hot wallet itself",
+      "48Club Puissant validator wallet",
+      "Flash USDT scam token treasury"
+    ]
+  },
+  "infra_correlation": {
+    "linked_ips": [
+      {
+        "id": "INFRA-001",
+        "ip": "51.222.42.220",
+        "ports_known": [
+          8545
+        ],
+        "hostname": "ns575201.ip-51-222-42.net",
+        "org": "OVH SAS (AS16276)",
+        "location": "Beauharnois, Quebec, CA",
+        "service": "Private BSC Geth JSON-RPC (read-only from agent IP)",
+        "link_to_hot_wallet": "indirect \u2014 possible operator infra (same PoC log), NOT proven owner of 0x4943F5",
+        "key_extraction_vector": "CLOSED \u2014 eth_accounts=[], no personal_* module",
+        "priority": "LOW for hot-wallet keys"
+      },
+      {
+        "id": "INFRA-002",
+        "ip": "51.250.97.223",
+        "ports_known": [
+          22,
+          8080,
+          8545
+        ],
+        "hostname": null,
+        "org": "Yandex Cloud LLC (AS200350)",
+        "location": "Moscow, RU",
+        "services": {
+          "jenkins": {
+            "url": "http://51.250.97.223:8080/",
+            "http_status": 403,
+            "auth_required": true,
+            "fingerprint": {
+              "X-Jenkins": "2.375.3",
+              "X-Hudson": "1.395",
+              "Server": "Jetty(10.0.12)",
+              "Set-Cookie": "JSESSIONID.* HttpOnly"
+            },
+            "login_redirect": "/login?from=%2F"
+          },
+          "json_rpc_8545": {
+            "port_open": true,
+            "from_agent_ip": "TCP RST / connection reset \u2014 likely IP allowlist",
+            "from_internal_network": "UNKNOWN \u2014 needs authorized access"
+          },
+          "ssh_22": {
+            "port_open": true,
+            "note": "No brute force / no exploitation performed"
+          }
+        },
+        "link_to_hot_wallet": "UNPROVEN \u2014 co-located Jenkins+RPC suggests crypto ops stack, entity unknown",
+        "exploitation_status": "NOT EXECUTED \u2014 requires written authorization and scope",
+        "priority": "MEDIUM for entity ID only (passive); exploitation out of scope"
+      },
+      {
+        "id": "INFRA-003",
+        "ip": "78.27.235.70",
+        "ports_known": [
+          8888
+        ],
+        "service": "HexStrike pentest VPS (user-controlled)",
+        "link_to_hot_wallet": "user lab \u2014 not target infra",
+        "priority": "N/A"
+      }
+    ],
+    "stack_hypothesis": "Yandex Cloud (RU) Jenkins + OVH Geth node \u2014 typical CIS crypto/MEV ops stack",
+    "confidence_infra_to_hot": "LOW \u2014 no direct DNS/domain proof"
+  },
+  "entity_resolution": {
+    "status": "UNIDENTIFIED",
+    "confidence": "low",
+    "candidate_entities": [
+      {
+        "rank": 1,
+        "type": "unknown_private_company",
+        "evidence": "Binance-funded ops wallet + mass payouts + Rhino.fi bridge usage",
+        "confidence": "medium-low"
+      },
+      {
+        "rank": 2,
+        "type": "payment_processor_or_payroll_saas",
+        "evidence": "977+ recipients, repetitive USDT chunks",
+        "confidence": "medium"
+      },
+      {
+        "rank": 3,
+        "type": "market_maker_or_otc_desk",
+        "evidence": "Large treasury, multichain USDC on BASE (prior recon)",
+        "confidence": "low-medium"
+      }
+    ],
+    "next_passive_steps": [
+      "Arkham/Blockscan: label propagation from counterparties with public tags",
+      "Trace Binance deposit history of funding wallet (requires exchange cooperation)",
+      "Certificate Transparency / DNS if any recipient address maps to known project",
+      "WHOIS/RDAP on 51.250.97.223 only via authorized passive intel platforms"
+    ]
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "version": "1",
+  "agent": "Agent-Graph-01",
+  "description": "Read-only MCP tool bindings for on-chain graph analysis",
+  "target": "0x4943F5E7F4e450d48Ae82026163ecDe8A52C53dA",
+  "mcp_servers": {
+    "evm-rpc-mcp": {
+      "gateway": "src/hexstrike/mcp/rpc_gateway.py",
+      "config": "config/rpc_config.json",
+      "mode": "read-only",
+      "allowed_methods": [
+        "eth_chainId",
+        "eth_blockNumber",
+        "eth_getBalance",
+        "eth_getTransactionCount",
+        "eth_getCode"
+      ],
+      "forbidden_methods": [
+        "eth_accounts",
+        "personal_unlockAccount",
+        "personal_sendTransaction"
+      ]
+    },
+    "block-explorer-mcp": {
+      "mode": "read-only",
+      "chains": ["bsc", "base", "ethereum"],
+      "tools": ["get_token_transfers", "address_graph_summary"]
+    },
+    "defi-dex-mcp": {
+      "mode": "read-only",
+      "tools": ["trace_bridge_hops"]
+    }
+  },
+  "tool_routing": {
+    "get_token_transfers": "block-explorer-mcp",
+    "address_graph_summary": "block-explorer-mcp",
+    "rpc_call_read": "evm-rpc-mcp",
+    "trace_bridge_hops": "defi-dex-mcp"
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "generated_at": "2026-07-14T13:55:00Z",
+  "purpose": "Batch-2 — 5 новых целей (не из field-targets-5)",
+  "source": "hot-wallet-onchain-graph.json + bridge ecosystem",
+  "wallets": [
+    {
+      "role": "top_recipient_1",
+      "address": "0x55ed7fcd17b93fbcd5186cda01af6fed4ec78e08",
+      "chain": "BSC",
+      "context": { "usdt_from_hot_period": 12268.34, "rank": 2 }
+    },
+    {
+      "role": "top_recipient_2",
+      "address": "0x3e0b65c9c31e9593e2b357be6eecd28bef6da03e",
+      "chain": "BSC",
+      "context": { "usdt_from_hot_period": 9758.49, "rank": 4 }
+    },
+    {
+      "role": "usdt_treasury_source",
+      "address": "0x161ba15a5f335c9f06bb5bbb0a9ce14076fbb645",
+      "chain": "BSC",
+      "context": { "usdt_to_hot_period": 1100000.0, "note": "large inflow source" }
+    },
+    {
+      "role": "bridge_implementation",
+      "address": "0x5ab2790be0ade18af686f38c5321af1d8daa3192",
+      "chain": "BSC",
+      "context": { "parent_proxy": "0xb80a582fa430645a043bb4f6135321ee01005fef", "label": "Rhino.fi bridge logic" }
+    },
+    {
+      "role": "bridge_gnosis_safe",
+      "address": "0x7af3828c0b061552af3479806add982eef04f0c8",
+      "chain": "BSC",
+      "context": { "label": "Rhino.fi MultiSig", "controls": "ProxyAdmin owner" }
+    }
+  ]
+}

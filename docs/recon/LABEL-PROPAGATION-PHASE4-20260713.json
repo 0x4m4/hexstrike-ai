@@ -1,0 +1,152 @@
+{
+  "generated_at": "2026-07-13T20:31:11.956848+00:00",
+  "agent": "Agent-OSINT-03",
+  "task": "arkham-label-propagate",
+  "mode": "read-only_passive",
+  "target_count": 8,
+  "public_labels_found": 2,
+  "entity_resolution": {
+    "status": "UNIDENTIFIED",
+    "confidence": "low",
+    "hot_wallet_entity": null,
+    "infra_cluster": "hot_wallet_infra (4 EIP-7702 delegates + shared impl)",
+    "external_protocols": [
+      "Rhino.fi",
+      "Binance"
+    ],
+    "separate_infra": [
+      "48Club Puissant (not correlated)"
+    ]
+  },
+  "labels": [
+    {
+      "role": "hot_wallet",
+      "address": "0x4943F5E7F4e450d48Ae82026163ecDe8A52C53dA",
+      "chain": "MULTI",
+      "public_label": null,
+      "inferred_role": "multichain ops treasury (BSC USDT + Base USDC)",
+      "entity_cluster": "UNIDENTIFIED",
+      "arkham_url": "https://platform.arkhamintelligence.com/explorer/address/0x4943F5E7F4e450d48Ae82026163ecDe8A52C53dA",
+      "blockscan_url": "https://blockscan.com/address/0x4943F5E7F4e450d48Ae82026163ecDe8A52C53dA",
+      "basescan_url": "https://basescan.org/address/0x4943F5E7F4e450d48Ae82026163ecDe8A52C53dA",
+      "bscscan_url": "https://bscscan.com/address/0x4943F5E7F4e450d48Ae82026163ecDe8A52C53dA",
+      "label_source": "inferred"
+    },
+    {
+      "role": "authority",
+      "address": "0x730ea0231808f42a20f8921ba7fbc788226768f5",
+      "chain": "BSC",
+      "public_label": null,
+      "inferred_role": "EIP-7702 authority delegate",
+      "entity_cluster": "hot_wallet_infra",
+      "arkham_url": "https://platform.arkhamintelligence.com/explorer/address/0x730ea0231808f42a20f8921ba7fbc788226768f5",
+      "blockscan_url": "https://blockscan.com/address/0x730ea0231808f42a20f8921ba7fbc788226768f5",
+      "basescan_url": null,
+      "bscscan_url": "https://bscscan.com/address/0x730ea0231808f42a20f8921ba7fbc788226768f5",
+      "label_source": "inferred"
+    },
+    {
+      "role": "sweep_router_primary",
+      "address": "0x55ed7fcd17b93fbcd5186cda01af6fed4ec78e08",
+      "chain": "BSC",
+      "public_label": null,
+      "inferred_role": "EIP-7702 sweep delegate #1",
+      "entity_cluster": "hot_wallet_infra",
+      "arkham_url": "https://platform.arkhamintelligence.com/explorer/address/0x55ed7fcd17b93fbcd5186cda01af6fed4ec78e08",
+      "blockscan_url": "https://blockscan.com/address/0x55ed7fcd17b93fbcd5186cda01af6fed4ec78e08",
+      "basescan_url": null,
+      "bscscan_url": "https://bscscan.com/address/0x55ed7fcd17b93fbcd5186cda01af6fed4ec78e08",
+      "label_source": "inferred"
+    },
+    {
+      "role": "sweep_router_secondary",
+      "address": "0x3e0b65c9c31e9593e2b357be6eecd28bef6da03e",
+      "chain": "BSC",
+      "public_label": null,
+      "inferred_role": "EIP-7702 sweep delegate #2",
+      "entity_cluster": "hot_wallet_infra",
+      "arkham_url": "https://platform.arkhamintelligence.com/explorer/address/0x3e0b65c9c31e9593e2b357be6eecd28bef6da03e",
+      "blockscan_url": "https://blockscan.com/address/0x3e0b65c9c31e9593e2b357be6eecd28bef6da03e",
+      "basescan_url": null,
+      "bscscan_url": "https://bscscan.com/address/0x3e0b65c9c31e9593e2b357be6eecd28bef6da03e",
+      "label_source": "inferred"
+    },
+    {
+      "role": "sweep_router_tertiary",
+      "address": "0x3a8b628934f9db7999499905bbf767331266b5b5",
+      "chain": "BSC",
+      "public_label": null,
+      "inferred_role": "EIP-7702 sweep delegate #3",
+      "entity_cluster": "hot_wallet_infra",
+      "arkham_url": "https://platform.arkhamintelligence.com/explorer/address/0x3a8b628934f9db7999499905bbf767331266b5b5",
+      "blockscan_url": "https://blockscan.com/address/0x3a8b628934f9db7999499905bbf767331266b5b5",
+      "basescan_url": null,
+      "bscscan_url": "https://bscscan.com/address/0x3a8b628934f9db7999499905bbf767331266b5b5",
+      "label_source": "inferred"
+    },
+    {
+      "role": "rhino_hub",
+      "address": "0xb80a582fa430645a043bb4f6135321ee01005fef",
+      "chain": "BSC",
+      "public_label": "Rhino.fi: Bridge",
+      "inferred_role": "cross-chain bridge sink",
+      "entity_cluster": "Rhino.fi (protocol)",
+      "arkham_url": "https://platform.arkhamintelligence.com/explorer/address/0xb80a582fa430645a043bb4f6135321ee01005fef",
+      "blockscan_url": "https://blockscan.com/address/0xb80a582fa430645a043bb4f6135321ee01005fef",
+      "basescan_url": null,
+      "bscscan_url": "https://bscscan.com/address/0xb80a582fa430645a043bb4f6135321ee01005fef",
+      "label_source": "artifact"
+    },
+    {
+      "role": "binance_funder",
+      "address": "0x161ba15a5f335c9f06bb5bbb0a9ce14076fbb645",
+      "chain": "BSC",
+      "public_label": "Binance Hot Wallet 11",
+      "inferred_role": "CEX hot wallet \u2014 primary funder",
+      "entity_cluster": "Binance",
+      "arkham_url": "https://platform.arkhamintelligence.com/explorer/address/0x161ba15a5f335c9f06bb5bbb0a9ce14076fbb645",
+      "blockscan_url": "https://blockscan.com/address/0x161ba15a5f335c9f06bb5bbb0a9ce14076fbb645",
+      "basescan_url": null,
+      "bscscan_url": "https://bscscan.com/address/0x161ba15a5f335c9f06bb5bbb0a9ce14076fbb645",
+      "label_source": "artifact"
+    },
+    {
+      "role": "eip7702_implementation",
+      "address": "0x314C01e758a7911e7339aa4F960C7749E8947775",
+      "chain": "BSC",
+      "public_label": null,
+      "inferred_role": "EIP-7702 payment delegate implementation",
+      "entity_cluster": "hot_wallet_infra",
+      "arkham_url": "https://platform.arkhamintelligence.com/explorer/address/0x314C01e758a7911e7339aa4F960C7749E8947775",
+      "blockscan_url": "https://blockscan.com/address/0x314C01e758a7911e7339aa4F960C7749E8947775",
+      "basescan_url": null,
+      "bscscan_url": "https://bscscan.com/address/0x314C01e758a7911e7339aa4F960C7749E8947775",
+      "label_source": "inferred"
+    }
+  ],
+  "entity_clusters": {
+    "UNIDENTIFIED": [
+      "hot_wallet"
+    ],
+    "hot_wallet_infra": [
+      "authority",
+      "sweep_router_primary",
+      "sweep_router_secondary",
+      "sweep_router_tertiary",
+      "eip7702_implementation"
+    ],
+    "Rhino.fi (protocol)": [
+      "rhino_hub"
+    ],
+    "Binance": [
+      "binance_funder"
+    ]
+  },
+  "arkham_manual_required": true,
+  "arkham_note": "No ARKHAM_API_KEY in env \u2014 UI lookup URLs generated per target",
+  "next_steps": [
+    "Manual Arkham UI review for hot_wallet cluster naming",
+    "GitHub token for address dorking",
+    "Extended outflow trace on unlabeled top recipients"
+  ]
+}

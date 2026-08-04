@@ -1,0 +1,2 @@
+# Ops evidence validation (GLOBAL GO artifact contracts)
+pydantic>=2.6,<3

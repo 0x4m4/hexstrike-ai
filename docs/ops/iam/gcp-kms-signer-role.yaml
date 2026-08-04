@@ -1,0 +1,17 @@
+# Custom role: HexStrike Ethereum signer (least privilege).
+# Bind only to the staging/prod runtime SA. No human owners on the SA key.
+title: hexstrike.kms.signer
+description: AsymmetricSign + GetPublicKey only for rescue signer crypto key
+stage: GA
+includedPermissions:
+  - cloudkms.cryptoKeyVersions.useToSign
+  - cloudkms.cryptoKeyVersions.viewPublicKey
+  - cloudkms.cryptoKeys.get
+# Explicitly NOT included: destroy, update, setIamPolicy, decrypt, getIamPolicy (optional read)
+---
+# Example binding (replace PROJECT / LOCATION / KEYRING / KEY / SA):
+# gcloud kms keys add-iam-policy-binding KEY \
+#   --keyring=KEYRING --location=LOCATION --project=PROJECT \
+#   --member="serviceAccount:hexstrike-signer@PROJECT.iam.gserviceaccount.com" \
+#   --role="projects/PROJECT/roles/hexstrike.kms.signer" \
+#   --condition=None

@@ -1,0 +1,405 @@
+{
+  "generated_at": "2026-07-11T16:10:31.571200+00:00",
+  "runs_per_session": 5,
+  "monitor_duration": 60,
+  "defense": [
+    {
+      "test_id": "hexstrike_defense_stress_01",
+      "session": "defense",
+      "run": 1,
+      "run_id": "7bfd9ceafee9",
+      "mode": "DEFENSE_MAX",
+      "started_at": "2026-07-11T16:12:02.806791+00:00",
+      "env": {
+        "ARKHAM_API_KEY_set": false,
+        "ALLOWED_FUNDERS": "0x730ea0231808f42a20f8921ba7fbc788226768f5"
+      },
+      "overall_score": 100.0,
+      "wall_clock_sec": 91.24,
+      "attacks": {
+        "02-race-duplicate-sign": "DEFENDED",
+        "04-replay-rescue-tx": "DEFENDED",
+        "06-compromised-funder": "DEFENDED"
+      },
+      "go_test": "PASS",
+      "engine_test": "PASS",
+      "hot_path": {
+        "latency_ms_hot_path": 67.6,
+        "bench_stdout": "PASS\nok  \tgithub.com/hexstrike-ai/hexstrike/cmd/agent/internal/orchestrator\t0.009s\n"
+      },
+      "pipeline": {
+        "success": true,
+        "elapsed_sec": 6.148,
+        "latency_ms": 6148.0
+      },
+      "battle": {
+        "exit_code": 0,
+        "readiness_score": 60,
+        "elapsed_sec": 83.607
+      },
+      "bus": {
+        "panics": [],
+        "clean": true
+      },
+      "monitor_duration_config": 60,
+      "finished_at": "2026-07-11T16:12:02.806810+00:00"
+    },
+    {
+      "test_id": "hexstrike_defense_stress_02",
+      "session": "defense",
+      "run": 2,
+      "run_id": "6ce49ce2d5a9",
+      "mode": "DEFENSE_MAX",
+      "started_at": "2026-07-11T16:13:33.920488+00:00",
+      "env": {
+        "ARKHAM_API_KEY_set": false,
+        "ALLOWED_FUNDERS": "0x730ea0231808f42a20f8921ba7fbc788226768f5"
+      },
+      "overall_score": 100.0,
+      "wall_clock_sec": 91.11,
+      "attacks": {
+        "02-race-duplicate-sign": "DEFENDED",
+        "04-replay-rescue-tx": "DEFENDED",
+        "06-compromised-funder": "DEFENDED"
+      },
+      "go_test": "PASS",
+      "engine_test": "PASS",
+      "hot_path": {
+        "latency_ms_hot_path": 69.0,
+        "bench_stdout": "PASS\nok  \tgithub.com/hexstrike-ai/hexstrike/cmd/agent/internal/orchestrator\t0.010s\n"
+      },
+      "pipeline": {
+        "success": true,
+        "elapsed_sec": 6.059,
+        "latency_ms": 6059.0
+      },
+      "battle": {
+        "exit_code": 0,
+        "readiness_score": 60,
+        "elapsed_sec": 83.603
+      },
+      "bus": {
+        "panics": [],
+        "clean": true
+      },
+      "monitor_duration_config": 60,
+      "finished_at": "2026-07-11T16:13:33.920504+00:00"
+    },
+    {
+      "test_id": "hexstrike_defense_stress_03",
+      "session": "defense",
+      "run": 3,
+      "run_id": "85a4f0ac8457",
+      "mode": "DEFENSE_MAX",
+      "started_at": "2026-07-11T16:15:05.008885+00:00",
+      "env": {
+        "ARKHAM_API_KEY_set": false,
+        "ALLOWED_FUNDERS": "0x730ea0231808f42a20f8921ba7fbc788226768f5"
+      },
+      "overall_score": 100.0,
+      "wall_clock_sec": 91.09,
+      "attacks": {
+        "02-race-duplicate-sign": "DEFENDED",
+        "04-replay-rescue-tx": "DEFENDED",
+        "06-compromised-funder": "DEFENDED"
+      },
+      "go_test": "PASS",
+      "engine_test": "PASS",
+      "hot_path": {
+        "latency_ms_hot_path": 65.6,
+        "bench_stdout": "PASS\nok  \tgithub.com/hexstrike-ai/hexstrike/cmd/agent/internal/orchestrator\t0.009s\n"
+      },
+      "pipeline": {
+        "success": true,
+        "elapsed_sec": 6.084,
+        "latency_ms": 6084.0
+      },
+      "battle": {
+        "exit_code": 0,
+        "readiness_score": 60,
+        "elapsed_sec": 83.595
+      },
+      "bus": {
+        "panics": [],
+        "clean": true
+      },
+      "monitor_duration_config": 60,
+      "finished_at": "2026-07-11T16:15:05.008901+00:00"
+    },
+    {
+      "test_id": "hexstrike_defense_stress_04",
+      "session": "defense",
+      "run": 4,
+      "run_id": "432083c11a39",
+      "mode": "DEFENSE_MAX",
+      "started_at": "2026-07-11T16:16:36.118455+00:00",
+      "env": {
+        "ARKHAM_API_KEY_set": false,
+        "ALLOWED_FUNDERS": "0x730ea0231808f42a20f8921ba7fbc788226768f5"
+      },
+      "overall_score": 100.0,
+      "wall_clock_sec": 91.11,
+      "attacks": {
+        "02-race-duplicate-sign": "DEFENDED",
+        "04-replay-rescue-tx": "DEFENDED",
+        "06-compromised-funder": "DEFENDED"
+      },
+      "go_test": "PASS",
+      "engine_test": "PASS",
+      "hot_path": {
+        "latency_ms_hot_path": 68.8,
+        "bench_stdout": "PASS\nok  \tgithub.com/hexstrike-ai/hexstrike/cmd/agent/internal/orchestrator\t0.010s\n"
+      },
+      "pipeline": {
+        "success": true,
+        "elapsed_sec": 6.061,
+        "latency_ms": 6061.0
+      },
+      "battle": {
+        "exit_code": 0,
+        "readiness_score": 60,
+        "elapsed_sec": 83.624
+      },
+      "bus": {
+        "panics": [],
+        "clean": true
+      },
+      "monitor_duration_config": 60,
+      "finished_at": "2026-07-11T16:16:36.118487+00:00"
+    },
+    {
+      "test_id": "hexstrike_defense_stress_05",
+      "session": "defense",
+      "run": 5,
+      "run_id": "f0d7efc5cad5",
+      "mode": "DEFENSE_MAX",
+      "started_at": "2026-07-11T16:18:07.290521+00:00",
+      "env": {
+        "ARKHAM_API_KEY_set": false,
+        "ALLOWED_FUNDERS": "0x730ea0231808f42a20f8921ba7fbc788226768f5"
+      },
+      "overall_score": 100.0,
+      "wall_clock_sec": 91.17,
+      "attacks": {
+        "02-race-duplicate-sign": "DEFENDED",
+        "04-replay-rescue-tx": "DEFENDED",
+        "06-compromised-funder": "DEFENDED"
+      },
+      "go_test": "PASS",
+      "engine_test": "PASS",
+      "hot_path": {
+        "latency_ms_hot_path": 74.0,
+        "bench_stdout": "PASS\nok  \tgithub.com/hexstrike-ai/hexstrike/cmd/agent/internal/orchestrator\t0.010s\n"
+      },
+      "pipeline": {
+        "success": true,
+        "elapsed_sec": 6.103,
+        "latency_ms": 6103.0
+      },
+      "battle": {
+        "exit_code": 0,
+        "readiness_score": 60,
+        "elapsed_sec": 83.585
+      },
+      "bus": {
+        "panics": [],
+        "clean": true
+      },
+      "monitor_duration_config": 60,
+      "finished_at": "2026-07-11T16:18:07.290537+00:00"
+    }
+  ],
+  "attack": [
+    {
+      "test_id": "hexstrike_attack_stress_01",
+      "session": "attack",
+      "run": 1,
+      "run_id": "6a2edab9f619",
+      "mode": "ATTACK_SIMULATION",
+      "recon_ip": "51.250.97.223",
+      "started_at": "2026-07-11T16:18:54.666472+00:00",
+      "overall_score": 100.0,
+      "wall_clock_sec": 47.38,
+      "stress_test": {
+        "exit_code": 0,
+        "overall_score": 100.0,
+        "elapsed_sec": 43.847
+      },
+      "amount_simulation": {
+        "pass": true,
+        "elapsed_sec": 2.573
+      },
+      "fees1559": {
+        "pass": true,
+        "elapsed_sec": 0.342
+      },
+      "entity_gate": {
+        "pass": true,
+        "elapsed_sec": 0.212
+      },
+      "go_test": "PASS",
+      "hot_path": {
+        "pipeline_latency_ms": 43847.0,
+        "amount_sim_ms": 2573.0
+      },
+      "monitor_duration_config": 60,
+      "finished_at": "2026-07-11T16:18:54.666497+00:00"
+    },
+    {
+      "test_id": "hexstrike_attack_stress_02",
+      "session": "attack",
+      "run": 2,
+      "run_id": "31ecdc0a4002",
+      "mode": "ATTACK_SIMULATION",
+      "recon_ip": "51.250.97.223",
+      "started_at": "2026-07-11T16:19:42.178799+00:00",
+      "overall_score": 100.0,
+      "wall_clock_sec": 47.51,
+      "stress_test": {
+        "exit_code": 0,
+        "overall_score": 100.0,
+        "elapsed_sec": 44.04
+      },
+      "amount_simulation": {
+        "pass": true,
+        "elapsed_sec": 2.591
+      },
+      "fees1559": {
+        "pass": true,
+        "elapsed_sec": 0.307
+      },
+      "entity_gate": {
+        "pass": true,
+        "elapsed_sec": 0.177
+      },
+      "go_test": "PASS",
+      "hot_path": {
+        "pipeline_latency_ms": 44040.0,
+        "amount_sim_ms": 2591.0
+      },
+      "monitor_duration_config": 60,
+      "finished_at": "2026-07-11T16:19:42.178821+00:00"
+    },
+    {
+      "test_id": "hexstrike_attack_stress_03",
+      "session": "attack",
+      "run": 3,
+      "run_id": "26f2de1dd6ab",
+      "mode": "ATTACK_SIMULATION",
+      "recon_ip": "51.250.97.223",
+      "started_at": "2026-07-11T16:20:28.815209+00:00",
+      "overall_score": 100.0,
+      "wall_clock_sec": 46.64,
+      "stress_test": {
+        "exit_code": 0,
+        "overall_score": 100.0,
+        "elapsed_sec": 43.15
+      },
+      "amount_simulation": {
+        "pass": true,
+        "elapsed_sec": 2.59
+      },
+      "fees1559": {
+        "pass": true,
+        "elapsed_sec": 0.312
+      },
+      "entity_gate": {
+        "pass": true,
+        "elapsed_sec": 0.176
+      },
+      "go_test": "PASS",
+      "hot_path": {
+        "pipeline_latency_ms": 43150.0,
+        "amount_sim_ms": 2590.0
+      },
+      "monitor_duration_config": 60,
+      "finished_at": "2026-07-11T16:20:28.815228+00:00"
+    },
+    {
+      "test_id": "hexstrike_attack_stress_04",
+      "session": "attack",
+      "run": 4,
+      "run_id": "fdd7580af62f",
+      "mode": "ATTACK_SIMULATION",
+      "recon_ip": "51.250.97.223",
+      "started_at": "2026-07-11T16:21:16.248653+00:00",
+      "overall_score": 100.0,
+      "wall_clock_sec": 47.43,
+      "stress_test": {
+        "exit_code": 0,
+        "overall_score": 100.0,
+        "elapsed_sec": 43.882
+      },
+      "amount_simulation": {
+        "pass": true,
+        "elapsed_sec": 2.595
+      },
+      "fees1559": {
+        "pass": true,
+        "elapsed_sec": 0.337
+      },
+      "entity_gate": {
+        "pass": true,
+        "elapsed_sec": 0.221
+      },
+      "go_test": "PASS",
+      "hot_path": {
+        "pipeline_latency_ms": 43882.0,
+        "amount_sim_ms": 2595.0
+      },
+      "monitor_duration_config": 60,
+      "finished_at": "2026-07-11T16:21:16.248675+00:00"
+    },
+    {
+      "test_id": "hexstrike_attack_stress_05",
+      "session": "attack",
+      "run": 5,
+      "run_id": "bdfccc9a2707",
+      "mode": "ATTACK_SIMULATION",
+      "recon_ip": "51.250.97.223",
+      "started_at": "2026-07-11T16:22:03.624228+00:00",
+      "overall_score": 100.0,
+      "wall_clock_sec": 47.38,
+      "stress_test": {
+        "exit_code": 0,
+        "overall_score": 100.0,
+        "elapsed_sec": 43.884
+      },
+      "amount_simulation": {
+        "pass": true,
+        "elapsed_sec": 2.586
+      },
+      "fees1559": {
+        "pass": true,
+        "elapsed_sec": 0.315
+      },
+      "entity_gate": {
+        "pass": true,
+        "elapsed_sec": 0.185
+      },
+      "go_test": "PASS",
+      "hot_path": {
+        "pipeline_latency_ms": 43884.0,
+        "amount_sim_ms": 2586.0
+      },
+      "monitor_duration_config": 60,
+      "finished_at": "2026-07-11T16:22:03.624249+00:00"
+    }
+  ],
+  "defense_avg_score": 100.0,
+  "attack_avg_score": 100.0,
+  "defense_avg_pipeline_sec": 6091.0,
+  "go_test_final": {
+    "cmd": [
+      "go",
+      "test",
+      "./...",
+      "-count=1"
+    ],
+    "exit_code": 0,
+    "elapsed_sec": 0.376,
+    "stdout": "?   \tgithub.com/hexstrike-ai/hexstrike/cmd/agent\t[no test files]\nok  \tgithub.com/hexstrike-ai/hexstrike/cmd/agent/internal/entity\t0.003s\nok  \tgithub.com/hexstrike-ai/hexstrike/cmd/agent/internal/guard\t0.007s\nok  \tgithub.com/hexstrike-ai/hexstrike/cmd/agent/internal/orchestrator\t0.009s\nok  \tgithub.com/hexstrike-ai/hexstrike/cmd/agent/internal/tx\t0.009s\n",
+    "stderr": ""
+  },
+  "go_test_pass": true
+}

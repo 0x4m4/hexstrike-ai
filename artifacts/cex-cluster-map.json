@@ -1,0 +1,427 @@
+{
+  "agent": "Agent-Graph-01",
+  "task": "trace-funds (read-only)",
+  "target": "0x4943f5e7f4e450d48ae82026163ecde8a52c53da",
+  "depth": 3,
+  "block_range": [
+    108943025,
+    109043025
+  ],
+  "filters": [
+    "cex_deposit",
+    "binance",
+    "okx",
+    "bybit"
+  ],
+  "depth0_hot_wallet": {
+    "total_out_usdt_200plus": 796543.46,
+    "unique_recipients": 977,
+    "cex_direct_hits": {},
+    "top_recipients": [
+      {
+        "address": "0x730ea0231808f42a20f8921ba7fbc788226768f5",
+        "usdt": 22486.98,
+        "tag": null
+      },
+      {
+        "address": "0x55ed7fcd17b93fbcd5186cda01af6fed4ec78e08",
+        "usdt": 12268.34,
+        "tag": null
+      },
+      {
+        "address": "0xcfc85f21f5f01ab24d6b7a3b93ef097099ebde3a",
+        "usdt": 11804.0,
+        "tag": null
+      },
+      {
+        "address": "0x3e0b65c9c31e9593e2b357be6eecd28bef6da03e",
+        "usdt": 9758.49,
+        "tag": null
+      },
+      {
+        "address": "0x3a8b628934f9db7999499905bbf767331266b5b5",
+        "usdt": 7462.49,
+        "tag": null
+      },
+      {
+        "address": "0xd0b5b1fa9122696bcab0cc5d5f4421e6d94a9e52",
+        "usdt": 6000.0,
+        "tag": null
+      },
+      {
+        "address": "0x2a3cba35c2b427850c2047b2d79164a6227ebe7b",
+        "usdt": 5972.97,
+        "tag": null
+      },
+      {
+        "address": "0x831c7f9ea511a161c037b6b682ade7d46695a08f",
+        "usdt": 5450.0,
+        "tag": null
+      },
+      {
+        "address": "0x6977262a9a9b2eaaf7c20903b45798b1676ea7fd",
+        "usdt": 4998.67,
+        "tag": null
+      },
+      {
+        "address": "0xd0ec42011863e55e58d76219e978df8cde4b2247",
+        "usdt": 4992.5,
+        "tag": null
+      },
+      {
+        "address": "0x405238ebce4a7adbd010202b080d5515f234601e",
+        "usdt": 4908.13,
+        "tag": null
+      },
+      {
+        "address": "0x85837e008e63598e730f27628289ff9c06709a7a",
+        "usdt": 4700.0,
+        "tag": null
+      },
+      {
+        "address": "0x9458dd88cff7fa0de398a6e1f132b4715f41600a",
+        "usdt": 4455.0,
+        "tag": null
+      },
+      {
+        "address": "0x59c9bc67afc1ef6e6d61b5da740080a742263833",
+        "usdt": 4400.0,
+        "tag": null
+      },
+      {
+        "address": "0x44c42dcdfbf682a9eb6c42298e20cfd9875d7a2d",
+        "usdt": 4373.83,
+        "tag": null
+      }
+    ],
+    "sample_edges": [
+      {
+        "from": "0x4943f5e7f4e450d48ae82026163ecde8a52c53da",
+        "to": "0xc3c5f183e5109f1cb5303a31e911b85e84fab3f7",
+        "amount_usdt": 202.94,
+        "tx": "0xa06ec2fd4bbff73f96bd790182ebb847818b8ef5baf4eb4551938adeff8bc188",
+        "cex": null
+      },
+      {
+        "from": "0x4943f5e7f4e450d48ae82026163ecde8a52c53da",
+        "to": "0xf01621736a09b67d8619f4b38a1f6e170ded99e3",
+        "amount_usdt": 300.0,
+        "tx": "0x32ba830c2eb0698a71cc2c28ac4e11959ecc9d21ad28c82dd8bb9edf5c78d8fa",
+        "cex": null
+      },
+      {
+        "from": "0x4943f5e7f4e450d48ae82026163ecde8a52c53da",
+        "to": "0x0ece031bad7e031d7732a32d29874d50e2746fc1",
+        "amount_usdt": 218.9,
+        "tx": "0x1ce54dddba2740e90498fd08be14dc358e02716ddf25e0f9a2e0478a30778d55",
+        "cex": null
+      },
+      {
+        "from": "0x4943f5e7f4e450d48ae82026163ecde8a52c53da",
+        "to": "0x3e1a8794d59d81b8e692095b9b7027e8acd8b51d",
+        "amount_usdt": 200.0,
+        "tx": "0xc16326618c95beb9b361e30d3072de3d5cf16bc84c4430d8b9358abd2d56309e",
+        "cex": null
+      },
+      {
+        "from": "0x4943f5e7f4e450d48ae82026163ecde8a52c53da",
+        "to": "0xdf3b3c12a8bd59c36ad4aea66c7803db8b39183b",
+        "amount_usdt": 1000.0,
+        "tx": "0x16d49aff8e1b4f32194ea616db5810e444d245dc330d92a376fe0616e045c096",
+        "cex": null
+      },
+      {
+        "from": "0x4943f5e7f4e450d48ae82026163ecde8a52c53da",
+        "to": "0xc21fd6b5dfc2c9b0b2eeb9c17d5a0730193c5dee",
+        "amount_usdt": 200.0,
+        "tx": "0x56dc7b7488a26c6fa52d8dd569240330a5bbf7140f7be646b06358093290477a",
+        "cex": null
+      },
+      {
+        "from": "0x4943f5e7f4e450d48ae82026163ecde8a52c53da",
+        "to": "0xab29db89f1d4f6f55e365c02f0c9e8c1654f47bb",
+        "amount_usdt": 500.0,
+        "tx": "0x10589b257c7acc1cf8b7b28b5b3f6854711cdd022cf60e02fa288a77d2e90bbb",
+        "cex": null
+      },
+      {
+        "from": "0x4943f5e7f4e450d48ae82026163ecde8a52c53da",
+        "to": "0xb179cb8133a72c8d836ee227dcb7c347a7460f9b",
+        "amount_usdt": 297.5,
+        "tx": "0x089c9f88eb3bef079e9a57879af6fded0e2bc7832a3d89e9039adfa41cd328ae",
+        "cex": null
+      },
+      {
+        "from": "0x4943f5e7f4e450d48ae82026163ecde8a52c53da",
+        "to": "0x86a49d408ad4933850c6c087988e38247ad58092",
+        "amount_usdt": 595.0,
+        "tx": "0x80865d029e41a6f6c698fa116e448907de7249999a105b81c0dd4fcf49b50fb8",
+        "cex": null
+      },
+      {
+        "from": "0x4943f5e7f4e450d48ae82026163ecde8a52c53da",
+        "to": "0x98ece1907e9484ed907c93ba30e964fd3ddedc46",
+        "amount_usdt": 1000.0,
+        "tx": "0xa84fee02f131db1a1c75b86a8bfdeb2b4cf56ccc3cb1deff66cf8ed3eda994c4",
+        "cex": null
+      },
+      {
+        "from": "0x4943f5e7f4e450d48ae82026163ecde8a52c53da",
+        "to": "0xf0320f84b3521149b02533b2db6bd52b234bf23b",
+        "amount_usdt": 1450.0,
+        "tx": "0xc42993dea059438d1a511a0266ff9e6721fb1a79210c1c1c6252c2b9e2f2ac55",
+        "cex": null
+      },
+      {
+        "from": "0x4943f5e7f4e450d48ae82026163ecde8a52c53da",
+        "to": "0xb9acd8d3cc3bfc7951b9ac1c8e25a0064b0f6e20",
+        "amount_usdt": 248.75,
+        "tx": "0xb09a79f6d830cd1a511742d212396ce2d9060acd9454ef7ad0ab041a986a7058",
+        "cex": null
+      },
+      {
+        "from": "0x4943f5e7f4e450d48ae82026163ecde8a52c53da",
+        "to": "0x382bf6f747bb9f9e880c25678779e01df3ea12be",
+        "amount_usdt": 343.27,
+        "tx": "0xfb5d9bc584c8a658d236cbbfa71621261c99c4b245b2965bd4a9ef3378c7bb7c",
+        "cex": null
+      },
+      {
+        "from": "0x4943f5e7f4e450d48ae82026163ecde8a52c53da",
+        "to": "0x6cb2318c968e7dac02e91bbd02ae7555c83a9b5c",
+        "amount_usdt": 398.0,
+        "tx": "0xa375df1bb0899777bc1b219d55935bcf1a8b6e386ae58405362e1639482adf83",
+        "cex": null
+      },
+      {
+        "from": "0x4943f5e7f4e450d48ae82026163ecde8a52c53da",
+        "to": "0x6f953d09690e4991554dbd6d2ccb14f2899919a6",
+        "amount_usdt": 698.0,
+        "tx": "0xde63399ad25ae8f5fe00725b8d657fdf48628b438e8e4f2a73d424b6c1f9ed2e",
+        "cex": null
+      },
+      {
+        "from": "0x4943f5e7f4e450d48ae82026163ecde8a52c53da",
+        "to": "0x7ad58a56f3d307b1f6f358cd8f2cab849e41fed5",
+        "amount_usdt": 750.0,
+        "tx": "0xb498febaad752cb663ccc2e2243af84442857e1acf495a576bb23f8fc92a275a",
+        "cex": null
+      },
+      {
+        "from": "0x4943f5e7f4e450d48ae82026163ecde8a52c53da",
+        "to": "0x873502bd874991795eff2d586c9a80c8124d30c8",
+        "amount_usdt": 297.94,
+        "tx": "0xb8544a638b13639c13b4759028cf57568e7ec03ef3ec90fca371b9d115fc77f9",
+        "cex": null
+      },
+      {
+        "from": "0x4943f5e7f4e450d48ae82026163ecde8a52c53da",
+        "to": "0x55ed7fcd17b93fbcd5186cda01af6fed4ec78e08",
+        "amount_usdt": 1820.85,
+        "tx": "0x948d906374b37f0abf623e8eef34a22c521c64ac71cb53c8e8069f75f5d2d63d",
+        "cex": null
+      },
+      {
+        "from": "0x4943f5e7f4e450d48ae82026163ecde8a52c53da",
+        "to": "0x6f3b6e88bb03e1bd23708b26c09d18af8b6d04cf",
+        "amount_usdt": 510.0,
+        "tx": "0xb8d42cd69aa7104573e77405b46fca3c1c2da7973a93b540c22a3a6d1f369e58",
+        "cex": null
+      },
+      {
+        "from": "0x4943f5e7f4e450d48ae82026163ecde8a52c53da",
+        "to": "0xbbe2132052a3892c61203cf1a42b4ae2baecd8a3",
+        "amount_usdt": 300.0,
+        "tx": "0xee6b34d5d7fd3e8a1abc38dd035f54849f63ca9eaeda3c6c782d27fb634b0ab3",
+        "cex": null
+      },
+      {
+        "from": "0x4943f5e7f4e450d48ae82026163ecde8a52c53da",
+        "to": "0x5385181a4afa3169efacedf424bf3996e551a4f3",
+        "amount_usdt": 500.0,
+        "tx": "0x23b6b556a49e239e9d6173c90becc48f8d55acc186a6ffcf04b2aeb591408fd5",
+        "cex": null
+      },
+      {
+        "from": "0x4943f5e7f4e450d48ae82026163ecde8a52c53da",
+        "to": "0x59846a1abdd699fc3bb34bd37bd5941be362375d",
+        "amount_usdt": 595.5,
+        "tx": "0xa97dc854221c609957d911b3a5168e0fd7c772d1e491663be325c8fd81c92af4",
+        "cex": null
+      },
+      {
+        "from": "0x4943f5e7f4e450d48ae82026163ecde8a52c53da",
+        "to": "0x29a271ff6f2f79bacb1960eecedbbb6560b96c2d",
+        "amount_usdt": 300.0,
+        "tx": "0xa5cd0c6f555f7c2f20dccc4182c15837878aff735f283c2f6480008c0da103b3",
+        "cex": null
+      },
+      {
+        "from": "0x4943f5e7f4e450d48ae82026163ecde8a52c53da",
+        "to": "0xfeb1500466adce1e51494a65ab3ec806d2fbba09",
+        "amount_usdt": 500.0,
+        "tx": "0x56fb82c627dc86f12e95be25d9079b1adb6b7ea0217b8f1f26f16cce9cbacf75",
+        "cex": null
+      },
+      {
+        "from": "0x4943f5e7f4e450d48ae82026163ecde8a52c53da",
+        "to": "0x3dff4a4cac5a0f33f652fc21388eb512395f0745",
+        "amount_usdt": 247.0,
+        "tx": "0xb835799f287c7382b18bfd81e6d7d52cbd64d123c23b35155f96c732d8d0d2e8",
+        "cex": null
+      }
+    ]
+  },
+  "depth1_from_top_recipients": {
+    "scanned": [
+      "0x730ea0231808f42a20f8921ba7fbc788226768f5",
+      "0x55ed7fcd17b93fbcd5186cda01af6fed4ec78e08",
+      "0xcfc85f21f5f01ab24d6b7a3b93ef097099ebde3a",
+      "0x3e0b65c9c31e9593e2b357be6eecd28bef6da03e",
+      "0x3a8b628934f9db7999499905bbf767331266b5b5",
+      "0xd0b5b1fa9122696bcab0cc5d5f4421e6d94a9e52",
+      "0x2a3cba35c2b427850c2047b2d79164a6227ebe7b",
+      "0x831c7f9ea511a161c037b6b682ade7d46695a08f"
+    ],
+    "nodes": {
+      "0x730ea0231808f42a20f8921ba7fbc788226768f5": {
+        "total_out_usdt": 19133.83,
+        "top_out": [
+          [
+            "0xb80a582fa430645a043bb4f6135321ee01005fef",
+            19133.83,
+            null
+          ]
+        ]
+      },
+      "0x55ed7fcd17b93fbcd5186cda01af6fed4ec78e08": {
+        "total_out_usdt": 0,
+        "top_out": []
+      },
+      "0xcfc85f21f5f01ab24d6b7a3b93ef097099ebde3a": {
+        "total_out_usdt": 0,
+        "top_out": []
+      },
+      "0x3e0b65c9c31e9593e2b357be6eecd28bef6da03e": {
+        "total_out_usdt": 0,
+        "top_out": []
+      },
+      "0x3a8b628934f9db7999499905bbf767331266b5b5": {
+        "total_out_usdt": 0,
+        "top_out": []
+      },
+      "0xd0b5b1fa9122696bcab0cc5d5f4421e6d94a9e52": {
+        "total_out_usdt": 4000.0,
+        "top_out": [
+          [
+            "0xb80a582fa430645a043bb4f6135321ee01005fef",
+            4000.0,
+            null
+          ]
+        ]
+      },
+      "0x2a3cba35c2b427850c2047b2d79164a6227ebe7b": {
+        "total_out_usdt": 5972.97,
+        "top_out": [
+          [
+            "0xb80a582fa430645a043bb4f6135321ee01005fef",
+            5972.97,
+            null
+          ]
+        ]
+      },
+      "0x831c7f9ea511a161c037b6b682ade7d46695a08f": {
+        "total_out_usdt": 2450.0,
+        "top_out": [
+          [
+            "0xb80a582fa430645a043bb4f6135321ee01005fef",
+            2450.0,
+            null
+          ]
+        ]
+      }
+    },
+    "cex_hits_depth1": {},
+    "sample_edges": [
+      {
+        "from": "0x730ea0231808f42a20f8921ba7fbc788226768f5",
+        "to": "0xb80a582fa430645a043bb4f6135321ee01005fef",
+        "amount_usdt": 4816.0,
+        "tx": "0xa7279140ccaefb092ea63690a1db6a5354acf3ccaf6368b7e80beb1bb5a93667",
+        "cex": null
+      },
+      {
+        "from": "0x730ea0231808f42a20f8921ba7fbc788226768f5",
+        "to": "0xb80a582fa430645a043bb4f6135321ee01005fef",
+        "amount_usdt": 4797.0,
+        "tx": "0x7f9cba2507bf7aea6b9ec1d7e9273a31120b384a8ea4c0caa4ee0f3bf597727c",
+        "cex": null
+      },
+      {
+        "from": "0x730ea0231808f42a20f8921ba7fbc788226768f5",
+        "to": "0xb80a582fa430645a043bb4f6135321ee01005fef",
+        "amount_usdt": 4797.0,
+        "tx": "0x1441d8b9eddb5cda67a03b04b682e1a2645d2a868877a89da8cef168054c3598",
+        "cex": null
+      },
+      {
+        "from": "0x730ea0231808f42a20f8921ba7fbc788226768f5",
+        "to": "0xb80a582fa430645a043bb4f6135321ee01005fef",
+        "amount_usdt": 4723.83,
+        "tx": "0xc4c5b18bf3bcab377ebdb7890569405672b06ffcd797131ae1387776f89a91a3",
+        "cex": null
+      },
+      {
+        "from": "0xd0b5b1fa9122696bcab0cc5d5f4421e6d94a9e52",
+        "to": "0xb80a582fa430645a043bb4f6135321ee01005fef",
+        "amount_usdt": 2000.0,
+        "tx": "0xf215d4771d053765a8a413e50341effb19ae27956cc3562453c5d5eee647e07b",
+        "cex": null
+      },
+      {
+        "from": "0xd0b5b1fa9122696bcab0cc5d5f4421e6d94a9e52",
+        "to": "0xb80a582fa430645a043bb4f6135321ee01005fef",
+        "amount_usdt": 2000.0,
+        "tx": "0xefd16b27e453d15768b7fdb7c48692ffe6ef6fda2b8167cf02ecb650198f75e4",
+        "cex": null
+      },
+      {
+        "from": "0x2a3cba35c2b427850c2047b2d79164a6227ebe7b",
+        "to": "0xb80a582fa430645a043bb4f6135321ee01005fef",
+        "amount_usdt": 4000.0,
+        "tx": "0x2e6db31b95595434661d9d148a2b9803fa5c85f03aa07286afd67a8e456276be",
+        "cex": null
+      },
+      {
+        "from": "0x2a3cba35c2b427850c2047b2d79164a6227ebe7b",
+        "to": "0xb80a582fa430645a043bb4f6135321ee01005fef",
+        "amount_usdt": 1972.97,
+        "tx": "0xb48c6ed3090ea93fc46e132c5cfc259f1edacb1a3115a2081b936caf9e145763",
+        "cex": null
+      },
+      {
+        "from": "0x831c7f9ea511a161c037b6b682ade7d46695a08f",
+        "to": "0xb80a582fa430645a043bb4f6135321ee01005fef",
+        "amount_usdt": 2450.0,
+        "tx": "0x15bd7480cb0504ce97992f6351eee5a136da569bcb86057935943e66f21b25a9",
+        "cex": null
+      }
+    ]
+  },
+  "authority_730ea023": {
+    "address": "0x730ea0231808f42a20f8921ba7fbc788226768f5",
+    "out_usdt_total": 22486.98,
+    "cex_direct": {},
+    "top_out": [
+      [
+        "0xb80a582fa430645a043bb4f6135321ee01005fef",
+        22486.98,
+        null
+      ]
+    ]
+  },
+  "verdict": {
+    "direct_cex_drain_from_hot": false,
+    "pattern": "hot -> many EOAs/authorities -> further split; check depth1 for CEX"
+  }
+}

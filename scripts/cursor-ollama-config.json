@@ -1,0 +1,47 @@
+{
+  "_comment": "Copy to ~/.cursor/config.json — HexStrike Ollama integration (deepseek-r1:1.5b)",
+  "ollama": {
+    "enabled": true,
+    "host": "http://127.0.0.1:11434",
+    "openai_compatible_base": "http://127.0.0.1:11434/v1",
+    "api_key": "ollama",
+    "default_model": "deepseek-r1:1.5b"
+  },
+  "models": {
+    "custom": [
+      {
+        "id": "deepseek-r1:1.5b",
+        "name": "deepseek-r1:1.5b",
+        "provider": "openai-compatible",
+        "baseUrl": "http://127.0.0.1:11434/v1",
+        "apiKey": "ollama"
+      }
+    ]
+  },
+  "cursor": {
+    "chat": {
+      "defaultModel": "deepseek-r1:1.5b",
+      "useLocalLlm": true
+    },
+    "composer": {
+      "defaultModel": "deepseek-r1:1.5b",
+      "useLocalLlm": true
+    },
+    "openai": {
+      "overrideBaseUrl": true,
+      "baseUrl": "http://127.0.0.1:11434/v1",
+      "apiKey": "ollama"
+    },
+    "routing": {
+      "preferLocalhost": true,
+      "offlinePrimary": true
+    }
+  },
+  "env": {
+    "OLLAMA_HOST": "http://127.0.0.1:11434",
+    "LLM_PROVIDER": "ollama-local",
+    "LLM_BASE_URL": "http://127.0.0.1:11434/v1",
+    "LLM_MODEL": "deepseek-r1:1.5b",
+    "CURSOR_INTEGRATION_MODE": "OFFLINE_PRIMARY"
+  }
+}

@@ -1,0 +1,385 @@
+{
+  "version": "1",
+  "description": "HexStrike custom agent registry (orchestrator-compatible)",
+  "defaults": {
+    "server": "http://127.0.0.1:8888",
+    "artifacts_dir": "artifacts",
+    "mode": "forensics"
+  },
+  "agents": {
+    "Agent-Orchestrator": {
+      "role": "orchestrator",
+      "description": "Routes tasks via hexstrike-orchestrator (not Cursor chat)",
+      "runner": "scripts/hexstrike-orchestrator.py",
+      "cli": "./hexstrike-orchestrator",
+      "tasks": {
+        "dispatch": {
+          "note": "Use: hexstrike-orchestrator run <workflow> | dispatch <agent> <task> | watch"
+        }
+      },
+      "workflows_file": "agents/workflows.json",
+      "queue_dir": "agents/queue",
+      "log_dir": "artifacts/orchestrator",
+      "delegates_to": [
+        "Agent-OSINT-03",
+        "Agent-Web-04",
+        "Agent-Graph-01",
+        "Agent-Infra-01",
+        "Agent-Contract-02",
+        "Agent-Contract-03",
+        "Agent-Contract-04",
+        "Agent-Vuln-05",
+        "Agent-Report-06",
+        "Agent-Battle-07",
+        "Agent-Malware-08",
+        "Agent-Malware-09",
+        "Agent-Malware-10",
+        "Agent-Malware-11",
+        "Agent-Malware-12",
+        "Agent-Forensics-01",
+        "Agent-DualMode-08"
+      ]
+    },
+    "Agent-OSINT-03": {
+      "role": "off-chain-intel",
+      "description": "Passive on-chain → off-chain infra mapping (no active scan)",
+      "tasks": {
+        "infra-mapping": {
+          "script": "scripts/agents/agent_osint_03.py",
+          "output": "artifacts/infra-targets.json",
+          "methods": ["github_dorking", "ens_resolve", "metadata_extract", "ip_history"],
+          "constraints": ["read-only", "passive", "no-nmap"]
+        },
+        "entity-resolution": {
+          "script": "scripts/agents/agent_osint_03_entity.py",
+          "output": "artifacts/entity-id.json",
+          "methods": ["arkham_intelligence", "first_funder_analysis", "bscan_labels", "github_org_mapping"],
+          "constraints": ["read-only", "passive"]
+        },
+        "blockscan-cluster": {
+          "script": "scripts/agents/agent_osint_03_multichain.py",
+          "output": "artifacts/multichain-cluster.json",
+          "methods": ["blockscan_multichain", "basescan_portfolio", "bsc_outflow_sample"],
+          "constraints": ["read-only", "passive"]
+        },
+        "shodan-kz-scan": {
+          "script": "scripts/agents/agent_osint_03_shodan_kz.py",
+          "output": "artifacts/shodan-kz-report.json",
+          "methods": ["shodan_search", "ripestat_kz", "crtsh_kz", "internetdb", "geth_rpc_probe"],
+          "constraints": ["read-only", "passive", "defensive-ir", "no-nmap"]
+        },
+        "shodan-ru-scan": {
+          "script": "scripts/agents/agent_osint_03_shodan_ru.py",
+          "output": "artifacts/shodan-ru-report.json",
+          "methods": ["shodan_search", "ripestat_ru", "crtsh_ru", "internetdb", "geth_rpc_probe"],
+          "constraints": ["read-only", "passive", "defensive-ir", "no-nmap"]
+        },
+        "found-targets-recon": {
+          "script": "scripts/agents/agent_osint_03_found_recon.py",
+          "output": "artifacts/found-targets-recon.json",
+          "methods": ["ipinfo", "internetdb", "whois", "jenkins_fingerprint", "geth_rpc_probe", "wallet_correlation"],
+          "constraints": ["read-only", "passive", "defensive-ir", "no-nmap"]
+        },
+        "arkham-label-propagate": {
+          "script": "scripts/agents/agent_osint_03_labels.py",
+          "output": "docs/recon/LABEL-PROPAGATION-PHASE4-20260713.json",
+          "constraints": ["read-only", "passive"]
+        }
+      },
+      "mcp_tools": [],
+      "hexstrike_api": []
+    },
+    "Agent-Web-04": {
+      "role": "web-recon",
+      "description": "Stealth service fingerprinting — headers/cookies only, LotL",
+      "tasks": {
+        "stealth-recon": {
+          "script": "scripts/agents/agent_web_04.py",
+          "input": "artifacts/infra-targets.json",
+          "output": "artifacts/web-recon.json",
+          "focus": ["jenkins_fingerprint", "api_surface", "git_exposure_passive"],
+          "constraints": ["lotl-mode", "no-nmap", "no-exploit", "no-bruteforce"]
+        }
+      },
+      "mcp_tools": ["technology_detection"],
+      "hexstrike_api": ["/api/intelligence/technology-detection"]
+    },
+    "Agent-Graph-01": {
+      "role": "on-chain-graph",
+      "description": "USDT graph + token verification via blockchain MCP",
+      "tasks": {
+        "bind-mcp-tools": {
+          "script": "scripts/mcp-smoke-test.sh",
+          "config": "mcp/agent-bindings.json",
+          "output": "artifacts/mcp-smoke-report.json",
+          "target": "0x4943F5E7F4e450d48Ae82026163ecDe8A52C53dA"
+        },
+        "onchain-graph": {
+          "output": "artifacts/hot-wallet-onchain-graph.json",
+          "note": "Use block-explorer-mcp: get_token_transfers, address_graph_summary"
+        }
+      },
+      "mcp_servers": ["block-explorer-mcp", "defi-dex-mcp", "evm-rpc-mcp"]
+    },
+    "Agent-Infra-01": {
+      "role": "mcp-deploy",
+      "description": "Deploy read-only blockchain MCP layer on VPS",
+      "tasks": {
+        "deploy-mcp": {
+          "script": "scripts/deploy-blockchain-mcp.sh",
+          "servers": ["evm-rpc-mcp", "block-explorer-mcp", "defi-dex-mcp"],
+          "config": "mcp-config.json"
+        }
+      }
+    },
+    "Agent-Contract-02": {
+      "role": "contract-audit",
+      "description": "Read-only bytecode / EIP-7702 analysis",
+      "tasks": {
+        "fetch-bytecode": {
+          "output": "artifacts/authority-contract-analysis.json",
+          "mcp_tools": ["get_contract_code", "get_contract_abi_stub", "eth_call_read"]
+        }
+      },
+      "mcp_servers": ["evm-rpc-mcp", "block-explorer-mcp"]
+    },
+    "Agent-Vuln-05": {
+      "role": "vuln-intel",
+      "description": "Passive CVE correlation — no exploit",
+      "tasks": {
+        "passive-cve-check": {
+          "script": "scripts/agents/agent_vuln_05.py",
+          "output": "artifacts/jenkins-cve-report.json",
+          "sources": ["cve.mitre.org", "nvd.nist.gov", "jenkins-security-advisories"],
+          "constraints": ["no-exploit", "read-only"]
+        }
+      }
+    },
+    "Agent-Battle-07": {
+      "role": "sandbox-redteam",
+      "description": "Autonomous Go agent — 7-attack Anvil battle suite + readiness score",
+      "tasks": {
+        "battle-suite": {
+          "script": "scripts/sandbox/run-battle-suite.sh",
+          "output": "artifacts/sandbox/battle-report.json",
+          "constraints": ["local-anvil-only", "authorized-lab", "no-remote-exploit"]
+        },
+        "generate-target-profile": {
+          "script": "scripts/sandbox/generate-target-profile.py",
+          "output": "artifacts/sandbox/target-profiles.json",
+          "constraints": ["read-only"]
+        },
+        "multi-wallet-recon": {
+          "script": "scripts/sandbox/run-multi-wallet-recon.py",
+          "output": "artifacts/sandbox/target-recon-bundle.json",
+          "constraints": ["read-only", "no-remote-exploit"]
+        },
+        "generate-target-conclusion": {
+          "script": "scripts/sandbox/generate-target-conclusion.py",
+          "output": "artifacts/sandbox/target-conclusion.json",
+          "constraints": ["read-only"]
+        },
+        "redteam-all": {
+          "script": "scripts/sandbox/redteam/run-all.sh",
+          "output": "artifacts/sandbox/redteam-report.json",
+          "constraints": ["local-anvil-only"]
+        },
+        "target-recon": {
+          "script": "scripts/sandbox/run-target-recon.sh",
+          "output": "artifacts/sandbox/target-recon-bundle.json",
+          "input": "artifacts/sandbox/target-profiles.json",
+          "constraints": ["read-only", "no-remote-exploit"]
+        },
+        "target-fork-setup": {
+          "script": "scripts/sandbox/setup-real-target-fork.sh",
+          "output": "artifacts/sandbox/target-fork-status.json",
+          "constraints": ["local-fork-only"]
+        },
+        "sweep-phase2-audit": {
+          "script": "scripts/sandbox/sweep-phase2-audit.py",
+          "output": "docs/recon/SWEEP-PHASE2-AUDIT-20260713.json",
+          "constraints": ["read-only", "no-remote-exploit"]
+        },
+        "multichain-target-recon": {
+          "script": "scripts/sandbox/run-multichain-target-recon.py",
+          "output": "artifacts/sandbox/multichain-recon-bundle.json",
+          "constraints": ["read-only", "no-remote-exploit"]
+        },
+        "crosschain-rhino-correlate": {
+          "script": "scripts/sandbox/crosschain-rhino-correlate.py",
+          "output": "docs/recon/CROSSCHAIN-PHASE3-20260713.json",
+          "constraints": ["read-only", "no-remote-exploit"]
+        },
+        "extended-outflow-trace": {
+          "script": "scripts/sandbox/extended-outflow-trace.py",
+          "output": "docs/recon/EXTENDED-OUTFLOW-PHASE4-20260713.json",
+          "constraints": ["read-only", "no-remote-exploit"]
+        }
+      },
+      "cli": "./bin/hexstrike-agent",
+      "depends_on": ["foundry", "python3"]
+    },
+    "Agent-Report-06": {
+      "role": "reporting",
+      "description": "Defensive audit checklist for responsible disclosure",
+      "tasks": {
+        "generate-defensive-checklist": {
+          "script": "scripts/agents/agent_report_06.py",
+          "output": "artifacts/defensive-audit-template.md",
+          "include": ["hardening", "access-control", "secret-management"]
+        },
+        "operator-balance-check": {
+          "script": "scripts/agents/agent_operator_balance.py",
+          "output": "artifacts/operator-balance.json",
+          "constraints": ["read-only", "no-exchange-access"]
+        },
+        "operator-crypto-audit": {
+          "script": "scripts/crypto-audit.sh",
+          "output": "artifacts/operator-crypto-audit.txt",
+          "constraints": ["local-only", "no-secret-dump", "mac-operator-lab"]
+        },
+        "generate-vps-master-report": {
+          "script": "scripts/agents/agent_report_vps_master.py",
+          "output": "artifacts/vps-master-report.json",
+          "include": ["all-artifacts", "orchestrator-latest", "highlights"]
+        },
+        "generate-session-report": {
+          "script": "scripts/forensics/generate_session_report.py",
+          "output": "artifacts/forensics/session-summary.json",
+          "constraints": ["forensics", "reporting"]
+        }
+      }
+    },
+    "Agent-Malware-08": {
+      "role": "malware-forensics",
+      "description": "TRX Drainer Tool static IOC extraction (read-only)",
+      "tasks": {
+        "static-ioc-extract": {
+          "script": "scripts/agents/agent_malware_08.py",
+          "output": "artifacts/trx-drainer-tool-iocs.json",
+          "constraints": ["forensics", "defensive-analysis"]
+        }
+      }
+    },
+    "Agent-Malware-09": {
+      "role": "malware-forensics",
+      "description": "EVM drainer deploy kit static IOC extraction (read-only)",
+      "tasks": {
+        "static-ioc-extract": {
+          "script": "scripts/agents/agent_malware_09.py",
+          "output": "artifacts/evm-drainer-iocs.json",
+          "constraints": ["forensics", "defensive-analysis"]
+        }
+      }
+    },
+    "Agent-Malware-10": {
+      "role": "malware-forensics",
+      "description": "ApeTerminal Next.js drainer static IOC extraction (read-only)",
+      "tasks": {
+        "static-ioc-extract": {
+          "script": "scripts/agents/agent_malware_10.py",
+          "output": "artifacts/apeterminal-main-iocs.json",
+          "constraints": ["forensics", "defensive-analysis"]
+        }
+      }
+    },
+    "Agent-Malware-11": {
+      "role": "malware-forensics",
+      "description": "Solana Drainer Tool static IOC extraction (read-only)",
+      "tasks": {
+        "static-ioc-extract": {
+          "script": "scripts/agents/agent_malware_11.py",
+          "output": "artifacts/solana-drainer-tool-iocs.json",
+          "constraints": ["forensics", "defensive-analysis"]
+        }
+      }
+    },
+    "Agent-Malware-12": {
+      "role": "malware-forensics",
+      "description": "Vanilla Drainer OSINT IOC extraction (read-only)",
+      "tasks": {
+        "osint-ioc-extract": {
+          "script": "scripts/agents/agent_malware_12.py",
+          "output": "artifacts/vanilla-drainer-iocs.json",
+          "constraints": ["forensics", "osint", "defensive-analysis"]
+        }
+      }
+    },
+    "Agent-Contract-03": {
+      "role": "contract-forensics",
+      "description": "EIP-2612 permit farming static analysis (read-only)",
+      "tasks": {
+        "permit-farming-analyze": {
+          "script": "scripts/agents/agent_contract_03.py",
+          "output": "artifacts/permit-farming-eip2612-iocs.json",
+          "constraints": ["forensics", "defensive-analysis"]
+        }
+      }
+    },
+    "Agent-Contract-04": {
+      "role": "contract-forensics",
+      "description": "CREATE2 / EIP-1167 factory pipeline analysis (read-only)",
+      "tasks": {
+        "create2-analyze": {
+          "script": "scripts/agents/agent_contract_04.py",
+          "output": "artifacts/create2-drainer-iocs.json",
+          "constraints": ["forensics", "defensive-analysis"]
+        }
+      }
+    },
+    "Agent-Forensics-01": {
+      "role": "forensics-analyzer",
+      "description": "Полный analyzer: attack_chain + on-chain enrichment",
+      "tasks": {
+        "run-analyzer-trx": {
+          "script": "scripts/agents/agent_forensics_01.py",
+          "output": "artifacts/forensics/trx-drainer-report.json"
+        },
+        "run-analyzer-evm": {
+          "script": "scripts/agents/agent_forensics_01.py",
+          "output": "artifacts/forensics/evm-drainer-report.json"
+        },
+        "run-analyzer-apeterminal": {
+          "script": "scripts/agents/agent_forensics_01.py",
+          "output": "artifacts/forensics/apeterminal-drainer-report.json"
+        },
+        "run-analyzer-solana": {
+          "script": "scripts/agents/agent_forensics_01.py",
+          "output": "artifacts/forensics/solana-drainer-report.json"
+        },
+        "run-analyzer-vanilla": {
+          "script": "scripts/agents/agent_forensics_01.py",
+          "output": "artifacts/forensics/vanilla-drainer-report.json"
+        },
+        "run-analyzer-permit": {
+          "script": "scripts/agents/agent_forensics_01.py",
+          "output": "artifacts/forensics/permit-farming-report.json"
+        },
+        "run-analyzer-create2": {
+          "script": "scripts/agents/agent_forensics_01.py",
+          "output": "artifacts/forensics/create2-drainer-report.json"
+        }
+      }
+    },
+    "Agent-DualMode-08": {
+      "role": "dual-mode-contract",
+      "description": "Defense/offense contract expert — Slither, Mythril, Echidna, Foundry sandbox PoC",
+      "tasks": {
+        "contract-audit-defense": {
+          "script": "scripts/agents/agent_dual_mode_08.py",
+          "output": "artifacts/dual-mode/report-defense.json",
+          "constraints": ["defense", "read-only-mainnet", "remediation"],
+          "env": {"HEXSTRIKE_MODE": "defense"}
+        },
+        "contract-audit-offense": {
+          "script": "scripts/agents/agent_dual_mode_08.py",
+          "output": "artifacts/dual-mode/report-offense.json",
+          "constraints": ["offense", "sandbox-only", "local-anvil"],
+          "env": {"HEXSTRIKE_MODE": "offense", "HEXSTRIKE_SANDBOX": "1"}
+        }
+      },
+      "depends_on": ["python3"],
+      "optional_tools": ["slither", "mythril", "echidna", "foundry"]
+    }
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "generated_at": "2026-07-14T16:09:00Z",
+  "source": [
+    "docs.rhino.fi/general/contract-addresses",
+    "bscscan label Rhino.fi: Bridge",
+    "repo scripts/agents"
+  ],
+  "note": "UI/logs may show truncated 0xb80a582f... — full 42-char address is below. Typo form 0xb80a582f05fef is INVALID (missing middle).",
+  "invalid_truncated_seen": "0xb80a582f05fef",
+  "rhino_fi_bridge": {
+    "chain": "BSC",
+    "chain_id": 56,
+    "address": "0xb80a582fa430645a043bb4f6135321ee01005fef",
+    "checksum": "0xB80A582fa430645A043bB4f6135321ee01005fEf",
+    "label": "Rhino.fi: Bridge",
+    "role": "cross-chain offramp sink / bridge hub",
+    "bscscan": "https://bscscan.com/address/0xb80a582fa430645a043bb4f6135321ee01005fef",
+    "docs": "https://docs.rhino.fi/general/contract-addresses"
+  },
+  "audit_ready": true
+}

@@ -1,0 +1,16 @@
+{
+  "generated_at": "2026-07-07T00:00:00Z",
+  "source": "TARGETS-REPORT-20260707.md",
+  "targets_file": "scripts/sandbox/field-targets-5.json",
+  "wallet_count": 5,
+  "roles": [
+    "hot_wallet",
+    "authority",
+    "primary_sink_hub",
+    "puissant_validator",
+    "infra_correlated_wallet"
+  ],
+  "primary_hot_wallet": "0x4943F5E7F4e450d48Ae82026163ecDe8A52C53dA",
+  "workflow": "field-targets-5",
+  "mode": "read-only"
+}

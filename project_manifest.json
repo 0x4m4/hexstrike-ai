@@ -1,0 +1,163 @@
+{
+  "name": "HexStrike-AI",
+  "version": "8.1.0",
+  "architecture": "autonomous_execution_phase",
+  "instructions_dir": "src/hexstrike/instructions/",
+  "updated_at": null,
+  "layers": {
+    "modules": {
+      "core.monitor": {
+        "description": "Geth RPC mempool listener with failover and stealth transport",
+        "path": "src/hexstrike/core/monitor/mempool.py",
+        "status": "active",
+        "dependencies": ["core.stealth", "mcp_rpc_gateway", "config/rpc_config.json"]
+      },
+      "core.stealth": {
+        "description": "Outbound traffic masking — UA rotation, jitter, optional proxy/TLS",
+        "path": "src/hexstrike/core/stealth/transport.py",
+        "status": "active",
+        "env": ["HEXSTRIKE_PROXY", "HEXSTRIKE_STEALTH"]
+      },
+      "core.forensics": {
+        "description": "Chain analysis with CEX-mapping and bytecode deobfuscation",
+        "path": "src/hexstrike/core/forensics/engine.py",
+        "status": "active",
+        "dependencies": ["skill.bytecode_deobfuscator", "mcp_rag_memory", "artifacts/master_context.json"]
+      },
+      "core.execution": {
+        "description": "Safe broadcaster with pre-flight gas estimation and sniping profiles",
+        "path": "src/hexstrike/core/execution/broadcaster.py",
+        "status": "active",
+        "dependencies": ["mcp_execution_gate", "core.vault", "skill.timing_analysis"]
+      },
+      "core.vault": {
+        "description": "AES-256 encrypted storage with RAM-disk backing for high-value artifacts",
+        "path": "src/hexstrike/core/vault/keystore.py",
+        "status": "active",
+        "dependencies": ["cryptography"],
+        "storage": ["/dev/shm/hexstrike-vault", "artifacts/vault"]
+      }
+    },
+    "skills": {
+      "skill.recon_osint": {
+        "description": "Passive infra mapping (Jenkins/CVE/RPC scanning)",
+        "path": "src/hexstrike/skills/recon_osint.py",
+        "status": "active"
+      },
+      "skill.chain_tracer": {
+        "description": "Recipient depth analysis and entity clustering via gas-pattern heuristics",
+        "path": "src/hexstrike/skills/chain_tracer.py",
+        "status": "active"
+      },
+      "skill.timing_analysis": {
+        "description": "RPC latency profiling for optimal gas-war positioning",
+        "path": "src/hexstrike/skills/timing_analysis.py",
+        "status": "active"
+      },
+      "skill.vulnerability_scanner": {
+        "description": "Sweep-sniping windows and EIP-7702/delegation risk checks",
+        "path": "src/hexstrike/skills/vulnerability_scanner.py",
+        "status": "active"
+      },
+      "skill.dedup_engine": {
+        "description": "Pattern-based alert filtering (15-min window)",
+        "path": "src/hexstrike/skills/dedup_engine.py",
+        "status": "active",
+        "window_seconds": 900
+      },
+      "skill.bytecode_deobfuscator": {
+        "description": "Contract bytecode analysis — proxies, delegatecall, implementation resolution",
+        "path": "src/hexstrike/skills/bytecode_deobfuscator.py",
+        "status": "active"
+      },
+      "skill.dual_mode": {
+        "description": "Defense/offense contract audit — Slither, Mythril, Echidna, Foundry sandbox PoC",
+        "path": "src/hexstrike/skills/dual_mode_agent.py",
+        "status": "active",
+        "config": "config/dual-mode.json",
+        "dependencies": ["skill.contract_toolchain"]
+      },
+      "skill.contract_toolchain": {
+        "description": "External Solidity toolchain wrappers — Slither, Mythril, Echidna, Foundry",
+        "path": "src/hexstrike/skills/contract_toolchain.py",
+        "status": "active",
+        "config": "config/dual-mode.json"
+      }
+    },
+    "mcps": {
+      "mcp_rpc_gateway": {
+        "description": "Unified node manager with stealth RPC client",
+        "path": "src/hexstrike/mcp/rpc_gateway.py",
+        "status": "active"
+      },
+      "mcp_rag_memory": {
+        "description": "LanceDB interface for historical pattern retrieval",
+        "path": "src/hexstrike/mcp/rag_memory.py",
+        "status": "active"
+      },
+      "mcp_execution_gate": {
+        "description": "Human-in-the-loop approval bridge (PendingAction queue)",
+        "path": "src/hexstrike/mcp/execution_gate.py",
+        "status": "active"
+      },
+      "mcp_github_bridge": {
+        "description": "Real-time PR/Commit/Push event ingestion from GitHub webhooks",
+        "path": "src/hexstrike/mcp/github_bridge.py",
+        "status": "active",
+        "events": ["pull_request", "push", "ping"]
+      }
+    }
+  },
+  "instructions": {
+    "core.monitor": {
+      "file": "src/hexstrike/instructions/monitor.md",
+      "status": "active"
+    },
+    "core.forensics": {
+      "file": "src/hexstrike/instructions/forensics.md",
+      "status": "active"
+    },
+    "core.execution": {
+      "file": "src/hexstrike/instructions/execution.md",
+      "status": "active"
+    },
+    "skill.recon_osint": {
+      "file": "src/hexstrike/instructions/recon_osint.md",
+      "status": "active"
+    },
+    "skill.timing_analysis": {
+      "file": "src/hexstrike/instructions/timing_analysis.md",
+      "status": "active"
+    },
+    "skill.dual_mode": {
+      "file": "src/hexstrike/instructions/dual_mode.md",
+      "status": "active"
+    }
+  },
+  "services": {
+    "hexstrike_server": {
+      "script": "hexstrike_server.py",
+      "port": 8888,
+      "status": "external"
+    },
+    "autonomous_monitor": {
+      "script": "scripts/autonomous_monitor.py",
+      "status": "active",
+      "note": "Monitor client — bound to monitor.md instruction protocol"
+    },
+    "orchestrator": {
+      "script": "hexstrike_orchestrator.py",
+      "status": "active",
+      "agent_manager": "src/hexstrike/agent_manager.py"
+    },
+    "health_check": {
+      "script": "scripts/health_check.sh",
+      "status": "active"
+    },
+    "watch_duty": {
+      "script": "watch_duty.sh",
+      "status": "active"
+    }
+  },
+  "runtime": {}
+}

@@ -1,0 +1,91 @@
+{
+  "operation": "jenkins-script-console-diagnostic",
+  "mode": "read_only_defensive",
+  "target": {
+    "host": "51.250.97.223",
+    "jenkins_url": "http://51.250.97.223:8080",
+    "jenkins_version": "2.375.3",
+    "observed_at": "2026-07-11T08:39:00Z"
+  },
+  "access_context": {
+    "authenticated": true,
+    "role": "admin (Script Console /scriptText)",
+    "jenkins_unix_user": "uid=131(jenkins) gid=139(jenkins)",
+    "sudo": "password required; no passwordless sudo"
+  },
+  "script_errors": {
+    "first_attempt": {
+      "error": "groovy.lang.MissingPropertyException: No such property: println for class: Script1",
+      "likely_cause": "Malformed Groovy payload in Python heredoc (truncated/broken string) or script submitted before full paste completed",
+      "resolution": "Second script with identical println usage succeeded — syntax/heredoc integrity was the issue, not Jenkins sandbox"
+    }
+  },
+  "host_recon": {
+    "processes_matching_crypto_stack": {
+      "geth": false,
+      "signer": false,
+      "bot": false,
+      "web3": false,
+      "node": false,
+      "python_observed": [
+        "/usr/bin/python3 /usr/bin/networkd-dispatcher",
+        "/usr/bin/python3 /usr/share/unattended-upgrades/unattended-upgrade-shutdown"
+      ],
+      "note": "Geth/node not running at scan time; prior port scan showed :8545/:8546/:30303 open on Jul 10"
+    },
+    "listening_ports": [
+      {"port": 22, "bind": "0.0.0.0", "service": "SSH"},
+      {"port": 631, "bind": "127.0.0.1", "service": "CUPS"},
+      {"port": 53, "bind": "127.0.0.53", "service": "systemd-resolved"},
+      {"port": 3350, "bind": "[::1]", "service": "unknown"},
+      {"port": 3389, "bind": "*", "service": "xrdp"},
+      {"port": 8080, "bind": "*", "service": "jenkins (java pid=884)"}
+    ],
+    "env_secrets_in_jenkins_process": "none matched key|secret|pass|wallet|mnemonic|private",
+    "unix_accounts_in_home": [
+      "apex1", "apex2", "apex3", "ct_admin",
+      "scriptmaster2", "scriptmaster3", "scriptmaster4", "scriptmaster5",
+      "ubuntu"
+    ],
+    "writable_system_paths_sample": [
+      "/etc/ssl/private/ssl-cert-snakeoil.key",
+      "/etc/xrdp/km-*.ini",
+      "/etc/xrdp/rsakeys.ini",
+      "/etc/xrdp/xrdp.ini",
+      "/etc/xrdp/reconnectwm.sh",
+      "/etc/xrdp/pulse/default.pa"
+    ],
+    "cron_enumeration": "blocked — crontab -u requires root"
+  },
+  "risk_assessment": {
+    "critical": [
+      "Admin Jenkins Script Console access confirmed — full RCE on Jenkins controller as jenkins user",
+      "Jenkins 2.375.3 public on :8080 with known CVEs (CVSS up to 9.8)",
+      "xrdp :3389 exposed to Internet",
+      "World/group-writable files under /etc (xrdp, ssl snakeoil key) — local privilege escalation surface"
+    ],
+    "high": [
+      "Multiple human/service accounts (scriptmaster*, apex*, ct_admin) suggest shared crypto-ops host",
+      "SSH :22 open alongside RDP — dual remote-admin surface",
+      "Geth RPC ports not visible from jenkins context; may be down, firewalled per-process, or different network namespace"
+    ],
+    "medium": [
+      "No wallet/crypto env vars in jenkins process env (secrets likely in user homes, Jenkins credentials store, or offline)",
+      "jenkins user cannot sudo without password"
+    ]
+  },
+  "incident_response": {
+    "immediate_owner_actions": [
+      "Rotate Jenkins admin password and all Jenkins-stored credentials immediately",
+      "Disable Script Console for non-break-glass admins; restrict to VPN",
+      "Upgrade Jenkins LTS to current (minimum ≥ 2.375.4)",
+      "Firewall :8080 and :3389 to management VPN only",
+      "Audit /var/lib/jenkins for credentials.xml, secrets/, job workspaces with .env or keystores",
+      "Fix permissions on /etc/xrdp and /etc/ssl/private (remove world/group write)",
+      "Review auth logs for Script Console access from unauthorized IPs",
+      "Assume compromise: check scriptmaster*/apex* home dirs and CI job history for key material"
+    ],
+    "disclosure": "See artifacts/disclosure-pack/email-yandex-cloud-abuse.md"
+  },
+  "policy_note": "Defensive audit only. No credential extraction, lateral movement, or privilege escalation steps performed or recommended."
+}

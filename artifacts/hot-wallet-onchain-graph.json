@@ -1,0 +1,221 @@
+{
+  "hot_wallet": "0x4943f5e7f4e450d48ae82026163ecde8a52c53da",
+  "period_blocks": [
+    108941522,
+    109041522
+  ],
+  "approx_days": 0.9,
+  "usdt_out_txs": 1768,
+  "usdt_in_txs": 5,
+  "net_usdt_period": 192182.27,
+  "top_destinations": [
+    {
+      "address": "0x730ea0231808f42a20f8921ba7fbc788226768f5",
+      "label": null,
+      "total_usdt": 22486.98
+    },
+    {
+      "address": "0x55ed7fcd17b93fbcd5186cda01af6fed4ec78e08",
+      "label": null,
+      "total_usdt": 12268.34
+    },
+    {
+      "address": "0xcfc85f21f5f01ab24d6b7a3b93ef097099ebde3a",
+      "label": null,
+      "total_usdt": 11804.0
+    },
+    {
+      "address": "0x3e0b65c9c31e9593e2b357be6eecd28bef6da03e",
+      "label": null,
+      "total_usdt": 9758.49
+    },
+    {
+      "address": "0x3a8b628934f9db7999499905bbf767331266b5b5",
+      "label": null,
+      "total_usdt": 7462.49
+    },
+    {
+      "address": "0xd0b5b1fa9122696bcab0cc5d5f4421e6d94a9e52",
+      "label": null,
+      "total_usdt": 6000.0
+    },
+    {
+      "address": "0x2a3cba35c2b427850c2047b2d79164a6227ebe7b",
+      "label": null,
+      "total_usdt": 5972.97
+    },
+    {
+      "address": "0x831c7f9ea511a161c037b6b682ade7d46695a08f",
+      "label": null,
+      "total_usdt": 5450.0
+    },
+    {
+      "address": "0x6977262a9a9b2eaaf7c20903b45798b1676ea7fd",
+      "label": null,
+      "total_usdt": 4998.67
+    },
+    {
+      "address": "0xd0ec42011863e55e58d76219e978df8cde4b2247",
+      "label": null,
+      "total_usdt": 4992.5
+    },
+    {
+      "address": "0x405238ebce4a7adbd010202b080d5515f234601e",
+      "label": null,
+      "total_usdt": 4908.13
+    },
+    {
+      "address": "0x85837e008e63598e730f27628289ff9c06709a7a",
+      "label": null,
+      "total_usdt": 4700.0
+    }
+  ],
+  "top_sources": [
+    {
+      "address": "0x161ba15a5f335c9f06bb5bbb0a9ce14076fbb645",
+      "label": null,
+      "total_usdt": 1100000.0
+    },
+    {
+      "address": "0x5f8afd3a9ca31c919f9989c7c46ca6b484a47a7d",
+      "label": null,
+      "total_usdt": 0.0
+    },
+    {
+      "address": "0xd99d6f813881d688fd753f5ea816880d1b82545d",
+      "label": null,
+      "total_usdt": 0.0
+    },
+    {
+      "address": "0x057a37a4c627ff7d35207c968ebfad4d9c1dd4dd",
+      "label": null,
+      "total_usdt": 0.0
+    },
+    {
+      "address": "0xf64046d018a29f7a042b16485acb495354d2ef19",
+      "label": null,
+      "total_usdt": 0.0
+    }
+  ],
+  "large_outflows_500plus": [
+    {
+      "to": "0x6977262a9a9b2eaaf7c20903b45798b1676ea7fd",
+      "label": null,
+      "amount": 4998.67,
+      "tx": "0x9f189822a89ed94882a843d275f3cfa8e9b1c43e7700d674e32068d504c1430a",
+      "bscscan": "https://bscscan.com/tx/0x9f189822a89ed94882a843d275f3cfa8e9b1c43e7700d674e32068d504c1430a"
+    },
+    {
+      "to": "0x55ed7fcd17b93fbcd5186cda01af6fed4ec78e08",
+      "label": null,
+      "amount": 4997.07,
+      "tx": "0x0636fa544f6d5314b784d5947fad34b05127c19fce6d8ff61bb525737e53381c",
+      "bscscan": "https://bscscan.com/tx/0x0636fa544f6d5314b784d5947fad34b05127c19fce6d8ff61bb525737e53381c"
+    },
+    {
+      "to": "0x405238ebce4a7adbd010202b080d5515f234601e",
+      "label": null,
+      "amount": 4908.13,
+      "tx": "0x403d95d7284e75bcad8504c0535822809b222cb12894ef0331d9d516b50a3fb6",
+      "bscscan": "https://bscscan.com/tx/0x403d95d7284e75bcad8504c0535822809b222cb12894ef0331d9d516b50a3fb6"
+    },
+    {
+      "to": "0x730ea0231808f42a20f8921ba7fbc788226768f5",
+      "label": null,
+      "amount": 4816.0,
+      "tx": "0x15cae4d8d0df7be751f17ae7330b5e9aa51f46424fe37e4d0bfbc683f74c4501",
+      "bscscan": "https://bscscan.com/tx/0x15cae4d8d0df7be751f17ae7330b5e9aa51f46424fe37e4d0bfbc683f74c4501"
+    },
+    {
+      "to": "0x3e0b65c9c31e9593e2b357be6eecd28bef6da03e",
+      "label": null,
+      "amount": 4800.0,
+      "tx": "0x1d5e95fdf60100a1f0024c4655c7b1efe5d4051a22cf47b153808ace18f881a3",
+      "bscscan": "https://bscscan.com/tx/0x1d5e95fdf60100a1f0024c4655c7b1efe5d4051a22cf47b153808ace18f881a3"
+    },
+    {
+      "to": "0x730ea0231808f42a20f8921ba7fbc788226768f5",
+      "label": null,
+      "amount": 4797.0,
+      "tx": "0x5a34b97a112f60154af203dc5f1a64cb42286964652cad50ac8ee2ac895384f2",
+      "bscscan": "https://bscscan.com/tx/0x5a34b97a112f60154af203dc5f1a64cb42286964652cad50ac8ee2ac895384f2"
+    },
+    {
+      "to": "0x730ea0231808f42a20f8921ba7fbc788226768f5",
+      "label": null,
+      "amount": 4797.0,
+      "tx": "0x07618f0d8cae3cdcc52125bbbabe0d6f1c8c6b932e7b5a7767d6a94df5cd3e5a",
+      "bscscan": "https://bscscan.com/tx/0x07618f0d8cae3cdcc52125bbbabe0d6f1c8c6b932e7b5a7767d6a94df5cd3e5a"
+    },
+    {
+      "to": "0x3a8b628934f9db7999499905bbf767331266b5b5",
+      "label": null,
+      "amount": 4771.09,
+      "tx": "0x67c323ef8a3a807508e3a64f0e235d062803e02ce691c09d2e2a796004b66b80",
+      "bscscan": "https://bscscan.com/tx/0x67c323ef8a3a807508e3a64f0e235d062803e02ce691c09d2e2a796004b66b80"
+    },
+    {
+      "to": "0x730ea0231808f42a20f8921ba7fbc788226768f5",
+      "label": null,
+      "amount": 4723.83,
+      "tx": "0x90895074e69ba270d6bb41dcdfcb43f1e814fa7be24794ceff9d2f5e65feb567",
+      "bscscan": "https://bscscan.com/tx/0x90895074e69ba270d6bb41dcdfcb43f1e814fa7be24794ceff9d2f5e65feb567"
+    },
+    {
+      "to": "0xcfc85f21f5f01ab24d6b7a3b93ef097099ebde3a",
+      "label": null,
+      "amount": 4500.0,
+      "tx": "0x9460d701cf35dc90866aec74688d63c92d5f59acfb9f83137f6b66f8b9e08782",
+      "bscscan": "https://bscscan.com/tx/0x9460d701cf35dc90866aec74688d63c92d5f59acfb9f83137f6b66f8b9e08782"
+    },
+    {
+      "to": "0x85837e008e63598e730f27628289ff9c06709a7a",
+      "label": null,
+      "amount": 4500.0,
+      "tx": "0xa58afa20443bae4c800035a3e211a9c672fdbf2c274fec786505a3db6db39980",
+      "bscscan": "https://bscscan.com/tx/0xa58afa20443bae4c800035a3e211a9c672fdbf2c274fec786505a3db6db39980"
+    },
+    {
+      "to": "0x9458dd88cff7fa0de398a6e1f132b4715f41600a",
+      "label": null,
+      "amount": 4455.0,
+      "tx": "0xc7d9f0d14aba270b9c91dd618422e283600cf558f793f06b05930046de223133",
+      "bscscan": "https://bscscan.com/tx/0xc7d9f0d14aba270b9c91dd618422e283600cf558f793f06b05930046de223133"
+    },
+    {
+      "to": "0x59c9bc67afc1ef6e6d61b5da740080a742263833",
+      "label": null,
+      "amount": 4400.0,
+      "tx": "0x028a39f0851ea435440a1e5e1755563f1a8914a562d8a547e936c4ba125b92b4",
+      "bscscan": "https://bscscan.com/tx/0x028a39f0851ea435440a1e5e1755563f1a8914a562d8a547e936c4ba125b92b4"
+    },
+    {
+      "to": "0x44c42dcdfbf682a9eb6c42298e20cfd9875d7a2d",
+      "label": null,
+      "amount": 4373.83,
+      "tx": "0x8daecdb7bac475e1a6b5b6c23f791b81de88fcf55ed918004f5874223e35e811",
+      "bscscan": "https://bscscan.com/tx/0x8daecdb7bac475e1a6b5b6c23f791b81de88fcf55ed918004f5874223e35e811"
+    },
+    {
+      "to": "0x2f1f774e3d2259f1ba7ee76639829b66ff2741da",
+      "label": null,
+      "amount": 4350.36,
+      "tx": "0xf497af6c581f4a29ff8fb743ce711c97e52b89ef58818023c47ae9673fbf8506",
+      "bscscan": "https://bscscan.com/tx/0xf497af6c581f4a29ff8fb743ce711c97e52b89ef58818023c47ae9673fbf8506"
+    }
+  ],
+  "large_inflows_500plus": [
+    {
+      "from": "0x161ba15a5f335c9f06bb5bbb0a9ce14076fbb645",
+      "label": null,
+      "amount": 1100000.0,
+      "tx": "0x8f56f5e9c9a194202ff21f1002774eb0a8fb746c45cf519321cf0ceb1083e407",
+      "bscscan": "https://bscscan.com/tx/0x8f56f5e9c9a194202ff21f1002774eb0a8fb746c45cf519321cf0ceb1083e407"
+    }
+  ],
+  "verdict": {
+    "operator_can_withdraw_via_allowance": false,
+    "funds_active": true,
+    "pattern": "High-frequency treasury/MM style wallet \u2014 constant in/out, not dormant"
+  }
+}

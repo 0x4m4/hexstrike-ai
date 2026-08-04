@@ -1,0 +1,59 @@
+[
+  {
+    "payload_id": "financial_invoice_substitution",
+    "technique": "invoice_substitution",
+    "method": "POST",
+    "path_template": "/api/v1/arena/financial/invoices/{{invoice_id}}/substitute",
+    "headers": {
+      "X-Samson-Operator": "{{operator_id}}",
+      "X-Exercise-Run": "{{run_id}}"
+    },
+    "body_template": {
+      "merchant_id": "{{merchant_id}}",
+      "iban_to": "{{iban_to}}",
+      "amount_eur": "{{amount_eur}}",
+      "synthetic": true
+    },
+    "expected_status": [200, 201, 202]
+  },
+  {
+    "payload_id": "financial_payment_intent_abuse",
+    "technique": "payment_api_abuse",
+    "method": "POST",
+    "path_template": "/api/v1/arena/financial/payment-intents",
+    "body_template": {
+      "merchant_id": "{{merchant_id}}",
+      "amount_eur": "{{amount_eur}}",
+      "metadata": {
+        "technique": "{{technique}}",
+        "run_id": "{{run_id}}",
+        "synthetic": true
+      }
+    },
+    "expected_status": [200, 201]
+  },
+  {
+    "payload_id": "financial_beneficiary_swap",
+    "technique": "beneficiary_swap",
+    "method": "POST",
+    "path_template": "/api/v1/arena/financial/transfers",
+    "body_template": {
+      "merchant_id": "{{merchant_id}}",
+      "iban_from": "{{iban_from}}",
+      "iban_to": "{{iban_to}}",
+      "amount_eur": "{{amount_eur}}"
+    },
+    "expected_status": [200, 201, 403]
+  },
+  {
+    "payload_id": "persistence_marker_set",
+    "technique": "persistence",
+    "method": "POST",
+    "path_template": "/api/v1/arena/markers",
+    "body_template": {
+      "marker_id": "samson-{{run_id}}",
+      "scenario_id": "{{scenario_id}}"
+    },
+    "expected_status": [200, 201]
+  }
+]

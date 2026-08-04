@@ -1,0 +1,54 @@
+{
+  "generated_at": "2026-07-13T20:27:57.068163+00:00",
+  "mode": "read-only_passive",
+  "phase": "crosschain-phase-3",
+  "hot_wallet": "0x4943F5E7F4e450d48Ae82026163ecDe8A52C53dA",
+  "live_balances": {
+    "bsc_usdt": 501564.5622275518,
+    "base_usdc": 703490.171225,
+    "combined_stable_usd": 1205054.73,
+    "rhino_hub_usdt_float": 1683792.6895985808
+  },
+  "activity": {
+    "bsc_nonce": "67285",
+    "base_nonce": "70508",
+    "base_more_active": true
+  },
+  "correlation": {
+    "rhino_hub_role": "BSC cross-chain exit sink",
+    "sweep_rail": {
+      "pattern": "hot_wallet \u2192 4x EIP-7702 delegated accounts \u2192 shared impl \u2192 Rhino.fi hub",
+      "unified_rail": true,
+      "pass_through_sweeps": true
+    },
+    "base_parallel_treasury": true,
+    "direct_cex_from_either_chain": false,
+    "hypothesis": "BSC USDT payroll \u2192 sweep/EIP-7702 \u2192 Rhino hub; Base USDC is parallel treasury rail",
+    "confidence": "medium"
+  },
+  "recent_outflows_sample": {
+    "base_usdc_top": [],
+    "bsc_usdt_top": []
+  },
+  "architecture": {
+    "bsc_rail": "hot \u2192 4x EIP-7702 delegates \u2192 impl \u2192 Rhino hub (0xb80a582fa430645a043bb4f6135321ee01005fef)",
+    "base_rail": "hot (0x4943F5E7F4e450d48Ae82026163ecDe8A52C53dA) holds USDC on Base \u2014 independent high-activity EOA",
+    "multichain_total_usd": 1205054.73
+  },
+  "vectors_closed": [
+    "Single-chain-only analysis",
+    "Direct hot\u2192CEX on Base (sample window)",
+    "Direct hot\u2192CEX on BSC (prior depth-2)"
+  ],
+  "vectors_open": [
+    "Entity UNIDENTIFIED",
+    "Base USDC top recipients labeling",
+    "Rhino bridge destination chain mapping"
+  ],
+  "next_steps": [
+    "Arkham multichain cluster labels",
+    "Extended Base USDC outflow window (Basescan Pro / indexer)",
+    "Rhino.fi bridge event correlation BSC\u2192Base",
+    "Monitor hot wallet delegate deployments"
+  ]
+}

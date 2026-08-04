@@ -1,0 +1,8 @@
+{
+  "generated_at": "2026-07-11T16:33:13Z",
+  "status": "PASS",
+  "revert_contract": "0x5370F78c6af2Da9cF6642382A3a75F9D5aEc9cc1",
+  "dedup_released_on_revert": true,
+  "retry_prepare_rescue": "clear_to_sign",
+  "chain": "anvil_local"
+}

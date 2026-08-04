@@ -1,0 +1,20 @@
+# Samson SBM production dependencies
+pydantic>=2.7.0,<3.0.0
+pydantic-settings>=2.2.0,<3.0.0
+sqlalchemy>=2.0.30,<3.0.0
+psycopg2-binary>=2.9.9,<3.0.0
+httpx>=0.27.0,<1.0.0
+aiohttp>=3.9.0,<4.0.0
+PyYAML>=6.0.1,<7.0.0
+pgvector>=0.3.0,<1.0.0
+
+# Web3 / EVM synthetic diversion signing (fork/arena only; key via env)
+eth-account>=0.13.0,<0.14.0
+web3>=6.15.0,<8.0.0
+
+# Redis unauthenticated exposure probe (redis_executor)
+redis>=5.0.0,<6.0.0
+
+# Optional red-team tool integrations (install in execution environment)
+# pyrit
+# garak

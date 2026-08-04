@@ -1,0 +1,132 @@
+{
+  "generated_at": "2026-07-13T20:24:40.631237+00:00",
+  "mode": "read-only_passive",
+  "phase": "sweep-phase-2",
+  "parent_hot_wallet": "0x4943F5E7F4e450d48Ae82026163ecDe8A52C53dA",
+  "eip7702_implementation": {
+    "address": "0x314C01e758a7911e7339aa4F960C7749E8947775",
+    "bytecode_bytes": 2751,
+    "compiler_hint": "Solidity 0.8.4 (ipfs/solc strings in bytecode)",
+    "verified_source": false,
+    "function_selectors": [
+      {
+        "selector": "0x0146102a",
+        "signature": "unknown"
+      },
+      {
+        "selector": "0x1290024a",
+        "signature": "unknown"
+      },
+      {
+        "selector": "0x3f707e6b",
+        "signature": "execute((address,uint256,bytes)[])"
+      },
+      {
+        "selector": "0x43000804",
+        "signature": "unknown"
+      },
+      {
+        "selector": "0x4e487b71",
+        "signature": "Panic(uint256)"
+      },
+      {
+        "selector": "0x6171d1c9",
+        "signature": "execute((address,uint256,bytes)[],bytes)"
+      },
+      {
+        "selector": "0xaffed0e0",
+        "signature": "nonce()"
+      },
+      {
+        "selector": "0xddbda419",
+        "signature": "unknown"
+      }
+    ],
+    "security_strings": [
+      "ECDSA: invalid signature",
+      "ECDSA: invalid signature 's' val`D",
+      "ECDSA: invalid signature 'v' val`D",
+      "ECDSA: invalid signature length",
+      "Ethereum Signed Message:",
+      "RpInvalid authority`x",
+      "RpInvalid signature`x"
+    ],
+    "rbac": {
+      "pattern": "ECDSA signature-gated batch execute",
+      "entry_points": [
+        "execute((address,uint256,bytes)[]) \u2014 unsigned batch (internal?)",
+        "execute((address,uint256,bytes)[],bytes) \u2014 signature-required batch"
+      ],
+      "hardcoded_owner": false,
+      "nonce_replay_protection": true
+    },
+    "exploit_surface": {
+      "unauthorized_transfer": "CLOSED \u2014 requires valid authority ECDSA signature",
+      "onlyOwner_misconfig": "N/A",
+      "signature_replay": "mitigated by nonce() per delegated account",
+      "logic_bug": "theoretical \u2014 needs verified source or formal audit"
+    }
+  },
+  "delegated_accounts": [
+    {
+      "role": "authority",
+      "address": "0x730ea0231808f42a20f8921ba7fbc788226768f5",
+      "bytecode_prefix": "0xef0100314c01e758a7911e7339aa4f960c7749e8947775",
+      "matches_impl_delegate": true,
+      "nonce": "14"
+    },
+    {
+      "role": "sweep_router_primary",
+      "address": "0x55ed7fcd17b93fbcd5186cda01af6fed4ec78e08",
+      "bytecode_prefix": "0xef0100314c01e758a7911e7339aa4f960c7749e8947775",
+      "matches_impl_delegate": true,
+      "nonce": "8"
+    },
+    {
+      "role": "sweep_router_secondary",
+      "address": "0x3e0b65c9c31e9593e2b357be6eecd28bef6da03e",
+      "bytecode_prefix": "0xef0100314c01e758a7911e7339aa4f960c7749e8947775",
+      "matches_impl_delegate": true,
+      "nonce": "3"
+    },
+    {
+      "role": "sweep_router_tertiary",
+      "address": "0x3a8b628934f9db7999499905bbf767331266b5b5",
+      "bytecode_prefix": "0xef0100314c01e758a7911e7339aa4f960c7749e8947775",
+      "matches_impl_delegate": true,
+      "nonce": "12"
+    }
+  ],
+  "rhino_fi_hub": {
+    "address": "0xb80a582fa430645a043bb4f6135321ee01005fef",
+    "label": "Rhino.fi: Bridge",
+    "balance_bnb_wei": "74987424278857431482",
+    "balance_usdt": 1683795.710195581,
+    "role": "primary cross-chain exit sink",
+    "inflow_edges_sampled": 9,
+    "sample_inflows_usdt": 31556.8,
+    "direct_cex_outflow": false,
+    "verdict": "All sweep + authority rails converge here; bridge exit not direct CEX"
+  },
+  "architecture_confirmed": {
+    "pattern": "hot_wallet \u2192 4x EIP-7702 delegated accounts \u2192 shared impl \u2192 Rhino.fi hub",
+    "unified_rail": true,
+    "pass_through_sweeps": true
+  },
+  "vectors_closed": [
+    "Independent sweep contract exploits",
+    "Unauthorized impl execute without signature",
+    "Direct hot\u2192CEX outflow (depth 0-1)"
+  ],
+  "vectors_open": [
+    "Entity behind hot wallet \u2014 UNIDENTIFIED",
+    "Rhino.fi cross-chain destination chains (Base/Ethereum)",
+    "Impl logic bug \u2014 requires verified source"
+  ],
+  "next_steps": [
+    "Trace Rhino.fi bridge events on destination chains (Base USDC correlation)",
+    "Arkham label propagation on 4 delegated accounts + hub",
+    "Monitor hot wallet for new EIP-7702 delegate deployments",
+    "Request verified source from deployer if entity identified"
+  ]
+}

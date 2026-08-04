@@ -1,0 +1,5 @@
+{
+  "workflow": "real-target-pipeline",
+  "env": {},
+  "note": "BSC hot wallet from recon artifacts — read-only fork + recon via orchestrator"
+}

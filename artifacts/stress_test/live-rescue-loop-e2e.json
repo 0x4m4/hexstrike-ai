@@ -1,0 +1,10 @@
+{
+  "generated_at": "2026-07-11T17:38:57Z",
+  "status": "SUCCESS",
+  "bot": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+  "funder": "0x730ea0231808f42a20f8921ba7fbc788226768f5",
+  "rescue_value_wei": "1000000000000000",
+  "relay_strategy": "public_mempool_fallback",
+  "dedup_held_after_success": true,
+  "chain": "anvil_local"
+}

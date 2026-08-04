@@ -1,0 +1,27 @@
+[
+  {
+    "address": "0x730ea0231808f42a20f8921ba7fbc788226768f5",
+    "usdt_balance": 0.000392,
+    "note": "authority"
+  },
+  {
+    "address": "0x55ed7fcd17b93fbcd5186cda01af6fed4ec78e08",
+    "usdt_balance": 0.000124713,
+    "note": "recipient"
+  },
+  {
+    "address": "0xcfc85f21f5f01ab24d6b7a3b93ef097099ebde3a",
+    "usdt_balance": 0.0004,
+    "note": "recipient"
+  },
+  {
+    "address": "0x3e0b65c9c31e9593e2b357be6eecd28bef6da03e",
+    "usdt_balance": 6.91698e-05,
+    "note": "recipient"
+  },
+  {
+    "address": "0x3a8b628934f9db7999499905bbf767331266b5b5",
+    "usdt_balance": 0.0002388,
+    "note": "recipient"
+  }
+]

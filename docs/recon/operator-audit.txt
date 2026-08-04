@@ -1,0 +1,20 @@
+HexStrike — Crypto-аудит оператора (2026-07-07)
+=================================================
+Режим: read-only / local-only
+Хост: операторская станция
+
+[PASS] Приватные ключи не в tracked-файлах репозитория
+[PASS] artifacts/ в .gitignore
+[PASS] Forensics-агенты в режиме defensive-analysis
+[INFO] API-ключи бирж: на cloud не настроены (норма)
+[INFO] Desktop mirror: ~/Desktop/on-chain-forensics
+
+Рекомендуемые команды (Mac + Eva):
+  source scripts/forensics-env-mac.sh
+  bash scripts/run-three-progons.sh
+
+Переменные репозиториев (Eva):
+  TRX_DRAINER_REPO=/Volumes/Eva/mufasaai-storage/TRX-Drainer-Tool
+  EVM_DRAINER_REPO=/Volumes/Eva/mufasaai-storage/evm-drainer
+  APETERMINAL_REPO=/Volumes/Eva/mufasaai-storage/apeterminal-main
+  SOLANA_DRAINER_REPO=/Volumes/Eva/mufasaai-storage/Solana-Drainer-Tool

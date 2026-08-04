@@ -1,0 +1,5 @@
+{
+  "workflow": "field-targets-6",
+  "env": {},
+  "note": "Sweep contracts cluster from recon reports — bytecode/ABI forensics, read-only"
+}

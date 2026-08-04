@@ -1,0 +1,41 @@
+{
+  "test_id": "hexstrike_defense_stress_01",
+  "session": "defense",
+  "run": 1,
+  "run_id": "7bfd9ceafee9",
+  "mode": "DEFENSE_MAX",
+  "started_at": "2026-07-11T16:12:02.806791+00:00",
+  "env": {
+    "ARKHAM_API_KEY_set": false,
+    "ALLOWED_FUNDERS": "0x730ea0231808f42a20f8921ba7fbc788226768f5"
+  },
+  "overall_score": 100.0,
+  "wall_clock_sec": 91.24,
+  "attacks": {
+    "02-race-duplicate-sign": "DEFENDED",
+    "04-replay-rescue-tx": "DEFENDED",
+    "06-compromised-funder": "DEFENDED"
+  },
+  "go_test": "PASS",
+  "engine_test": "PASS",
+  "hot_path": {
+    "latency_ms_hot_path": 67.6,
+    "bench_stdout": "PASS\nok  \tgithub.com/hexstrike-ai/hexstrike/cmd/agent/internal/orchestrator\t0.009s\n"
+  },
+  "pipeline": {
+    "success": true,
+    "elapsed_sec": 6.148,
+    "latency_ms": 6148.0
+  },
+  "battle": {
+    "exit_code": 0,
+    "readiness_score": 60,
+    "elapsed_sec": 83.607
+  },
+  "bus": {
+    "panics": [],
+    "clean": true
+  },
+  "monitor_duration_config": 60,
+  "finished_at": "2026-07-11T16:12:02.806810+00:00"
+}

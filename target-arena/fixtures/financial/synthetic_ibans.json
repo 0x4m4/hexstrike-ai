@@ -1,0 +1,22 @@
+{
+  "synthetic": true,
+  "merchants": [
+    {
+      "merchant_id": "MERCHANT_SYNTH_001",
+      "name": "Arena Synthetic Merchant",
+      "allowed_ibans": ["DE00000000000000000000", "DE00000000000000000001"]
+    }
+  ],
+  "ibans": [
+    {
+      "iban": "DE00000000000000000000",
+      "label": "SYNTH_BENEFICIARY_PRIMARY",
+      "synthetic": true
+    },
+    {
+      "iban": "DE00999999999999999999",
+      "label": "SYNTH_BENEFICIARY_ATTACK",
+      "synthetic": true
+    }
+  ]
+}

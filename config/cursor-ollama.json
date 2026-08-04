@@ -1,0 +1,73 @@
+{
+  "integration": "cursor-ollama-qwen2.5-coder",
+  "version": "1.2.0",
+  "operator": "Banda198565",
+  "system_integration_mode": "OFFLINE_PRIMARY",
+  "ollama": {
+    "host_env": "OLLAMA_HOST",
+    "default_host": "http://127.0.0.1:11434",
+    "model": "qwen2.5-coder:7b",
+    "pull_command": "ollama pull qwen2.5-coder:7b",
+    "alternatives": {
+      "light": "qwen2.5-coder:3b",
+      "balanced": "qwen2.5-coder:7b",
+      "quality": "qwen2.5-coder:14b",
+      "max": "qwen2.5-coder:32b",
+      "deepseek_light": "deepseek-r1:1.5b",
+      "deepseek_medium": "deepseek-r1:7b",
+      "deepseek_chat": "deepseek-v2.5:7b"
+    },
+    "options": {
+      "num_thread": 16,
+      "num_predict": 512,
+      "num_ctx": 32768
+    }
+  },
+  "cursor": {
+    "settings_file": ".cursor/settings.json",
+    "enable_script": "scripts/enable-system-integration-mode.sh",
+    "cloud_script": "scripts/enable-ollama-cloud-mode.sh",
+    "default_models": {
+      "chat": "qwen2.5-coder:7b",
+      "composer": "qwen2.5-coder:7b",
+      "maxMode": "qwen2.5-coder:14b"
+    },
+    "model_type": "openai_compatible",
+    "routing": {
+      "preferLocalhost": true,
+      "bypassTunnel": true,
+      "offlinePrimary": true
+    },
+    "ui_steps": [
+      "Run: ./scripts/enable-system-integration-mode.sh",
+      "Settings \u2192 Models \u2192 Override OpenAI Base URL \u2192 http://127.0.0.1:11434/v1",
+      "OpenAI API Key \u2192 ollama",
+      "Set qwen2.5-coder:7b as default for Chat and Composer; qwen2.5-coder:14b for Max Mode"
+    ],
+    "localhost_note": "OFFLINE_PRIMARY routes all reasoning to localhost \u2014 no Cloud VM tunnel required on desktop Cursor"
+  },
+  "cloud": {
+    "provider": "ollama-cloud",
+    "local_cloud_provider": "ollama-local-cloud",
+    "signin_command": "ollama signin",
+    "api_key_env": "OLLAMA_API_KEY",
+    "cloud_host": "https://ollama.com",
+    "local_cloud_model": "qwen3-coder:480b-cloud",
+    "direct_api_model": "qwen3.5:397b"
+  },
+  "orchestrator": {
+    "llm_provider_env": "LLM_PROVIDER",
+    "default_provider": "ollama-local",
+    "handshake_command": "python3 hexstrike_orchestrator.py llm-handshake"
+  },
+  "verification": {
+    "script": "scripts/verify-ollama-handshake.sh",
+    "setup_mac": "scripts/setup-cursor-ollama-mac.sh"
+  },
+  "local_terminal": {
+    "script": "scripts/hexstrike-terminal.py",
+    "launcher": "hexstrike-go.sh",
+    "setup": "scripts/setup-local-orchestrator.sh",
+    "default_chat_model_hint": "deepseek-v2.5:7b"
+  }
+}

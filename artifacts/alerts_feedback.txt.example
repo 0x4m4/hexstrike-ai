@@ -1,0 +1,5 @@
+# Operator feedback — one entry per line
+# Format: IGNORE: <tx_hash>  # optional comment
+#
+# Example (replace with real hash from alerts.log):
+# IGNORE: 0x774c3e98b39b8314aef03c9e301180b9338598ef95d0a54e182a38fd6b9706d3  # routine USDT transfer

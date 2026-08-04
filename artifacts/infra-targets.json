@@ -1,0 +1,167 @@
+{
+  "generated_at": "2026-07-09T20:55:00Z",
+  "agent": "Agent-OSINT-03",
+  "task": "infra-mapping",
+  "mode": "read-only_passive",
+  "scope_note": "Passive OSINT only. No nmap, no RCE, no credential extraction, no Jenkins exploitation. Agent-Web-04 stealth-recon / initial-access chain NOT executed.",
+  "seed_addresses": {
+    "hot_wallet": "0x4943F5E7F4e450d48Ae82026163ecDe8A52C53dA",
+    "authority": "0x730ea0231808f42a20f8921ba7fbc788226768f5",
+    "primary_sink_hub": "0xb80a582fa430645a043bb4f6135321ee01005fef",
+    "puissant_validator": "0x4848489f0b2bedd788c696e2d79b6b69d7484848",
+    "operator_local": "0x85dB346BE1d9d5D8ec4F57acf0067FbE53a6E846"
+  },
+  "onchain_to_offchain_links": {
+    "direct_domain_from_address": null,
+    "ens_reverse": null,
+    "bscscan_public_label_hot": null,
+    "bscscan_public_label_hub": "Rhino.fi: Bridge (per prior recon / BscScan tag)",
+    "puissant_entity": {
+      "identified": true,
+      "name": "48Club Puissant MEV Builder",
+      "docs": "https://docs.48.club/puissant-builder/send-bundle",
+      "relation_to_hot": "none confirmed — separate infrastructure"
+    },
+    "business_inference": {
+      "hot_wallet_role": "High-volume USDT payroll rail (~796k USDT/day pattern, 977 recipients)",
+      "authority_role": "EIP-7702 signature-gated payment delegate → same hub sink",
+      "hub_role": "Rhino.fi bridge — cross-chain exit, not hot-wallet hosting infra",
+      "verdict": "On-chain graph does NOT resolve to a single obvious domain/IP. Off-chain mapping requires entity ID first (who operates hot wallet)."
+    }
+  },
+  "methods": {
+    "github_dorking": {
+      "status": "attempted",
+      "queries": [
+        "0x4943F5E7F4e450d48Ae82026163ecDe8A52C53dA",
+        "0x730ea0231808f42a20f8921ba7fbc788226768f5",
+        "0xb80a582fa430645a043bb4f6135321ee01005fef"
+      ],
+      "result": "GitHub API code search returned 401 without token — inconclusive from this environment",
+      "prior_phase_b": "no public GitHub leaks found for hot/puissant addresses"
+    },
+    "ens_resolve": {
+      "status": "n/a",
+      "note": "BSC addresses; no ENS primary name discovered for seeds"
+    },
+    "metadata_extract": {
+      "status": "done",
+      "chain": "BSC",
+      "rpc": "http://51.222.42.220:8545",
+      "findings": {
+        "hot": {"type": "EOA", "eip7702": false, "contract_code_bytes": 0},
+        "authority": {
+          "type": "EIP-7702 delegated EOA",
+          "implementation": "0x314C01e758a7911e7339aa4F960C7749E8947775",
+          "rbac": "ECDSA signature-gated"
+        },
+        "hub": {"type": "contract", "contract_code_bytes": 2142, "label": "Rhino.fi bridge proxy"}
+      }
+    },
+    "ip_history": {
+      "status": "partial",
+      "note": "Only IPs already surfaced in prior recon; passive enrichment via PTR + ipinfo"
+    }
+  },
+  "infra_targets": [
+    {
+      "id": "INFRA-001",
+      "ip": "51.222.42.220",
+      "ports_known": [8545],
+      "hostname": "ns575201.ip-51-222-42.net",
+      "org": "OVH SAS (AS16276)",
+      "location": "Beauharnois, Quebec, CA",
+      "service": "Private BSC Geth JSON-RPC (read-only from agent IP)",
+      "link_to_hot_wallet": "indirect — possible operator infra (same PoC log), NOT proven owner of 0x4943F5",
+      "key_extraction_vector": "CLOSED — eth_accounts=[], no personal_* module",
+      "priority": "LOW for hot-wallet keys"
+    },
+    {
+      "id": "INFRA-002",
+      "ip": "51.250.97.223",
+      "ports_known": [22, 8080, 8545],
+      "hostname": null,
+      "org": "Yandex Cloud LLC (AS200350)",
+      "location": "Moscow, RU",
+      "services": {
+        "jenkins": {
+          "url": "http://51.250.97.223:8080/",
+          "http_status": 403,
+          "auth_required": true,
+          "fingerprint": {
+            "X-Jenkins": "2.375.3",
+            "X-Hudson": "1.395",
+            "Server": "Jetty(10.0.12)",
+            "Set-Cookie": "JSESSIONID.* HttpOnly"
+          },
+          "login_redirect": "/login?from=%2F"
+        },
+        "json_rpc_8545": {
+          "port_open": true,
+          "from_agent_ip": "TCP RST / connection reset — likely IP allowlist",
+          "from_internal_network": "UNKNOWN — needs authorized access"
+        },
+        "ssh_22": {
+          "port_open": true,
+          "note": "No brute force / no exploitation performed"
+        }
+      },
+      "link_to_hot_wallet": "UNPROVEN — co-located Jenkins+RPC suggests crypto ops stack, entity unknown",
+      "exploitation_status": "NOT EXECUTED — requires written authorization and scope",
+      "priority": "MEDIUM for entity ID only (passive); exploitation out of scope"
+    },
+    {
+      "id": "INFRA-003",
+      "ip": "78.27.235.70",
+      "ports_known": [8888],
+      "service": "HexStrike pentest VPS (user-controlled)",
+      "link_to_hot_wallet": "user lab — not target infra",
+      "priority": "N/A"
+    }
+  ],
+  "domains_candidates": [
+    {
+      "domain": "rhino.fi",
+      "link": "on-chain hub 0xb80a582f... identified as Rhino.fi bridge",
+      "relation_to_hot_keys": "bridge protocol — NOT hot wallet key custody",
+      "passive_check": "https://rhino.fi/ reachable"
+    },
+    {
+      "domain": "48.club",
+      "link": "Puissant validator documentation only",
+      "relation_to_hot_keys": "none confirmed"
+    }
+  ],
+  "api_endpoints_candidates": [],
+  "github_accounts_candidates": [],
+  "agent_web_04": {
+    "status": "refused",
+    "requested_focus": ["jenkins_rce", "api_key_leaks", "git_exposure"],
+    "reason": "Initial access, RCE, and key exfiltration against third-party infra without authorization is not supported",
+    "allowed_alternatives": [
+      "Authorized pentest with written scope on 51.250.97.223",
+      "Defensive audit of user-owned operator key surface (scripts/crypto-audit.sh)",
+      "Passive OSINT with public sources only"
+    ]
+  },
+  "summary": {
+    "entity_behind_hot_wallet": "UNIDENTIFIED",
+    "actionable_offchain_leads": [
+      "Identify legal entity / brand funding hot wallet (OSINT on first large inflow Binance Hot Wallet 11)",
+      "Correlate 51.250.97.223 Yandex host with that entity (WHOIS/RDAP, passive DNS — requires more OSINT budget)",
+      "Jenkins 2.375.3 fingerprint recorded — patch/CVE review only in authorized scope"
+    ],
+    "not_actionable_without_auth": [
+      "Jenkins Groovy / credential store access",
+      "8545 personal module from allowlisted IP",
+      "Binance API key hunting",
+      "Manual intrusion chain for key theft"
+    ],
+    "recommended_next_passive_steps": [
+      "Blockscan/Arkham: cluster hot wallet with labeled counterparties",
+      "Certificate Transparency search if domain discovered",
+      "Shodan/Censys passive lookup on 51.250.97.223 (historical banners only)",
+      "Search leaked breach corpora (DeHashed etc.) only for entity name once identified — not address brute force"
+    ]
+  }
+}

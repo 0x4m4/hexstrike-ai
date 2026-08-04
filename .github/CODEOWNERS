@@ -1,0 +1,5 @@
+# Go-live governance — require owner review on checklist + policy CI
+docs/GO_LIVE_CHECKLIST.md @Banda198565
+.github/workflows/policy-gate.yml @Banda198565
+.github/pull_request_template.md @Banda198565
+docs/GO-LIVE-MERGE-GATE-CHECKLIST.md @Banda198565

@@ -1,0 +1,189 @@
+{
+  "report_id": "field-agent-test-report-2026-07-11",
+  "generated_at": "2026-07-11T15:45:00Z",
+  "agent": "Agent-Battle-07",
+  "orchestrator": "hexstrike-orchestrator",
+  "mode": "read-only_defensive",
+  "scope": "Field recon + fork simulation on 5 report-selected BSC targets",
+  "constraints": [
+    "no_mainnet_exploit",
+    "no_balance_drain",
+    "no_unsigned_mainnet_tx",
+    "DRY_RUN on third-party addresses",
+    "local_anvil_only for signing benchmarks"
+  ],
+  "executive_summary": {
+    "verdict": "PASS — all automated test suites green",
+    "risk_posture": "elevated",
+    "entity_status": "UNIDENTIFIED",
+    "hot_wallet_risk": "high",
+    "battle_readiness": 75,
+    "field_pipeline_stable": true,
+    "amount_simulation_stable": true
+  },
+  "targets": {
+    "source": "scripts/sandbox/field-targets-5.json",
+    "count": 5,
+    "wallets": [
+      {
+        "role": "hot_wallet",
+        "address": "0x4943F5E7F4e450d48Ae82026163ecDe8A52C53dA",
+        "source_report": "recon-master-report-final-2026-07-10.json",
+        "live_balance_eth": "0.096162",
+        "live_nonce": 62832,
+        "risk_level": "high",
+        "multichain_usd_estimate": 2114305.07
+      },
+      {
+        "role": "authority",
+        "address": "0x730ea0231808f42a20f8921ba7fbc788226768f5",
+        "source_report": "authority-contract-analysis.json",
+        "classification": "EIP-7702 delegated EOA",
+        "risk_level": "medium"
+      },
+      {
+        "role": "primary_sink_hub",
+        "address": "0xb80a582fa430645a043bb4f6135321ee01005fef",
+        "source_report": "infra-targets.json",
+        "label": "Rhino.fi Bridge",
+        "live_balance_eth": "79.636048",
+        "risk_level": "medium"
+      },
+      {
+        "role": "puissant_validator",
+        "address": "0x4848489f0b2bedd788c696e2d79b6b69d7484848",
+        "source_report": "recon-master Phase A",
+        "entity": "48Club Puissant MEV Builder",
+        "live_balance_eth": "67.759884",
+        "risk_level": "low"
+      },
+      {
+        "role": "infra_correlated_wallet",
+        "address": "0xcfc85f21f5f01ab24d6b7a3b93ef097099ebde3a",
+        "source_report": "vector-forensics-report.json",
+        "correlated_ip": "51.250.97.223",
+        "hosting": "Yandex Cloud LLC",
+        "risk_level": "low"
+      }
+    ]
+  },
+  "test_campaigns": [
+    {
+      "id": "field-targets-5",
+      "type": "field_read_only",
+      "workflow": "field-targets-5",
+      "runs": 1,
+      "passed": 1,
+      "orchestrator_run_id": "be4466609169",
+      "description": "Profile → BSC fork → live recon → conclusion on 5 targets",
+      "mainnet_withdrawals": false,
+      "result": "5/5 wallets active, 1 high-risk (hot_wallet)"
+    },
+    {
+      "id": "field-runs-benchmark",
+      "type": "field_read_only",
+      "workflow": "multi-wallet-conclusions",
+      "runs": 10,
+      "passed": 10,
+      "pass_rate_pct": 100.0,
+      "avg_elapsed_sec": 13.8,
+      "hot_wallet_nonce_drift": 3,
+      "wallet_count_per_run": 12,
+      "mainnet_withdrawals": false
+    },
+    {
+      "id": "amount-simulation",
+      "type": "fork_dry_run",
+      "script": "scripts/sandbox/run-amount-simulation-benchmark.py",
+      "runs": 120,
+      "passed": 120,
+      "pass_rate_pct": 100.0,
+      "runs_per_scenario": 20,
+      "scenarios": {
+        "small": {
+          "balances_eth": ["0.3", "0.499", "0.001"],
+          "outcomes": ["signed (dry-run)", "signed (dry-run)", "blocked_no_gas"]
+        },
+        "large": {
+          "balances_eth": ["0.501", "10.0", "100.0"],
+          "outcomes": ["none", "none", "none"]
+        }
+      },
+      "parameters": {
+        "threshold_eth": 0.5,
+        "min_gas_eth": 0.01,
+        "rescue_value_eth": 1.0
+      },
+      "mainnet_withdrawals": false
+    },
+    {
+      "id": "withdraw-gas-benchmark",
+      "type": "local_anvil_signing",
+      "script": "scripts/sandbox/run-withdraw-gas-benchmark.py",
+      "runs": 20,
+      "passed": 20,
+      "pass_rate_pct": 100.0,
+      "scenarios": {
+        "with_gas": {"balance_eth": 0.3, "rescue_eth": 0.001, "outcome": "signed"},
+        "without_gas": {"balance_eth": 0.001, "outcome": "blocked_no_gas"}
+      },
+      "chain_id": 31337,
+      "mainnet_withdrawals": false
+    },
+    {
+      "id": "battle-suite",
+      "type": "local_anvil_redteam",
+      "runs": 5,
+      "readiness_score": 75,
+      "vuln_confirmed": 5,
+      "defended": 2,
+      "inconclusive": 0
+    }
+  ],
+  "findings": {
+    "on_chain": [
+      "hot_wallet: ACTIVE EOA, nonce>62k, ~0.096 BNB on BSC live; multichain treasury ~$2.1M per prior recon",
+      "authority: EIP-7702 delegated account, forwards to Rhino.fi hub",
+      "primary_sink_hub: contract with ~79.6 BNB — bridge exit, not key custody",
+      "puissant_validator: separate 48Club infra, no proven link to hot wallet keys",
+      "infra_correlated_wallet: linked to Yandex Cloud 51.250.97.223 in vector forensics"
+    ],
+    "simulation": [
+      "Threshold 0.5 ETH cleanly separates trigger (signed dry-run) vs idle (none)",
+      "0.001 ETH always blocked_no_gas — MIN_GAS 0.01 ETH enforced",
+      "120/120 fork simulations stable across 20 runs per scenario",
+      "RESCUE_VALUE 1.0 ETH on fork is simulated only — never broadcast to BSC mainnet"
+    ],
+    "closed_vectors": [
+      "RPC key extraction on public/private BSC nodes (read-only)",
+      "Allowance from hot/puissant to operator wallet",
+      "Unauthorized mainnet drain during field tests"
+    ],
+    "open_vectors": [
+      "Entity behind hot wallet UNIDENTIFIED",
+      "Infra/KMS of hot wallet controller (#9)",
+      "OSINT attribution (#6)",
+      "Jenkins/RDP on 51.250.97.223 — recon only, exploitation out of scope"
+    ]
+  },
+  "recommendations": [
+    "Continue read-only monitoring on hot_wallet outflows",
+    "Run Arkham/Blockscan label propagation (API keys required)",
+    "Enable GitHub token for infra dorking",
+    "Fork-watch before any authorized signing tests with operator keys",
+    "Harden sandbox: address allowlist for FUNDER, dedup/idempotency on rescue txs",
+    "Responsible disclosure if infra owner identified via passive OSINT"
+  ],
+  "artifacts_index": {
+    "report_md": "artifacts/field-agent-test-report-2026-07-11.md",
+    "report_json": "artifacts/field-agent-test-report-2026-07-11.json",
+    "field_targets": "scripts/sandbox/field-targets-5.json",
+    "target_conclusion": "artifacts/sandbox/target-conclusion.json",
+    "target_conclusion_md": "artifacts/sandbox/target-conclusion.md",
+    "amount_simulation": "artifacts/sandbox/amount-simulation-benchmark.json",
+    "amount_analysis": "artifacts/sandbox/amount-simulation-analysis.md",
+    "field_benchmark": "artifacts/sandbox/field-runs-benchmark.json",
+    "withdraw_benchmark": "artifacts/sandbox/withdraw-gas-benchmark.json",
+    "orchestrator_run": "artifacts/orchestrator/be4466609169-findings.json"
+  }
+}

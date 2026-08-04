@@ -1,0 +1,15 @@
+{
+  "wallet": "0x4943F5E7F4e450d48Ae82026163ecDe8A52C53dA",
+  "timestamp": "2026-07-10T11:45:00Z",
+  "balances": {
+    "bsc_usdt": 1650373.67,
+    "base_usdc": 463931.40,
+    "total_usd": 2114305.07,
+    "lending_exposure": {
+      "bsc_venus": 0,
+      "base_aave": 0,
+      "base_moonwell": 0,
+      "base_compound": 0
+    }
+  }
+}

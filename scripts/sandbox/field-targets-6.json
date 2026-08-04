@@ -1,0 +1,116 @@
+{
+  "generated_at": "2026-07-13T00:00:00Z",
+  "exclusive": true,
+  "purpose": "Sweep contracts cluster — bytecode/ABI forensics (read-only)",
+  "source_reports": [
+    "artifacts/2026-07-10/recon-summary.md",
+    "artifacts/recon-master-report-final-2026-07-10.json",
+    "artifacts/hot-wallet-onchain-graph.json",
+    "artifacts/cex-cluster-map.json",
+    "artifacts/authority-contract-analysis.json"
+  ],
+  "selection_rationale": {
+    "coverage": [
+      "primary sweep router (2nd largest hot wallet recipient)",
+      "secondary sweep contracts (automated routing infrastructure)",
+      "EIP-7702 implementation delegate (signature policy audit)",
+      "Rhino.fi hub sink (cross-chain exit correlation)"
+    ],
+    "excluded": [
+      "hot_wallet — recon exhausted per executive-summary",
+      "puissant_validator — separate MEV infra, no sweep correlation",
+      "operator_local — user-controlled PoC key"
+    ]
+  },
+  "parent_hot_wallet": "0x4943F5E7F4e450d48Ae82026163ecDe8A52C53dA",
+  "wallets": [
+    {
+      "role": "sweep_router_primary",
+      "address": "0x55ed7fcd17b93fbcd5186cda01af6fed4ec78e08",
+      "chain": "BSC",
+      "chain_id": 56,
+      "priority": 1,
+      "labels": {
+        "report": "hot-wallet-onchain-graph",
+        "classification": "sweep_contract",
+        "risk": "elevated"
+      },
+      "context": {
+        "total_usdt_from_hot": 12268.34,
+        "is_contract": true,
+        "balance_bnb": 0,
+        "balance_usdt": 0,
+        "note": "#2 recipient — automated routing, zero balance, needs bytecode analysis"
+      }
+    },
+    {
+      "role": "sweep_router_secondary",
+      "address": "0x3e0b65c9c31e9593e2b357be6eecd28bef6da03e",
+      "chain": "BSC",
+      "chain_id": 56,
+      "priority": 2,
+      "labels": {
+        "report": "cex-cluster-map",
+        "classification": "sweep_contract"
+      },
+      "context": {
+        "total_usdt_from_hot": 9758.49,
+        "is_contract": true,
+        "balance_bnb": 0,
+        "balance_usdt": 0,
+        "note": "Sweep contract — forwards to Rhino.fi hub"
+      }
+    },
+    {
+      "role": "sweep_router_tertiary",
+      "address": "0x3a8b628934f9db7999499905bbf767331266b5b5",
+      "chain": "BSC",
+      "chain_id": 56,
+      "priority": 3,
+      "labels": {
+        "report": "cex-cluster-map",
+        "classification": "sweep_contract"
+      },
+      "context": {
+        "total_usdt_from_hot": 7462.49,
+        "is_contract": true,
+        "balance_bnb": 0,
+        "balance_usdt": 0,
+        "note": "Part of hot wallet automated distribution infra"
+      }
+    },
+    {
+      "role": "eip7702_implementation",
+      "address": "0x314C01e758a7911e7339aa4F960C7749E8947775",
+      "chain": "BSC",
+      "chain_id": 56,
+      "priority": 4,
+      "labels": {
+        "report": "authority-contract-analysis",
+        "classification": "EIP-7702_delegate_impl"
+      },
+      "context": {
+        "delegated_by": "0x730ea0231808f42a20f8921ba7fbc788226768f5",
+        "rbac": "ECDSA signature-gated",
+        "primary_sink": "0xb80a582fa430645a043bb4f6135321ee01005fef",
+        "note": "Signature policy audit — authority rail component"
+      }
+    },
+    {
+      "role": "primary_sink_hub",
+      "address": "0xb80a582fa430645a043bb4f6135321ee01005fef",
+      "chain": "BSC",
+      "chain_id": 56,
+      "priority": 5,
+      "labels": {
+        "report": "infra-targets",
+        "bscscan_label": "Rhino.fi: Bridge"
+      },
+      "context": {
+        "type": "contract",
+        "role": "cross-chain exit hub — all sweep routers converge here",
+        "sweep_inflows_confirmed": true
+      }
+    }
+  ]
+}

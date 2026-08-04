@@ -1,0 +1,8 @@
+{
+  "generated_at": "2026-07-11T16:26:55Z",
+  "p3_relay": "PASS",
+  "receipt_monitor": "PASS",
+  "dedup_revert": "PASS",
+  "go_test": "PASS",
+  "ollama_prewarm": "async.PrewarmOllama wired in BootstrapMainnet"
+}

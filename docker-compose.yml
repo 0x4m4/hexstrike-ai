@@ -1,0 +1,133 @@
+name: samson-sbm
+
+networks:
+  samson_net:
+    driver: bridge
+    internal: false
+
+volumes:
+  samson_db_data:
+    name: samson_db_data
+
+services:
+  samson-db:
+    image: pgvector/pgvector:pg15
+    container_name: samson-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: samson
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: samson
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - samson_db_data:/var/lib/postgresql/data
+    networks:
+      - samson_net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U samson -d samson -h 127.0.0.1"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 10s
+
+  samson-anvil:
+    image: ghcr.io/foundry-rs/foundry:latest
+    container_name: samson-anvil
+    restart: unless-stopped
+    entrypoint: ["anvil"]
+    command:
+      [
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "8545",
+        "--chain-id",
+        "31337",
+        "--block-time",
+        "1",
+      ]
+    ports:
+      - "127.0.0.1:8545:8545"
+    networks:
+      - samson_net
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "cast block-number --rpc-url http://127.0.0.1:8545 >/dev/null",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 5s
+
+  samson-core-engine:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: samson-sbm:latest
+    container_name: samson-core-engine
+    restart: unless-stopped
+    environment:
+      PYTHONPATH: /workspace
+      SAMSON_DATABASE_URL: postgresql://samson:secret@samson-db:5432/samson
+      SAMSON_SHODAN_API_KEY: ${SAMSON_SHODAN_API_KEY:-${SHODAN_API_KEY:-}}
+      SHODAN_API_KEY: ${SHODAN_API_KEY:-${SAMSON_SHODAN_API_KEY:-}}
+      SAMSON_ARKHAM_API_KEY: ${SAMSON_ARKHAM_API_KEY:-${ARKHAM_API_KEY:-}}
+      ARKHAM_API_KEY: ${ARKHAM_API_KEY:-${SAMSON_ARKHAM_API_KEY:-}}
+      SAMSON_FOFA_API_KEY: ${SAMSON_FOFA_API_KEY:-${FOFA_API_KEY:-}}
+      FOFA_API_KEY: ${FOFA_API_KEY:-${SAMSON_FOFA_API_KEY:-}}
+      SAMSON_FOFA_API_EMAIL: ${SAMSON_FOFA_API_EMAIL:-${FOFA_EMAIL:-}}
+      SAMSON_COINSTATS_API_KEY: ${SAMSON_COINSTATS_API_KEY:-${COINSTATS_API_KEY:-}}
+      COINSTATS_API_KEY: ${COINSTATS_API_KEY:-${SAMSON_COINSTATS_API_KEY:-}}
+      SAMSON_ENVIRONMENT: ${SAMSON_ENVIRONMENT:-dev}
+      SAMSON_REQUIRE_HUMAN_APPROVAL: ${SAMSON_REQUIRE_HUMAN_APPROVAL:-false}
+      SAMSON_ARENA_BASE_URL: ${SAMSON_ARENA_BASE_URL:-http://host.docker.internal:8080}
+      SAMSON_OLLAMA_BASE_URL: ${SAMSON_OLLAMA_BASE_URL:-http://host.docker.internal:11434}
+      SAMSON_WEB3_RPC_URL: ${SAMSON_WEB3_RPC_URL:-http://samson-anvil:8545}
+      SAMSON_WEB3_CHAIN_ID: ${SAMSON_WEB3_CHAIN_ID:-31337}
+      SAMSON_WEB3_PRIVATE_KEY: ${SAMSON_WEB3_PRIVATE_KEY:-}
+      SAMSON_MAX_GAS_TRANSACTIONS: ${SAMSON_MAX_GAS_TRANSACTIONS:-100}
+      SAMSON_GUARDRAIL_PROXY_HOST: 0.0.0.0
+      SAMSON_GUARDRAIL_PROXY_PORT: "8787"
+    entrypoint: ["python3", "/workspace/samson/orchestrator.py"]
+    command: ["serve"]
+    depends_on:
+      samson-db:
+        condition: service_healthy
+      samson-anvil:
+        condition: service_started
+    networks:
+      - samson_net
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  samson-guardrail-proxy:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: samson-sbm:latest
+    container_name: samson-guardrail-proxy
+    restart: unless-stopped
+    environment:
+      PYTHONPATH: /workspace
+      SAMSON_DATABASE_URL: postgresql://samson:secret@samson-db:5432/samson
+      SAMSON_REQUIRE_HUMAN_APPROVAL: ${SAMSON_REQUIRE_HUMAN_APPROVAL:-false}
+      SAMSON_ARKHAM_API_KEY: ${SAMSON_ARKHAM_API_KEY:-${ARKHAM_API_KEY:-}}
+      ARKHAM_API_KEY: ${ARKHAM_API_KEY:-${SAMSON_ARKHAM_API_KEY:-}}
+      SAMSON_GUARDRAIL_PROXY_HOST: 0.0.0.0
+      SAMSON_GUARDRAIL_PROXY_PORT: "8787"
+      SAMSON_ARENA_BASE_URL: ${SAMSON_ARENA_BASE_URL:-http://host.docker.internal:8080}
+    ports:
+      - "8787:8787"
+    entrypoint: ["python3", "/workspace/samson/orchestrator.py"]
+    command: ["guardrail-proxy-serve"]
+    depends_on:
+      samson-db:
+        condition: service_healthy
+    networks:
+      - samson_net
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

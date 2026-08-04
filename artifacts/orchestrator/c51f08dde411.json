@@ -1,0 +1,31 @@
+{
+  "run_id": "c51f08dde411",
+  "type": "workflow",
+  "workflow": "defensive-disclosure",
+  "description": "CVE report + hardening template for infra owner outreach",
+  "started_at": "2026-07-09T21:29:47Z",
+  "finished_at": "2026-07-09T21:29:48Z",
+  "success": true,
+  "steps": [
+    {
+      "agent": "Agent-Vuln-05",
+      "task": "passive-cve-check",
+      "started_at": "2026-07-09T21:29:47Z",
+      "finished_at": "2026-07-09T21:29:48Z",
+      "exit_code": 0,
+      "stdout": "{\n  \"success\": true,\n  \"output\": \"/workspace/artifacts/jenkins-cve-report.json\",\n  \"cve_count\": 7\n}\n\u2192 Agent-Vuln-05 / passive-cve-check via scripts/agents/agent_vuln_05.py",
+      "stderr": "",
+      "success": true
+    },
+    {
+      "agent": "Agent-Report-06",
+      "task": "generate-defensive-checklist",
+      "started_at": "2026-07-09T21:29:48Z",
+      "finished_at": "2026-07-09T21:29:48Z",
+      "exit_code": 0,
+      "stdout": "Wrote /workspace/artifacts/defensive-audit-template.md\n\u2192 Agent-Report-06 / generate-defensive-checklist via scripts/agents/agent_report_06.py",
+      "stderr": "",
+      "success": true
+    }
+  ]
+}

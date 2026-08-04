@@ -1,0 +1,105 @@
+{
+  "generated_at": "2026-07-11T00:00:00Z",
+  "exclusive": true,
+  "purpose": "Field test set — 5 targets from desktop recon reports (read-only)",
+  "source_reports": [
+    "artifacts/recon-master-report-final-2026-07-10.json",
+    "artifacts/infra-targets.json",
+    "artifacts/authority-contract-analysis.json",
+    "artifacts/hot-wallet-onchain-graph.json",
+    "artifacts/vector-forensics-report.json"
+  ],
+  "selection_rationale": {
+    "coverage": [
+      "primary ops wallet (high volume, ~$2.1M multichain)",
+      "EIP-7702 authority rail",
+      "Rhino.fi bridge sink hub",
+      "48Club Puissant MEV validator",
+      "infra-correlated counterparty (Yandex Cloud IP 51.250.97.223)"
+    ],
+    "excluded": [
+      "operator_local — user-controlled PoC key, not third-party target",
+      "other counterparties — lower priority vs infra-correlated wallet"
+    ]
+  },
+  "wallets": [
+    {
+      "role": "hot_wallet",
+      "address": "0x4943F5E7F4e450d48Ae82026163ecDe8A52C53dA",
+      "chain": "BSC",
+      "chain_id": 56,
+      "priority": 1,
+      "labels": {
+        "report": "recon-master Phase A",
+        "risk": "elevated",
+        "multichain_net_usd": 2114305.07
+      },
+      "context": {
+        "bsc_usdt": 1650373.67,
+        "base_usdc": 463931.4,
+        "note": "Active multichain ops wallet; heavy USDT payroll rail"
+      }
+    },
+    {
+      "role": "authority",
+      "address": "0x730ea0231808f42a20f8921ba7fbc788226768f5",
+      "chain": "BSC",
+      "chain_id": 56,
+      "priority": 2,
+      "labels": {
+        "report": "authority-contract-analysis",
+        "classification": "EIP-7702 delegated EOA"
+      },
+      "context": {
+        "implementation": "0x314C01e758a7911e7339aa4F960C7749E8947775",
+        "primary_sink": "0xb80a582fa430645a043bb4f6135321ee01005fef"
+      }
+    },
+    {
+      "role": "primary_sink_hub",
+      "address": "0xb80a582fa430645a043bb4f6135321ee01005fef",
+      "chain": "BSC",
+      "chain_id": 56,
+      "priority": 3,
+      "labels": {
+        "report": "infra-targets",
+        "bscscan_label": "Rhino.fi: Bridge"
+      },
+      "context": {
+        "type": "contract",
+        "role": "cross-chain exit hub, not key custody"
+      }
+    },
+    {
+      "role": "puissant_validator",
+      "address": "0x4848489f0b2bedd788c696e2d79b6b69d7484848",
+      "chain": "BSC",
+      "chain_id": 56,
+      "priority": 4,
+      "labels": {
+        "report": "recon-master Phase A",
+        "entity": "48Club Puissant MEV Builder"
+      },
+      "context": {
+        "bnb_balance_approx": 67.85,
+        "docs": "https://docs.48.club/puissant-builder/send-bundle"
+      }
+    },
+    {
+      "role": "infra_correlated_wallet",
+      "address": "0xcfc85f21f5f01ab24d6b7a3b93ef097099ebde3a",
+      "chain": "BSC",
+      "chain_id": 56,
+      "priority": 5,
+      "labels": {
+        "report": "vector-forensics-report",
+        "correlation": "Yandex Cloud 51.250.97.223"
+      },
+      "context": {
+        "target_ip": "51.250.97.223",
+        "total_usdt_from_hot": 11804.0,
+        "sources": ["cex-cluster-map", "exchange-forensics"]
+      }
+    }
+  ]
+}

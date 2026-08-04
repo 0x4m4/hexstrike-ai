@@ -1,0 +1,40 @@
+name: Agent Battle
+
+on:
+  push:
+    branches: [master, main, develop]
+    paths:
+      - 'cmd/agent/**'
+      - 'scripts/sandbox/**'
+      - '.github/workflows/agent-battle.yml'
+  pull_request:
+    paths:
+      - 'cmd/agent/**'
+      - 'scripts/sandbox/**'
+
+jobs:
+  battle:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+
+      - name: Build battle agent
+        run: bash cmd/agent/build.sh
+
+      - name: Run battle suite
+        run: ./bin/hexstrike-agent battle -v
+        continue-on-error: true
+
+      - name: Upload battle report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: battle-report
+          path: artifacts/sandbox/battle-report.json

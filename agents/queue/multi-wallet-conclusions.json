@@ -1,0 +1,5 @@
+{
+  "workflow": "multi-wallet-conclusions",
+  "env": {},
+  "note": "Scan all seed wallets + counterparties → JSON + Markdown conclusions"
+}

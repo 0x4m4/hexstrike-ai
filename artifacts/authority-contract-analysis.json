@@ -1,0 +1,44 @@
+{
+  "agent": "Agent-Contract-02",
+  "task": "fetch-bytecode + rbac (read-only)",
+  "address": "0x730ea0231808f42a20f8921ba7fbc788226768f5",
+  "chain": "BSC",
+  "classification": "EIP-7702 delegated EOA (Authority account), NOT standalone custom contract",
+  "bytecode_on_address": "0xef0100314c01e758a7911e7339aa4f960c7749e8947775",
+  "delegation": {
+    "type": "EIP-7702",
+    "prefix": "0xef0100",
+    "implementation": "0x314C01e758a7911e7339aa4F960C7749E8947775",
+    "bscscan_impl": "https://bscscan.com/address/0x314C01e758a7911e7339aa4F960C7749E8947775#code"
+  },
+  "implementation_analysis": {
+    "compiler": "Solidity 0.8.4",
+    "verified_source": false,
+    "decompiled_strings": [
+      "Invalid authority",
+      "Invalid signature",
+      "ECDSA: invalid signature",
+      "ECDSA: invalid signature length",
+      "ECDSA: invalid signature 's' value",
+      "ECDSA: invalid signature 'v' value",
+      "Ethereum Signed Message:\\n32"
+    ],
+    "rbac_pattern": "Signature-gated execution (authority + ECDSA), not classic onlyOwner admin",
+    "hardcoded_admin_eoa": "not found in bytecode strings",
+    "exploit_surface": {
+      "onlyOwner_misconfig": "N/A — no Ownable on delegated account itself",
+      "unauthorized_transfer_without_key": "requires valid authority signature per implementation logic",
+      "logic_bug_possible": "theoretical on impl 0x314C01e7..., but not generic drain without auth bypass"
+    }
+  },
+  "fund_flow_from_authority": {
+    "usdt_out_total_period": 22486.98,
+    "primary_sink": "0xb80a582fa430645a043bb4f6135321ee01005fef",
+    "note": "Authority forwards USDT to hub 0xb80a582f... — same sink as other hot recipients"
+  },
+  "verdict": {
+    "is_selfwritten_vulnerable_contract": false,
+    "is_eip7702_payment_rail_component": true,
+    "recommended_next": "Analyze hub 0xb80a582f... and impl signature policy; no tx initiation"
+  }
+}

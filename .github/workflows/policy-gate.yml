@@ -1,0 +1,56 @@
+name: policy-gate
+
+on:
+  pull_request:
+    branches: [main, master]
+  push:
+    branches: [main, master]
+
+jobs:
+  policy-gate:
+    name: policy-gate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Ensure go-live checklist exists
+        run: test -f docs/GO_LIVE_CHECKLIST.md
+
+      - name: Ensure PR template exists
+        run: test -f .github/pull_request_template.md
+
+      - name: Block committed raw key material
+        # Scan git-tracked files only (ignores local venvs / site-packages).
+        # Allow empty placeholders (BOT_PRIVATE_KEY=) and env var *names* in code.
+        # Fail on hex private keys or PEM private-key blocks in the repo.
+        run: |
+          set -euo pipefail
+          matches="$(
+            git ls-files -z \
+              | grep -zZvE '\.(zip|png|pdf|jpg|jpeg|gif|webp)$' \
+              | xargs -0 grep -nE \
+                -e '(PRIVATE_KEY|RAW_PRIVATE_KEY|AGENT_PRIVATE_KEY|BOT_PRIVATE_KEY|WEB3_PRIVATE_KEY|SAMSON_WEB3_PRIVATE_KEY)=0x[0-9a-fA-F]{64}' \
+                -e 'BEGIN (EC |RSA |OPENSSH )?PRIVATE KEY' \
+                || true
+          )"
+          if [[ -n "${matches}" ]]; then
+            echo "Raw key material pattern found in tracked files:"
+            echo "${matches}"
+            exit 1
+          fi
+          echo "OK: no committed raw key material"
+
+      - name: Require architecture risk language preserved
+        run: |
+          grep -q "risk-reduced" docs/ARCHITECTURE.md \
+            || (echo "Expected risk posture text missing"; exit 1)
+
+      - name: Policy gate summary
+        if: always()
+        run: |
+          {
+            echo "## policy-gate"
+            echo "- Checklist: docs/GO_LIVE_CHECKLIST.md"
+            echo "- PR template: .github/pull_request_template.md"
+            echo "- Default branches: main, master"
+          } >> "$GITHUB_STEP_SUMMARY"

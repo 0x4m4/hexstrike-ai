@@ -1,0 +1,4 @@
+{
+  "workflow": "vps-full-readonly",
+  "note": "Full VPS passive recon + master report — drop in queue or run via orchestrator run-all"
+}

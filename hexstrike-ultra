@@ -1,0 +1,253 @@
+#!/usr/bin/env bash
+# HexStrike Ultra — master runner (Mac operator + VPS recon)
+# Usage:
+#   ./hexstrike-ultra              # auto: Mac → operator-lab, VPS → run-all
+#   ./hexstrike-ultra mac          # force Mac operator pipeline
+#   ./hexstrike-ultra vps          # force VPS recon pipeline
+#   ./hexstrike-ultra status       # balances + last runs + paths
+#   ./hexstrike-ultra fix-keys     # proof-key permissions (Mac)
+#   ./hexstrike-ultra report       # print latest findings
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "$0")" && pwd)"
+cd "$ROOT"
+
+OPERATOR="${OPERATOR_ADDRESS:-0x85dB346BE1d9d5D8ec4F57acf0067FbE53a6E846}"
+EVA_KEY="${HEXSTRIKE_PROOF_KEY:-/Volumes/Eva/secrets/proof-key.txt}"
+HOME_KEY="${HOME}/proof-key.txt"
+BRANCH="cursor/hexstrike-agents-a1cf"
+
+log()  { printf '[hexstrike-ultra] %s\n' "$*"; }
+warn() { printf '[hexstrike-ultra] WARN: %s\n' "$*" >&2; }
+die()  { printf '[hexstrike-ultra] ERROR: %s\n' "$*" >&2; exit 1; }
+
+detect_env() {
+  if [[ -f /etc/systemd/system/hexstrike-orchestrator.service ]] \
+     || [[ "$(hostname 2>/dev/null)" == *ubuntu* && -d /opt/hexstrike-ai ]]; then
+    echo "vps"
+  elif [[ "$(uname -s)" == "Darwin" ]]; then
+    echo "mac"
+  elif [[ -d /Volumes/Eva/mufasaai-storage/hexstrike-ai ]]; then
+    echo "mac"
+  else
+    echo "unknown"
+  fi
+}
+
+ensure_orchestrator() {
+  [[ -x "$ROOT/hexstrike-orchestrator" ]] || die "hexstrike-orchestrator not found in $ROOT"
+  [[ -f "$ROOT/scripts/hexstrike-orchestrator.py" ]] || die "orchestrator script missing"
+}
+
+git_sync() {
+  if [[ ! -d "$ROOT/.git" ]]; then
+    warn "Not a git repo — skip pull"
+    return 0
+  fi
+  log "git fetch + pull ($BRANCH)..."
+  git remote set-url origin https://github.com/Banda198565/hexstrike-ai.git 2>/dev/null || true
+  git fetch origin "$BRANCH" 2>/dev/null || warn "git fetch failed (offline?)"
+  if git diff --quiet HEAD 2>/dev/null; then
+    git pull origin "$BRANCH" 2>/dev/null || warn "git pull failed — continuing with local tree"
+  else
+    warn "Local changes detected — stash or commit first. Trying pull..."
+    git stash push -u -m "hexstrike-ultra-$(date +%s)" 2>/dev/null || true
+    git pull origin "$BRANCH" 2>/dev/null || warn "git pull failed"
+  fi
+  chmod +x hexstrike-orchestrator hexstrike-cli scripts/*.sh 2>/dev/null || true
+}
+
+fix_proof_key() {
+  local env="$1"
+  [[ "$env" == "mac" ]] || return 0
+
+  log "Checking proof-key permissions (Mac)..."
+
+  if [[ -f "$EVA_KEY" ]]; then
+    chmod 600 "$EVA_KEY" 2>/dev/null || warn "cannot chmod $EVA_KEY (Eva mounted?)"
+    log "Eva key: $(ls -la "$EVA_KEY" 2>/dev/null || echo missing)"
+  else
+    warn "Eva key not found: $EVA_KEY"
+  fi
+
+  if [[ -L "$HOME_KEY" ]]; then
+    log "Symlink: $(ls -la "$HOME_KEY")"
+  elif [[ -f "$HOME_KEY" ]]; then
+    chmod 600 "$HOME_KEY" 2>/dev/null || true
+    warn "proof-key in ~ without Eva symlink — prefer: ln -sf $EVA_KEY $HOME_KEY"
+  else
+    warn "No ~/proof-key.txt — create symlink after Eva mount:"
+    echo "  mkdir -p /Volumes/Eva/secrets && ln -sf $EVA_KEY $HOME_KEY"
+  fi
+}
+
+print_balance_summary() {
+  local bal="$ROOT/artifacts/operator-balance.json"
+  if [[ -f "$bal" ]]; then
+    python3 - "$bal" <<'PY'
+import json, sys
+r = json.load(open(sys.argv[1]))
+b = r.get("balances", {})
+c = r.get("checks", {})
+print(f"  Operator: {r.get('operator')}")
+print(f"  BNB : {b.get('bnb', '?')}  gas_ok={c.get('gas_ok')}")
+print(f"  USDT: {b.get('usdt', '?')}  usdt_ok={c.get('usdt_ok')}")
+if not c.get("usdt_ok") and c.get("gas_ok"):
+    print("  → BNB signing OK. USDT only if you need USDT transfers (Binance BEP-20).")
+na = r.get("next_action", {})
+if na.get("step") == "manual_binance_withdraw":
+    print(f"  → Manual: {na.get('what')} {na.get('amount_suggested')} via {na.get('network')}")
+    print(f"    Address: {na.get('address')}")
+PY
+  else
+    warn "No artifacts/operator-balance.json — run operator-lab on Mac"
+  fi
+}
+
+print_vps_summary() {
+  local master="$ROOT/artifacts/vps-master-report.json"
+  local latest="$ROOT/artifacts/orchestrator/latest.json"
+  if [[ -f "$master" ]]; then
+    python3 - "$master" <<'PY'
+import json, sys
+r = json.load(open(sys.argv[1]))
+print(f"  Host: {r.get('host')}")
+for h in r.get("highlights", []):
+    print(f"  • {h}")
+PY
+  fi
+  if [[ -f "$latest" ]]; then
+    python3 - "$latest" <<'PY'
+import json, sys
+r = json.load(open(sys.argv[1]))
+print(f"  Last run: {r.get('run_id')} workflow={r.get('workflow')} success={r.get('success')}")
+PY
+  fi
+}
+
+run_mac() {
+  log "=== MAC OPERATOR LAB ==="
+  fix_proof_key mac
+  git_sync
+  ensure_orchestrator
+
+  log "Running operator-lab (balance + audit + checklist)..."
+  ./hexstrike-orchestrator run operator-lab
+
+  echo ""
+  log "Balance:"
+  print_balance_summary
+
+  echo ""
+  log "BNB test send (optional, self-transfer 0.001 BNB):"
+  echo "  cd ~ && TO=$OPERATOR AMOUNT=0.001 NETWORK=bsc CONFIRM=yes node ~/send-proof.js"
+  echo ""
+  log "USDT deposit (manual — Binance website, NOT terminal):"
+  echo "  Coin: USDT | Network: BSC (BEP-20) | Address: $OPERATOR | Amount: 10"
+  echo ""
+  log "Artifacts:"
+  echo "  $ROOT/artifacts/operator-balance.json"
+  echo "  $ROOT/artifacts/operator-crypto-audit.txt"
+  echo "  $ROOT/artifacts/orchestrator/latest.json"
+}
+
+run_vps() {
+  log "=== VPS FULL RECON ==="
+  git_sync
+  ensure_orchestrator
+
+  if command -v systemctl >/dev/null 2>&1; then
+    if systemctl is-active --quiet hexstrike-orchestrator 2>/dev/null; then
+      log "hexstrike-orchestrator.service: active (watch queue)"
+    else
+      warn "systemd service inactive — start: systemctl start hexstrike-orchestrator"
+    fi
+  fi
+
+  log "Running vps-full-readonly (7 agents)..."
+  ./hexstrike-orchestrator run-all
+
+  echo ""
+  log "VPS summary:"
+  print_vps_summary
+
+  echo ""
+  log "Disclosure draft:"
+  echo "  cat $ROOT/artifacts/disclosure-pack/email-yandex-cloud-abuse.md"
+  echo ""
+  log "Artifacts sync to Mac (run ON MAC, not VPS):"
+  echo "  mkdir -p /Volumes/Eva/mufasaai-storage/hexstrike-ai/artifacts-vps"
+  echo "  scp -r root@78.27.235.70:$ROOT/artifacts /Volumes/Eva/mufasaai-storage/hexstrike-ai/artifacts-vps"
+}
+
+cmd_status() {
+  local env
+  env="$(detect_env)"
+  log "Environment: $env"
+  log "ROOT: $ROOT"
+  log "Branch: $(git -C "$ROOT" branch --show-current 2>/dev/null || echo '?')"
+  log "HEAD: $(git -C "$ROOT" log -1 --oneline 2>/dev/null || echo '?')"
+  echo ""
+  if [[ "$env" == "mac" || -f "$ROOT/artifacts/operator-balance.json" ]]; then
+    log "Operator balance:"
+    print_balance_summary
+    echo ""
+  fi
+  if [[ -f "$ROOT/artifacts/vps-master-report.json" ]]; then
+    log "VPS master:"
+    print_vps_summary
+    echo ""
+  fi
+  log "Quick commands:"
+  echo "  Mac : cd /Volumes/Eva/mufasaai-storage/hexstrike-ai && ./hexstrike-ultra mac"
+  echo "  VPS : cd /opt/hexstrike-ai && ./hexstrike-ultra vps"
+  echo "  SSH : ssh root@78.27.235.70 'cd /opt/hexstrike-ai && ./hexstrike-ultra vps'"
+}
+
+cmd_report() {
+  ensure_orchestrator
+  ./hexstrike-orchestrator report "${@:2}"
+}
+
+main() {
+  local cmd="${1:-auto}"
+  case "$cmd" in
+    auto)
+      case "$(detect_env)" in
+        mac) run_mac ;;
+        vps) run_vps ;;
+        *) die "Unknown environment. Use: ./hexstrike-ultra mac | vps | status" ;;
+      esac
+      ;;
+    mac|operator|operator-lab) run_mac ;;
+    vps|recon|run-all)       run_vps ;;
+    status|st)               cmd_status ;;
+    fix-keys|fix)            fix_proof_key mac ;;
+    report)                  cmd_report "$@" ;;
+    help|-h|--help)
+      cat <<EOF
+HexStrike Ultra — master runner
+
+  ./hexstrike-ultra              Auto-detect Mac/VPS
+  ./hexstrike-ultra mac          Operator lab (balance, audit, checklist)
+  ./hexstrike-ultra vps          Full VPS recon (7 agents + master report)
+  ./hexstrike-ultra status       Paths, balances, last run
+  ./hexstrike-ultra fix-keys     chmod 600 proof-key on Eva (Mac)
+  ./hexstrike-ultra report       Orchestrator findings report
+
+Environment variables:
+  OPERATOR_ADDRESS   default: $OPERATOR
+  HEXSTRIKE_PROOF_KEY default: $EVA_KEY
+
+NOT automated (manual only):
+  - Binance USDT withdraw (BEP-20) — use Binance app/website
+  - Transfers from third-party wallets (0x4943F5...)
+EOF
+      ;;
+    *)
+      die "Unknown command: $cmd (try: help)"
+      ;;
+  esac
+}
+
+main "$@"

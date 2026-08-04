@@ -31,6 +31,8 @@ import hashlib
 import pickle
 import base64
 import queue
+import secrets
+import functools
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta
 from typing import Dict, Any, Optional
@@ -93,6 +95,60 @@ logger = logging.getLogger(__name__)
 # Flask app configuration
 app = Flask(__name__)
 app.config['JSON_SORT_KEYS'] = False
+
+# ============================================================================
+# API KEY SECURITY
+# ============================================================================
+
+def _load_env_file() -> None:
+    env_path = Path(__file__).resolve().parent / ".env"
+    if not env_path.is_file():
+        return
+    for raw in env_path.read_text(encoding="utf-8").splitlines():
+        line = raw.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, value = line.split("=", 1)
+        os.environ.setdefault(key.strip(), value.strip().strip('"').strip("'"))
+
+
+_load_env_file()
+HEXSTRIKE_API_KEY = os.environ.get("HEXSTRIKE_API_KEY", "").strip()
+API_KEY_HEADER = "X-API-KEY"
+
+
+def _validate_request_api_key() -> bool:
+    if not HEXSTRIKE_API_KEY:
+        return False
+    provided = request.headers.get(API_KEY_HEADER, "")
+    return bool(provided) and secrets.compare_digest(provided, HEXSTRIKE_API_KEY)
+
+
+def require_api_key(f):
+    """Decorator: reject requests without valid X-API-KEY header."""
+    @functools.wraps(f)
+    def wrapper(*args, **kwargs):
+        if not _validate_request_api_key():
+            return jsonify({
+                "success": False,
+                "error": "Forbidden",
+                "detail": "Invalid or missing X-API-KEY header",
+            }), 403
+        return f(*args, **kwargs)
+    return wrapper
+
+
+@app.before_request
+def enforce_api_key_on_api_routes():
+    if not request.path.startswith("/api/"):
+        return None
+    if not _validate_request_api_key():
+        return jsonify({
+            "success": False,
+            "error": "Forbidden",
+            "detail": "Invalid or missing X-API-KEY header",
+        }), 403
+    return None
 
 # API Configuration
 API_PORT = int(os.environ.get('HEXSTRIKE_PORT', 8888))
@@ -9018,7 +9074,36 @@ class FileOperationsManager:
 # Global file operations manager
 file_manager = FileOperationsManager()
 
+# Unified artifact context
+ARTIFACTS_DIR = Path(__file__).resolve().parent / "artifacts"
+MASTER_CONTEXT_PATH = ARTIFACTS_DIR / "master_context.json"
+
 # API Routes
+
+@app.route("/api/context/latest", methods=["GET"])
+@require_api_key
+def context_latest():
+    """Return unified artifact index (artifacts/master_context.json)."""
+    if not MASTER_CONTEXT_PATH.is_file():
+        return jsonify({
+            "success": False,
+            "error": "master_context.json not found",
+            "hint": "Run: python3 scripts/unified_indexer.py",
+            "path": str(MASTER_CONTEXT_PATH),
+        }), 404
+    try:
+        with open(MASTER_CONTEXT_PATH, encoding="utf-8") as fh:
+            context = json.load(fh)
+        return jsonify({
+            "success": True,
+            "path": str(MASTER_CONTEXT_PATH),
+            "entry_count": context.get("entry_count", len(context.get("entries", []))),
+            "generated_at": context.get("generated_at"),
+            "context": context,
+        })
+    except (OSError, json.JSONDecodeError) as exc:
+        logger.error(f"Error reading master context: {exc}")
+        return jsonify({"success": False, "error": str(exc)}), 500
 
 @app.route("/health", methods=["GET"])
 def health_check():

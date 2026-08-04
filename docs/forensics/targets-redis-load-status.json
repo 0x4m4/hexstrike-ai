@@ -1,0 +1,19 @@
+{
+  "hexstrike:targets:critical": [
+    "0x4943f5e7f4e450d48ae82026163ecde8a52c53da",
+    "0x5ab2790be0ade18af686f38c5321af1d8daa3192",
+    "0xb80a582fa430645a043bb4f6135321ee01005fef",
+    "0xb8ee2cd0e210fac991e441dba767082d9cdceec3",
+    "0xc38a2eb3aa44f52b0516d5c171114815bc2f28fa"
+  ],
+  "critical_count": 5,
+  "all_count": 29,
+  "infra_count": 2,
+  "meta": {
+    "loaded_from": "/data/pentest/reports/hexstrike-targets-export.json",
+    "count_addresses": 29,
+    "count_infra": 2,
+    "critical": 5
+  },
+  "etherscan_key": "EMPTY \u2014 waiting for Chef real key (do not paste placeholder)"
+}

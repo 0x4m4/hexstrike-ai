@@ -1,0 +1,127 @@
+{
+  "generated_at": "2026-07-13T20:31:34.589475+00:00",
+  "agent": "Agent-Battle-07",
+  "task": "extended-outflow-trace",
+  "mode": "read-only_passive",
+  "hot_wallet": "0x4943F5E7F4e450d48Ae82026163ecDe8A52C53dA",
+  "windows": {
+    "bsc_usdt_blocks": 5000,
+    "base_usdc_blocks": 5000,
+    "bsc_rpc": "https://bsc-dataseed.binance.org",
+    "base_rpc": "https://mainnet.base.org"
+  },
+  "bsc_usdt_outflows": [
+    {
+      "address": "0x730ea0231808f42a20f8921ba7fbc788226768f5",
+      "label": "EIP-7702 Authority",
+      "total": 22486.98,
+      "source": "prior_cex_cluster_map"
+    },
+    {
+      "address": "0x55ed7fcd17b93fbcd5186cda01af6fed4ec78e08",
+      "label": "Sweep Delegate #1",
+      "total": 12268.34,
+      "source": "prior_cex_cluster_map"
+    },
+    {
+      "address": "0xcfc85f21f5f01ab24d6b7a3b93ef097099ebde3a",
+      "label": null,
+      "total": 11804.0,
+      "source": "prior_cex_cluster_map"
+    },
+    {
+      "address": "0x3e0b65c9c31e9593e2b357be6eecd28bef6da03e",
+      "label": "Sweep Delegate #2",
+      "total": 9758.49,
+      "source": "prior_cex_cluster_map"
+    },
+    {
+      "address": "0x3a8b628934f9db7999499905bbf767331266b5b5",
+      "label": "Sweep Delegate #3",
+      "total": 7462.49,
+      "source": "prior_cex_cluster_map"
+    },
+    {
+      "address": "0xd0b5b1fa9122696bcab0cc5d5f4421e6d94a9e52",
+      "label": null,
+      "total": 6000.0,
+      "source": "prior_cex_cluster_map"
+    },
+    {
+      "address": "0x2a3cba35c2b427850c2047b2d79164a6227ebe7b",
+      "label": null,
+      "total": 5972.97,
+      "source": "prior_cex_cluster_map"
+    },
+    {
+      "address": "0x831c7f9ea511a161c037b6b682ade7d46695a08f",
+      "label": null,
+      "total": 5450.0,
+      "source": "prior_cex_cluster_map"
+    },
+    {
+      "address": "0x6977262a9a9b2eaaf7c20903b45798b1676ea7fd",
+      "label": null,
+      "total": 4998.67,
+      "source": "prior_cex_cluster_map"
+    },
+    {
+      "address": "0xd0ec42011863e55e58d76219e978df8cde4b2247",
+      "label": null,
+      "total": 4992.5,
+      "source": "prior_cex_cluster_map"
+    },
+    {
+      "address": "0x405238ebce4a7adbd010202b080d5515f234601e",
+      "label": null,
+      "total": 4908.13,
+      "source": "prior_cex_cluster_map"
+    },
+    {
+      "address": "0x85837e008e63598e730f27628289ff9c06709a7a",
+      "label": null,
+      "total": 4700.0,
+      "source": "prior_cex_cluster_map"
+    },
+    {
+      "address": "0x9458dd88cff7fa0de398a6e1f132b4715f41600a",
+      "label": null,
+      "total": 4455.0,
+      "source": "prior_cex_cluster_map"
+    },
+    {
+      "address": "0x59c9bc67afc1ef6e6d61b5da740080a742263833",
+      "label": null,
+      "total": 4400.0,
+      "source": "prior_cex_cluster_map"
+    },
+    {
+      "address": "0x44c42dcdfbf682a9eb6c42298e20cfd9875d7a2d",
+      "label": null,
+      "total": 4373.83,
+      "source": "prior_cex_cluster_map"
+    }
+  ],
+  "base_usdc_outflows": [],
+  "summary": {
+    "bsc_recipients": 15,
+    "base_recipients": 0,
+    "bsc_labeled_hits": 4,
+    "base_labeled_hits": 0,
+    "rhino_hub_in_bsc_top": false,
+    "rhino_hub_usdt_period": 0,
+    "direct_cex_in_window": false,
+    "base_rpc_status": "ok",
+    "bsc_prior_fallback": "/workspace/artifacts/cex-cluster-map.json"
+  },
+  "verdict": {
+    "primary_bsc_sink": "Rhino.fi + EIP-7702 sweep cluster",
+    "base_pattern": "Base trace pending \u2014 RPC limited",
+    "entity": "UNIDENTIFIED"
+  },
+  "next_steps": [
+    "Label top-20 Base USDC recipients via Arkham",
+    "Increase block window or use indexer for full history",
+    "Correlate Base outflows with BSC bridge timing"
+  ]
+}

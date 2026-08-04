@@ -1,0 +1,202 @@
+{
+  "test_id": "hexstrike_stress_test_2026-07-10",
+  "mode": "STRESS_TEST",
+  "started_at": "2026-07-10T10:59:32.202983+00:00",
+  "target_wallet": "0xcfc85f21f5f01ab24d6b7a3b93ef097099ebde3a",
+  "known_hot_wallet": "0x4943f5e7f4e450d48ae82026163ecde8a52c53da",
+  "recon_ip": "51.250.97.223",
+  "agents": {
+    "core.monitor": {
+      "agent": "core.monitor",
+      "target": "0xcfc85f21f5f01ab24d6b7a3b93ef097099ebde3a",
+      "duration_sec": 30,
+      "wall_clock_sec": 32.11,
+      "new_alerts": 1,
+      "false_positives": 0,
+      "stealth_enabled": true,
+      "kpi": {
+        "latency": {
+          "status": "pass",
+          "note": "Monitor cycle completed in 32.11s"
+        },
+        "precision": {
+          "status": "pass",
+          "false_alerts": 0
+        },
+        "stealth": {
+          "status": "pass",
+          "note": "No RPC ban observed; stealth transport active"
+        }
+      },
+      "stdout_tail": "IGH_RISK_REPEAT 0x0917362e84fea5567d483b041dffb0715896d9a8c81219c966952d27bc64acc9\n        Pattern match: 0x4943f5e7f4e450d48ae82026163ecde8a52c53da -> 0x55d398326f99059ff775485246999027b3197955 matches prior documentation (funds_from_known_sink).\n        RAG: /workspace/artifacts/exchange-forensics/binance-lea-pack.json (score=0.6090477705001831)\n[indexer] unified_indexer exit=0\n{\n  \"success\": true,\n  \"polls\": 16,\n  \"txs_seen\": 829,\n  \"alerts\": 1,\n  \"dedup_skipped\": 0,\n  \"duration_sec\": 31.3\n}\n",
+      "score": 100.0
+    },
+    "core.forensics": {
+      "agent": "core.forensics",
+      "target": "0xcfc85f21f5f01ab24d6b7a3b93ef097099ebde3a",
+      "labels": [
+        "cex_cluster_map",
+        "exchange_forensics",
+        "exchange_forensics"
+      ],
+      "sources": [
+        "artifacts/cex-cluster-map.json",
+        "artifacts/exchange-forensics/cex-depth2-scan.json",
+        "artifacts/exchange-forensics/rhino-bridge-trace.json"
+      ],
+      "trace_depth_levels": 3,
+      "rag_hits": 3,
+      "kpi": {
+        "clustering": {
+          "status": "pass",
+          "cex_labels": true,
+          "linked_to_known_case": true
+        },
+        "depth": {
+          "status": "pass",
+          "levels": 3,
+          "required_min": 3
+        }
+      },
+      "score": 100.0
+    },
+    "skill.recon_osint": {
+      "agent": "skill.recon_osint",
+      "target_ip": "51.250.97.223",
+      "open_ports": [
+        {
+          "port": 22,
+          "open": true,
+          "latency_ms": 0.5
+        },
+        {
+          "port": 80,
+          "open": true,
+          "latency_ms": 0.2
+        },
+        {
+          "port": 443,
+          "open": true,
+          "latency_ms": 0.6
+        },
+        {
+          "port": 8080,
+          "open": true,
+          "latency_ms": 0.5
+        },
+        {
+          "port": 8545,
+          "open": true,
+          "latency_ms": 0.1
+        },
+        {
+          "port": 8546,
+          "open": true,
+          "latency_ms": 0.1
+        },
+        {
+          "port": 30303,
+          "open": true,
+          "latency_ms": 0.1
+        }
+      ],
+      "total_probed": 7,
+      "risk_flags": [
+        "exposed_geth_rpc",
+        "jenkins_or_http_admin",
+        "ssh_exposed"
+      ],
+      "cvss_estimate": 10.0,
+      "rpc_node_sample": [
+        {
+          "ip": "104.198.118.132",
+          "org": "Google LLC",
+          "country": "JP",
+          "reachable": false,
+          "latency_ms": null,
+          "risk_flags": [],
+          "client_version": null
+        }
+      ],
+      "kpi": {
+        "coverage": {
+          "status": "pass",
+          "open_count": 7
+        },
+        "risk_score": {
+          "status": "pass",
+          "cvss_estimate": 10.0,
+          "flags": [
+            "exposed_geth_rpc",
+            "jenkins_or_http_admin",
+            "ssh_exposed"
+          ]
+        }
+      },
+      "score": 100.0
+    },
+    "skill.timing_analysis": {
+      "agent": "skill.timing_analysis",
+      "best_endpoint": "http://51.222.42.220:8545",
+      "latency_ms_avg": 221.53,
+      "gas_price_gwei": 0.0,
+      "recommended_fee_gwei": 3.0,
+      "sample_tx": null,
+      "kpi": {
+        "accuracy": {
+          "status": "pass",
+          "would_pass_2_blocks_heuristic": true,
+          "note": "Heuristic based on RPC latency + 1.25x gas bump"
+        }
+      },
+      "score": 100.0
+    },
+    "core.execution": {
+      "agent": "core.execution",
+      "dry_run": true,
+      "preflight_ok": true,
+      "gas_estimate": 24029,
+      "queued_path": "/workspace/artifacts/pending_action.json",
+      "kpi": {
+        "safety": {
+          "status": "pass",
+          "gate_blocked": "Broadcast blocked — PendingAction requires explicit approval",
+          "broadcaster_blocked": "Operator approval required — set pending_action.json status to approved"
+        },
+        "formatting": {
+          "status": "pass",
+          "data_prefix": "0xa9059cbb",
+          "data_length": 138
+        }
+      },
+      "score": 100.0
+    }
+  },
+  "finished_at": "2026-07-10T11:00:21.646935+00:00",
+  "ranking": [
+    {
+      "agent": "core.monitor",
+      "score": 100.0
+    },
+    {
+      "agent": "core.forensics",
+      "score": 100.0
+    },
+    {
+      "agent": "skill.recon_osint",
+      "score": 100.0
+    },
+    {
+      "agent": "skill.timing_analysis",
+      "score": 100.0
+    },
+    {
+      "agent": "core.execution",
+      "score": 100.0
+    }
+  ],
+  "overall_score": 100.0,
+  "recommendations": [
+    "All agents within KPI bounds — proceed to live operator orders."
+  ]
+}

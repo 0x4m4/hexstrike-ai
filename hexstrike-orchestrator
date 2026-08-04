@@ -1,0 +1,4 @@
+#!/bin/bash
+# HexStrike Orchestrator — separate from Cursor chat agent
+ROOT="$(cd "$(dirname "$0")" && pwd)"
+exec python3 "$ROOT/scripts/hexstrike-orchestrator.py" "$@"

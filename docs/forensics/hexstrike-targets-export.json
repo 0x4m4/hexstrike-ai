@@ -1,0 +1,230 @@
+{
+  "generated_at": "2026-07-14T17:34:51Z",
+  "purpose": "HexStrike targets export replacing failed Redis RDB migration",
+  "count_addresses": 29,
+  "count_infra": 2,
+  "targets": [
+    {
+      "address": "0xb80a582fa430645a043bb4f6135321ee01005fef",
+      "label": "Rhino.fi Bridge",
+      "role": "primary_sink_hub",
+      "source": "canonical"
+    },
+    {
+      "address": "0x4943f5e7f4e450d48ae82026163ecde8a52c53da",
+      "label": "Hot Wallet Base",
+      "role": "hot_wallet_base",
+      "source": "live_audit"
+    },
+    {
+      "address": "0x5ab2790be0ade18af686f38c5321af1d8daa3192",
+      "label": "Rhino impl",
+      "role": "bridge_implementation",
+      "source": "eip1967"
+    },
+    {
+      "address": "0xb8ee2cd0e210fac991e441dba767082d9cdceec3",
+      "label": "Rhino proxy admin",
+      "role": "bridge_proxy_admin",
+      "source": "eip1967"
+    },
+    {
+      "address": "0xc38a2eb3aa44f52b0516d5c171114815bc2f28fa",
+      "label": "Rhino impl owner",
+      "role": "bridge_owner",
+      "source": "cast_owner"
+    },
+    {
+      "address": "0x730ea0231808f42a20f8921ba7fbc788226768f5",
+      "label": "authority",
+      "role": "authority",
+      "source": "/opt/hexstrike-ai/artifacts/infra-targets.json"
+    },
+    {
+      "address": null,
+      "ip": "51.222.42.220",
+      "label": null,
+      "role": "infra",
+      "source": "/opt/hexstrike-ai/artifacts/infra-targets.json",
+      "priority": null
+    },
+    {
+      "address": null,
+      "ip": "51.250.97.223",
+      "label": null,
+      "role": "infra",
+      "source": "/opt/hexstrike-ai/artifacts/infra-targets.json",
+      "priority": null
+    },
+    {
+      "address": "0xcfc85f21f5f01ab24d6b7a3b93ef097099ebde3a",
+      "label": "mentioned",
+      "role": "mentioned",
+      "source": "/opt/hexstrike-ai/artifacts/forensics/hot-wallet-dossier.json"
+    },
+    {
+      "address": "0x85db346be1d9d5d8ec4f57acf0067fbe53a6e846",
+      "label": "mentioned",
+      "role": "mentioned",
+      "source": "/opt/hexstrike-ai/artifacts/forensics/hot-wallet-dossier.json"
+    },
+    {
+      "address": "0x4848489f0b2bedd788c696e2d79b6b69d7484848",
+      "label": "mentioned",
+      "role": "mentioned",
+      "source": "/opt/hexstrike-ai/artifacts/forensics/hot-wallet-dossier.json"
+    },
+    {
+      "address": "0x161ba15a5f335c9f06bb5bbb0a9ce14076fbb645",
+      "label": "cex_related",
+      "role": "cex_related",
+      "source": "/opt/hexstrike-ai/artifacts/forensics/hot-wallet-dossier.json"
+    },
+    {
+      "address": "0x5f8afd3a9ca31c919f9989c7c46ca6b484a47a7d",
+      "label": "mentioned",
+      "role": "mentioned",
+      "source": "/opt/hexstrike-ai/artifacts/forensics/hot-wallet-dossier.json"
+    },
+    {
+      "address": "0xd99d6f813881d688fd753f5ea816880d1b82545d",
+      "label": "mentioned",
+      "role": "mentioned",
+      "source": "/opt/hexstrike-ai/artifacts/forensics/hot-wallet-dossier.json"
+    },
+    {
+      "address": "0x057a37a4c627ff7d35207c968ebfad4d9c1dd4dd",
+      "label": "mentioned",
+      "role": "mentioned",
+      "source": "/opt/hexstrike-ai/artifacts/forensics/hot-wallet-dossier.json"
+    },
+    {
+      "address": "0xf64046d018a29f7a042b16485acb495354d2ef19",
+      "label": "mentioned",
+      "role": "mentioned",
+      "source": "/opt/hexstrike-ai/artifacts/forensics/hot-wallet-dossier.json"
+    },
+    {
+      "address": "0xf1151e238fdd9ee6f67988bc0742215f5a5487c8",
+      "label": "mentioned",
+      "role": "mentioned",
+      "source": "/opt/hexstrike-ai/artifacts/forensics/hot-wallet-dossier.json"
+    },
+    {
+      "address": "0x511fffe09658f159bd9623252c608f3bc6886730",
+      "label": "mentioned",
+      "role": "mentioned",
+      "source": "/opt/hexstrike-ai/artifacts/forensics/hot-wallet-dossier.json"
+    },
+    {
+      "address": "0xe8b6270d8f30f93a200b2ce2e6606c080549b622",
+      "label": "mentioned",
+      "role": "mentioned",
+      "source": "/opt/hexstrike-ai/artifacts/forensics/hot-wallet-dossier.json"
+    },
+    {
+      "address": "0xc6bcdf194158e8798e006eac543d4aae9ff5e8c3",
+      "label": "mentioned",
+      "role": "mentioned",
+      "source": "/opt/hexstrike-ai/artifacts/forensics/hot-wallet-dossier.json"
+    },
+    {
+      "address": "0x2b873caee93a49ccd8d7d3a244022bc20198427f",
+      "label": "mentioned",
+      "role": "mentioned",
+      "source": "/opt/hexstrike-ai/artifacts/forensics/hot-wallet-dossier.json"
+    },
+    {
+      "address": "0x1477d88734073f416762a2ad02496b54fcad8514",
+      "label": "mentioned",
+      "role": "mentioned",
+      "source": "/opt/hexstrike-ai/artifacts/forensics/hot-wallet-dossier.json"
+    },
+    {
+      "address": "0x4576506b0692bdeff82b0ba2126d19abed914e9b",
+      "label": "mentioned",
+      "role": "mentioned",
+      "source": "/opt/hexstrike-ai/artifacts/forensics/hot-wallet-dossier.json"
+    },
+    {
+      "address": "0xc3b1a67aa3f7d6db952186e23eb0d070223fe6f6",
+      "label": "mentioned",
+      "role": "mentioned",
+      "source": "/opt/hexstrike-ai/artifacts/forensics/hot-wallet-dossier.json"
+    },
+    {
+      "address": "0x1fd5ad6381b43894faa716b233dd129feed73d84",
+      "label": "mentioned",
+      "role": "mentioned",
+      "source": "/opt/hexstrike-ai/artifacts/forensics/hot-wallet-dossier.json"
+    },
+    {
+      "address": "0x44c42dcdfbf682a9eb6c42298e20cfd9875d7a2d",
+      "label": "mentioned",
+      "role": "mentioned",
+      "source": "/opt/hexstrike-ai/artifacts/forensics/hot-wallet-dossier.json"
+    },
+    {
+      "address": "0xde961994dc5e6d36c0620b71909d1e14b24cb195",
+      "label": "mentioned",
+      "role": "mentioned",
+      "source": "/opt/hexstrike-ai/artifacts/forensics/hot-wallet-dossier.json"
+    },
+    {
+      "address": "0x69d12072260e6559c83533e4061cf78d975caae1",
+      "label": "mentioned",
+      "role": "mentioned",
+      "source": "/opt/hexstrike-ai/artifacts/forensics/hot-wallet-dossier.json"
+    },
+    {
+      "address": "0xf4fa192f3d86c96418557c16132724d776ab81ab",
+      "label": "mentioned",
+      "role": "mentioned",
+      "source": "/opt/hexstrike-ai/artifacts/forensics/hot-wallet-dossier.json"
+    },
+    {
+      "address": "0x6e2a5ce272a8b5821f80e7dacc171eb8d026bae5",
+      "label": "mentioned",
+      "role": "mentioned",
+      "source": "/opt/hexstrike-ai/artifacts/forensics/hot-wallet-dossier.json"
+    },
+    {
+      "address": "0x6973b5ad847b5d3b742d32ff8d30e949c2cffd67",
+      "label": "mentioned",
+      "role": "mentioned",
+      "source": "/opt/hexstrike-ai/artifacts/forensics/hot-wallet-dossier.json"
+    }
+  ],
+  "critical": [
+    {
+      "address": "0xb80a582fa430645a043bb4f6135321ee01005fef",
+      "label": "Rhino.fi Bridge",
+      "role": "primary_sink_hub",
+      "source": "canonical"
+    },
+    {
+      "address": "0x4943f5e7f4e450d48ae82026163ecde8a52c53da",
+      "label": "Hot Wallet Base",
+      "role": "hot_wallet_base",
+      "source": "live_audit"
+    },
+    {
+      "address": "0x5ab2790be0ade18af686f38c5321af1d8daa3192",
+      "label": "Rhino impl",
+      "role": "bridge_implementation",
+      "source": "eip1967"
+    },
+    {
+      "address": "0xb8ee2cd0e210fac991e441dba767082d9cdceec3",
+      "label": "Rhino proxy admin",
+      "role": "bridge_proxy_admin",
+      "source": "eip1967"
+    },
+    {
+      "address": "0xc38a2eb3aa44f52b0516d5c171114815bc2f28fa",
+      "label": "Rhino impl owner",
+      "role": "bridge_owner",
+      "source": "cast_owner"
+    }
+  ]
+}

@@ -1,0 +1,5 @@
+{
+  "workflow": "operator-lab",
+  "env": {},
+  "note": "Operator lab — run crypto-audit.sh on Mac manually for proof-key surface"
+}

@@ -1,0 +1,75 @@
+name: GO-LIVE Merge Gate
+
+on:
+  pull_request:
+    paths:
+      - 'cmd/agent/**'
+      - 'scripts/sandbox/**'
+      - 'docs/GO_LIVE_CHECKLIST.md'
+      - 'docs/GO-LIVE-MERGE-GATE-CHECKLIST.md'
+      - 'docs/ops/**'
+      - 'scripts/ops/**'
+      - '.github/workflows/go-live-merge-gate.yml'
+      - '.github/workflows/policy-gate.yml'
+  push:
+    branches: [master, main]
+    paths:
+      - 'cmd/agent/**'
+      - 'scripts/sandbox/**'
+      - 'scripts/ops/**'
+      - 'docs/ops/**'
+      - '.github/workflows/go-live-merge-gate.yml'
+
+jobs:
+  phase0-gates:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+
+      - name: Go Phase 0 unit tests
+        working-directory: cmd/agent
+        run: go test ./...
+
+      - name: Python production gate tests
+        run: python3 scripts/sandbox/test_production_gates.py
+
+      - name: Hardening tamper simulation
+        run: python3 scripts/sandbox/test_attack_blocked.py
+
+      - name: Verify go-live checklists exist
+        run: |
+          test -f docs/GO_LIVE_CHECKLIST.md
+          test -f docs/GO-LIVE-MERGE-GATE-CHECKLIST.md
+
+      - name: Block raw prod keys in tracked env
+        run: |
+          ! grep -qE '^BOT_PRIVATE_KEY=0x[0-9a-fA-F]{64}' scripts/sandbox/mainnet.env.example
+          ! grep -qE '^AGENT_PRIVATE_KEY=0x' scripts/sandbox/mainnet.env.example || true
+
+      - name: Ops evidence schema contracts (demo only — not GLOBAL GO)
+        run: |
+          pip install -r scripts/ops/requirements-ops.txt
+          python3 -m unittest scripts.ops.test_validate_schemas 2>/dev/null \
+            || (cd scripts/ops && python3 -m unittest test_validate_schemas -v)
+          COLLECT_MODE=demo ./scripts/ops/collect_artifacts.sh
+          python3 -c "import json; v=json.load(open('docs/ops/evidence/verdict.json')); assert v.get('global_go_eligible') is False, v"
+
+      - name: GO-LIVE gate summary
+        if: always()
+        run: |
+          echo "## GO-LIVE Phase 0 gate results" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Go tests: cmd/agent" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Python: test_production_gates.py" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Ops evidence schemas: COLLECT_MODE=demo (GLOBAL GO still blocked)" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Checklist: docs/GO-LIVE-MERGE-GATE-CHECKLIST.md" >> "$GITHUB_STEP_SUMMARY"

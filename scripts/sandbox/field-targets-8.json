@@ -1,0 +1,85 @@
+{
+  "generated_at": "2026-07-13T00:00:00Z",
+  "exclusive": true,
+  "purpose": "Phase-4: Arkham label propagation + extended outflow trace on key counterparties",
+  "source_reports": [
+    "docs/recon/CROSSCHAIN-PHASE3-20260713.json",
+    "docs/recon/SWEEP-PHASE2-AUDIT-20260713.json",
+    "artifacts/cex-cluster-map.json",
+    "artifacts/hot-wallet-onchain-graph.json"
+  ],
+  "wallets": [
+    {
+      "role": "hot_wallet",
+      "address": "0x4943F5E7F4e450d48Ae82026163ecDe8A52C53dA",
+      "chain": "MULTI",
+      "chain_id": 0,
+      "priority": 1,
+      "labels": {"report": "entity-id", "multichain": true},
+      "context": {"chains": ["BSC", "BASE"], "arkham_priority": 1}
+    },
+    {
+      "role": "authority",
+      "address": "0x730ea0231808f42a20f8921ba7fbc788226768f5",
+      "chain": "BSC",
+      "chain_id": 56,
+      "priority": 2,
+      "labels": {"classification": "EIP-7702 authority delegate"},
+      "context": {"impl": "0x314C01e758a7911e7339aa4F960C7749E8947775"}
+    },
+    {
+      "role": "sweep_router_primary",
+      "address": "0x55ed7fcd17b93fbcd5186cda01af6fed4ec78e08",
+      "chain": "BSC",
+      "chain_id": 56,
+      "priority": 3,
+      "labels": {"classification": "EIP-7702 sweep delegate"},
+      "context": {"usdt_from_hot": 12268.34}
+    },
+    {
+      "role": "sweep_router_secondary",
+      "address": "0x3e0b65c9c31e9593e2b357be6eecd28bef6da03e",
+      "chain": "BSC",
+      "chain_id": 56,
+      "priority": 4,
+      "labels": {"classification": "EIP-7702 sweep delegate"},
+      "context": {"usdt_from_hot": 9758.49}
+    },
+    {
+      "role": "sweep_router_tertiary",
+      "address": "0x3a8b628934f9db7999499905bbf767331266b5b5",
+      "chain": "BSC",
+      "chain_id": 56,
+      "priority": 5,
+      "labels": {"classification": "EIP-7702 sweep delegate"},
+      "context": {"usdt_from_hot": 7462.49}
+    },
+    {
+      "role": "rhino_hub",
+      "address": "0xb80a582fa430645a043bb4f6135321ee01005fef",
+      "chain": "BSC",
+      "chain_id": 56,
+      "priority": 6,
+      "labels": {"bscscan_label": "Rhino.fi: Bridge"},
+      "context": {"role": "cross-chain exit sink"}
+    },
+    {
+      "role": "binance_funder",
+      "address": "0x161ba15a5f335c9f06bb5bbb0a9ce14076fbb645",
+      "chain": "BSC",
+      "chain_id": 56,
+      "priority": 7,
+      "labels": {"bscscan_label": "Binance Hot Wallet 11"},
+      "context": {"funded_hot_usdt": 1100000}
+    },
+    {
+      "role": "eip7702_implementation",
+      "address": "0x314C01e758a7911e7339aa4F960C7749E8947775",
+      "chain": "BSC",
+      "chain_id": 56,
+      "priority": 8,
+      "labels": {"classification": "shared payment delegate"},
+      "context": {"delegated_count": 4}
+    }
+  ]
+}

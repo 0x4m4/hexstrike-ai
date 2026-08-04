@@ -1,0 +1,45 @@
+{
+  "generated_at": "2026-07-14T17:34:51Z",
+  "agent": "HexStrike-01",
+  "status": "COMPLETE",
+  "ssh": "key-only; ssh hexstrike-vps",
+  "rhino_fi": {
+    "address": "0xb80a582fa430645a043bb4f6135321ee01005fef",
+    "status": "AUDIT_COMPLETE",
+    "impl": "0x5ab2790be0ade18af686f38c5321af1d8daa3192",
+    "admin": "0xb8ee2cd0e210fac991e441dba767082d9cdceec3",
+    "owner": "0xc38a2eB3aA44F52b0516d5C171114815Bc2f28Fa",
+    "balance_bnb_approx": 74.76
+  },
+  "hot_wallet_base": {
+    "address": "0x4943f5e7f4e450d48ae82026163ecde8a52c53da",
+    "balance_usdc": 830432.157876,
+    "nonce": 72943,
+    "current_nonzero_allowances": [],
+    "recent_approval_events_11d": 0,
+    "verdict": "NO_CURRENT_USDC_ALLOWANCES \u2014 checked DEX/bridge/Permit2 spenders all zero; no Approval events in recent ~11d window"
+  },
+  "targets_export": {
+    "path": "/data/pentest/reports/hexstrike-targets-export.json",
+    "addresses": 29,
+    "infra": 2,
+    "critical": 5
+  },
+  "redis_migration": {
+    "status": "CLOSED_WRONG_DATASET",
+    "rdb": "/tmp/hex_migration.rdb",
+    "verdict": "NOT_HEXSTRIKE_TARGETS_DB \u2014 strings show device-fleet/C2-like keys (INFECTED/SCREENSHOT/JobScheduler). Zero Rhino/hot-wallet target strings.",
+    "replacement": "use hexstrike-targets-export.json"
+  },
+  "open_items": [
+    "Paste real ETHERSCAN_API_KEY for full Base Approval archive + contract source",
+    "Confirm Mac Redis 8.8 (INFECTED/SCREENSHOT/sim:ss7) is expected lab state or IR incident"
+  ],
+  "files": [
+    "/data/pentest/reports/chef-infra-status-FINAL-2026-07-14.json",
+    "/data/pentest/reports/base-hotwallet-approvals.json",
+    "/data/pentest/reports/hexstrike-targets-export.json",
+    "/data/pentest/reports/redis-mac-rdb-ir.json",
+    "/data/pentest/reports/rhino-bridge-address.json"
+  ]
+}

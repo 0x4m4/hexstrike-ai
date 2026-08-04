@@ -1,0 +1,42 @@
+{
+  "run_id": "437bc9d22d9a",
+  "type": "workflow",
+  "workflow": "operator-lab",
+  "description": "Operator preflight: balance check + crypto audit + checklist",
+  "started_at": "2026-07-10T08:19:27Z",
+  "finished_at": "2026-07-10T08:19:30Z",
+  "success": true,
+  "steps": [
+    {
+      "agent": "Agent-Report-06",
+      "task": "operator-balance-check",
+      "started_at": "2026-07-10T08:19:27Z",
+      "finished_at": "2026-07-10T08:19:28Z",
+      "exit_code": 0,
+      "stdout": "{\"success\": true, \"output\": \"/Volumes/Eva/mufasaai-storage/hexstrike-ai/artifacts/operator-balance.json\", \"bnb\": 0.015054312, \"usdt\": 0.0, \"ready\": false}\nBNB : 0.01505431 OK\nUSDT: 0.0000 DEPOSIT 10-20 USDT from Binance BEP-20\n\u2192 Withdraw USDT (BEP-20) to 0x85dB346BE1d9d5D8ec4F57acf0067FbE53a6E846\n\u2192 Agent-Report-06 / operator-balance-check via scripts/agents/agent_operator_balance.py",
+      "stderr": "",
+      "success": true
+    },
+    {
+      "agent": "Agent-Report-06",
+      "task": "operator-crypto-audit",
+      "started_at": "2026-07-10T08:19:28Z",
+      "finished_at": "2026-07-10T08:19:30Z",
+      "exit_code": 0,
+      "stdout": "    704 Jul  8 22:15 evidence\n-rw-r--r--   1 mufasaai  staff     257 Jul  8 19:19 evidence.sha256\n-rw-r--r--   1 mufasaai  staff   12033 Jul  7 14:06 exchanges_gateways.md\ndrwxr-xr-x   2 mufasaai  staff      64 Jul  8 19:27 logs\n-rw-r--r--   1 mufasaai  staff  782123 Jul  9 12:47 mempool-watch.log\n-rw-r--r--   1 mufasaai  staff   56442 Jul  7 14:06 shodan_findings.md\ndrwxr-xr-x  11 mufasaai  staff     352 Jul  9 09:44 subnet-scan\ndrwxr-xr-x  18 mufasaai  staff     576 Jul  8 22:20 tools\n-rw-r--r--   1 mufasaai  staff    1124 Jul  9 21:14 wallets-found.json\n\n--- Grep PRIVATE_KEY (operator paths only, no venv noise) ---\n/Users/mufasaai/Desktop/redteam/tools/validate-key.py\n/Users/mufasaai/Desktop/redteam/tools/test-drain-poc.py\n/Users/mufasaai/Desktop/redteam/MCP_PENTEST_MAP.md\n/Users/mufasaai/Desktop/redteam/KEY_HUNT.md\n/Users/mufasaai/create-proof-wallet.js\n/Users/mufasaai/send-proof.js\n\n--- Cursor MCP config (no secrets dump) ---\nno mcp.json\n\n--- npm/pip crypto deps (top) ---\neth_abi                                  6.0.0b1\neth-account                              0.13.7\neth-hash                                 0.8.0\neth-keyfile                              0.8.1\neth-keys                                 0.7.0\neth-rlp                                  2.2.0\neth-typing                               6.0.0\neth-utils                                6.0.0\nweb3                                     7.16.0\n\n--- Warnings ---\n  CRITICAL: proof-key.txt is 755 (world/group readable) \u2014 run: chmod 600 /Users/mufasaai/proof-key.txt\n\n--- Recommendations ---\n1. proof-key.txt: chmod 600, store on Eva (/Volumes/Eva/secrets/), symlink to ~\n2. redteam/tools/test-drain-poc.py: quarantine \u2014 operator lab only, never third-party treasury\n3. No signing tools in MCP; no mcp.json env secrets\n4. pip-audit / npm audit on projects that touch web3\nSaved: /Volumes/Eva/mufasaai-storage/hexstrike-ai/artifacts/operator-crypto-audit.txt\n\u2192 Agent-Report-06 / operator-crypto-audit via scripts/crypto-audit.sh",
+      "stderr": "",
+      "success": true
+    },
+    {
+      "agent": "Agent-Report-06",
+      "task": "generate-defensive-checklist",
+      "started_at": "2026-07-10T08:19:30Z",
+      "finished_at": "2026-07-10T08:19:30Z",
+      "exit_code": 0,
+      "stdout": "Wrote /Volumes/Eva/mufasaai-storage/hexstrike-ai/artifacts/defensive-audit-template.md\n\u2192 Agent-Report-06 / generate-defensive-checklist via scripts/agents/agent_report_06.py",
+      "stderr": "",
+      "success": true
+    }
+  ],
+  "findings_path": "/Volumes/Eva/mufasaai-storage/hexstrike-ai/artifacts/orchestrator/437bc9d22d9a-findings.json"
+}

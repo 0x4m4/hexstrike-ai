@@ -1,0 +1,6 @@
+{
+  "fee_wallet": "0x9d38606c16e6c4f7b1ed4224ea5724ff5c6e710d",
+  "commission_pct": "15-20",
+  "delivery": "telegram_saas",
+  "addresses": ["0x9d38606c16e6c4f7b1ed4224ea5724ff5c6e710d"]
+}
