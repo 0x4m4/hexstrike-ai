@@ -1,0 +1,175 @@
+{
+  "dashboard": {
+    "title": "HexStrike AI Security Operations Dashboard",
+    "tags": ["hexstrike", "security", "monitoring"],
+    "timezone": "browser",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Total Scans Executed",
+        "type": "stat",
+        "gridPos": { "x": 0, "y": 0, "w": 6, "h": 4 },
+        "targets": [
+          {
+            "expr": "hexstrike_commands_executed_total",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": { "mode": "thresholds" },
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                { "value": 0, "color": "green" },
+                { "value": 100, "color": "yellow" },
+                { "value": 500, "color": "red" }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 2,
+        "title": "Success Rate",
+        "type": "gauge",
+        "gridPos": { "x": 6, "y": 0, "w": 6, "h": 4 },
+        "targets": [
+          {
+            "expr": "hexstrike_success_rate",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "min": 0,
+            "max": 100,
+            "unit": "percent",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                { "value": 0, "color": "red" },
+                { "value": 50, "color": "yellow" },
+                { "value": 80, "color": "green" }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 3,
+        "title": "Active Processes",
+        "type": "stat",
+        "gridPos": { "x": 12, "y": 0, "w": 6, "h": 4 },
+        "targets": [
+          {
+            "expr": "hexstrike_active_processes",
+            "refId": "A"
+          }
+        ]
+      },
+      {
+        "id": 4,
+        "title": "System CPU Usage",
+        "type": "graph",
+        "gridPos": { "x": 0, "y": 4, "w": 12, "h": 6 },
+        "targets": [
+          {
+            "expr": "hexstrike_cpu_percent",
+            "refId": "A",
+            "legendFormat": "CPU %"
+          }
+        ],
+        "yaxes": [
+          {
+            "format": "percent",
+            "min": 0,
+            "max": 100
+          }
+        ]
+      },
+      {
+        "id": 5,
+        "title": "Memory Usage",
+        "type": "graph",
+        "gridPos": { "x": 12, "y": 4, "w": 12, "h": 6 },
+        "targets": [
+          {
+            "expr": "hexstrike_memory_percent",
+            "refId": "A",
+            "legendFormat": "Memory %"
+          }
+        ]
+      },
+      {
+        "id": 6,
+        "title": "Command Execution Time",
+        "type": "graph",
+        "gridPos": { "x": 0, "y": 10, "w": 12, "h": 6 },
+        "targets": [
+          {
+            "expr": "rate(hexstrike_command_duration_seconds_sum[5m]) / rate(hexstrike_command_duration_seconds_count[5m])",
+            "refId": "A",
+            "legendFormat": "Avg Execution Time"
+          }
+        ]
+      },
+      {
+        "id": 7,
+        "title": "Tool Usage Statistics",
+        "type": "table",
+        "gridPos": { "x": 12, "y": 10, "w": 12, "h": 6 },
+        "targets": [
+          {
+            "format": "table",
+            "rawSql": "SELECT scan_type, COUNT(*) as count FROM scan_results GROUP BY scan_type ORDER BY count DESC LIMIT 10",
+            "refId": "A"
+          }
+        ]
+      },
+      {
+        "id": 8,
+        "title": "Recent Vulnerabilities",
+        "type": "table",
+        "gridPos": { "x": 0, "y": 16, "w": 24, "h": 8 },
+        "targets": [
+          {
+            "format": "table",
+            "rawSql": "SELECT severity, title, cve_id, discovered_at FROM vulnerabilities ORDER BY discovered_at DESC LIMIT 20",
+            "refId": "A"
+          }
+        ]
+      },
+      {
+        "id": 9,
+        "title": "Cache Performance",
+        "type": "stat",
+        "gridPos": { "x": 18, "y": 0, "w": 6, "h": 4 },
+        "targets": [
+          {
+            "expr": "hexstrike_cache_hit_rate",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                { "value": 0, "color": "red" },
+                { "value": 50, "color": "yellow" },
+                { "value": 80, "color": "green" }
+              ]
+            }
+          }
+        }
+      }
+    ],
+    "refresh": "5s",
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    }
+  }
+}

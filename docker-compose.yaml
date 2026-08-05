@@ -1,0 +1,155 @@
+version: '3.9'
+
+services:
+  # HexStrike AI Server
+  hexstrike-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: hexstrike-ai-server
+    hostname: hexstrike-server
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./results:/app/results
+      - ./logs:/app/logs
+      - ./configs:/app/configs
+    environment:
+      - DEBUG=false
+      - MAX_WORKERS=4
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=hexstrike
+      - POSTGRES_USER=hexstrike
+      - POSTGRES_PASSWORD=hexstrike_secure_pass_2024
+    restart: unless-stopped
+    networks:
+      - hexstrike-network
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    depends_on:
+      - redis
+      - postgres
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.hexstrike.rule=Host(`hexstrike.local`)"
+      - "traefik.http.services.hexstrike.loadbalancer.server.port=8888"
+
+  # Redis for caching
+  redis:
+    image: redis:7-alpine
+    container_name: hexstrike-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    restart: unless-stopped
+    networks:
+      - hexstrike-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # PostgreSQL for results storage
+  postgres:
+    image: postgres:15-alpine
+    container_name: hexstrike-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: hexstrike
+      POSTGRES_USER: hexstrike
+      POSTGRES_PASSWORD: hexstrike_secure_pass_2024
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    restart: unless-stopped
+    networks:
+      - hexstrike-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hexstrike"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Prometheus for metrics collection
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: hexstrike-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    restart: unless-stopped
+    networks:
+      - hexstrike-network
+    depends_on:
+      - hexstrike-server
+
+  # Grafana for visualization
+  grafana:
+    image: grafana/grafana:latest
+    container_name: hexstrike-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=hexstrike_admin_2024
+      - GF_INSTALL_PLUGINS=redis-datasource
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources:ro
+    restart: unless-stopped
+    networks:
+      - hexstrike-network
+    depends_on:
+      - prometheus
+      - postgres
+
+  # Traefik reverse proxy
+  traefik:
+    image: traefik:v2.10
+    container_name: hexstrike-traefik
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"  # Traefik dashboard
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik/traefik.yml:/etc/traefik/traefik.yml
+      - ./traefik/dynamic:/etc/traefik/dynamic
+    restart: unless-stopped
+    networks:
+      - hexstrike-network
+
+networks:
+  hexstrike-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.25.0.0/16
+
+volumes:
+  redis_data:
+  postgres_data:
+  prometheus_data:
+  grafana_data:
