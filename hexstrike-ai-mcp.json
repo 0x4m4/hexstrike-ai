@@ -1,14 +1,42 @@
 {
   "mcpServers": {
-    "hexstrike-ai": {
+    "hexstrike-ai-guided": {
       "command": "python3",
       "args": [
-        "/path/hexstrike_mcp.py",
+        "/absolute/path/to/hexstrike-ai/hexstrike_mcp.py",
         "--server",
-        "http://IPADDRESS:8888"
+        "http://127.0.0.1:8888",
+        "--timeout",
+        "300"
       ],
-      "description": "HexStrike AI v6.0 - Advanced Cybersecurity Automation Platform. Turn off alwaysAllow if you dont want autonomous execution!",
+      "description": "HexStrike AI v6.0 guided profile with discovery and planning tools pre-approved.",
       "timeout": 300,
+      "disabled": false,
+      "alwaysAllow": [
+        "server_health",
+        "get_cache_stats",
+        "get_telemetry",
+        "list_active_processes",
+        "get_process_dashboard",
+        "analyze_target_intelligence",
+        "select_optimal_tools_ai",
+        "optimize_tool_parameters_ai",
+        "create_attack_chain_ai",
+        "intelligent_smart_scan"
+      ]
+    },
+    "hexstrike-ai-full-auto": {
+      "command": "python3",
+      "args": [
+        "/absolute/path/to/hexstrike-ai/hexstrike_mcp.py",
+        "--server",
+        "http://127.0.0.1:8888",
+        "--timeout",
+        "300"
+      ],
+      "description": "HexStrike AI v6.0 unrestricted profile. Enable intentionally after validation.",
+      "timeout": 300,
+      "disabled": true,
       "alwaysAllow": []
     }
   }

@@ -1,0 +1,75 @@
+{
+  "version": "1.0.0",
+  "surface_name": "hexstrike-ai",
+  "server": {
+    "default_url": "http://127.0.0.1:8888",
+    "health_endpoint": "/health",
+    "mcp_entrypoint": "hexstrike_mcp.py"
+  },
+  "profiles": {
+    "guided": {
+      "description": "Default safe profile for planning and guided execution",
+      "enabled_by_default": true,
+      "always_allow_tools": [
+        "server_health",
+        "get_cache_stats",
+        "get_telemetry",
+        "list_active_processes",
+        "get_process_dashboard",
+        "analyze_target_intelligence",
+        "select_optimal_tools_ai",
+        "optimize_tool_parameters_ai",
+        "create_attack_chain_ai",
+        "intelligent_smart_scan"
+      ]
+    },
+    "full_auto": {
+      "description": "Unrestricted execution profile for advanced operators",
+      "enabled_by_default": false,
+      "always_allow_tools": []
+    }
+  },
+  "cli_sequence_defaults": [
+    "server_health",
+    "analyze_target_intelligence",
+    "select_optimal_tools_ai",
+    "optimize_tool_parameters_ai",
+    "intelligent_smart_scan",
+    "get_process_dashboard"
+  ],
+  "route_groups": {
+    "health_and_env": [
+      "/health",
+      "/api/telemetry",
+      "/api/cache/stats"
+    ],
+    "tool_execution": [
+      "/api/tools/*"
+    ],
+    "process_management": [
+      "/api/processes/*"
+    ],
+    "ai_orchestration": [
+      "/api/intelligence/*"
+    ],
+    "workflows": [
+      "/api/bugbounty/*"
+    ]
+  },
+  "gui_blueprint": {
+    "tabs": [
+      "connect",
+      "target_analysis",
+      "tool_plan",
+      "execution",
+      "findings"
+    ],
+    "backlog_order": [
+      "read_only_dashboard",
+      "guided_quick_scan_wizard",
+      "tool_form_generation",
+      "profile_editor",
+      "run_history"
+    ]
+  }
+}
