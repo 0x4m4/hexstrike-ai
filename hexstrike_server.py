@@ -17260,6 +17260,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run the HexStrike AI API Server")
     parser.add_argument("--debug", action="store_true", help="Enable debug mode")
     parser.add_argument("--port", type=int, default=API_PORT, help=f"Port for the API server (default: {API_PORT})")
+    parser.add_argument("--host", type=str, default=API_HOST, help=f"Host interface to bind (default: {API_HOST}). Use 0.0.0.0 to expose on all interfaces (NOT RECOMMENDED — the API has no authentication).")
     args = parser.parse_args()
 
     if args.debug:
@@ -17268,6 +17269,9 @@ if __name__ == "__main__":
 
     if args.port != API_PORT:
         API_PORT = args.port
+
+    if args.host != API_HOST:
+        API_HOST = args.host
 
     # Enhanced startup messages with beautiful formatting
     startup_info = f"""
@@ -17286,4 +17290,19 @@ if __name__ == "__main__":
         if line.strip():
             logger.info(line)
 
-    app.run(host="0.0.0.0", port=API_PORT, debug=DEBUG_MODE)
+    # SECURITY: Warn loudly when binding to a non-loopback interface. The
+    # HexStrike API has no built-in authentication, so binding to 0.0.0.0 (or
+    # any externally reachable interface) exposes every endpoint — including
+    # arbitrary command execution helpers — to the network.
+    if API_HOST in ("0.0.0.0", "::", ""):
+        warning_msg = (
+            "⚠️  SECURITY WARNING: Binding to 0.0.0.0 exposes the unauthenticated "
+            "HexStrike API on all network interfaces. Anyone able to reach this "
+            "host can invoke every endpoint (including command execution). "
+            "Bind to 127.0.0.1 (the default) unless you have placed the server "
+            "behind an authenticating reverse proxy or firewall."
+        )
+        logger.warning(warning_msg)
+        print(f"\n{ModernVisualEngine.COLORS['CRITICAL']}{warning_msg}{ModernVisualEngine.COLORS['RESET']}\n")
+
+    app.run(host=API_HOST, port=API_PORT, debug=DEBUG_MODE)
