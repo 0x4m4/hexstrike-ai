@@ -1,15 +1,15 @@
 {
   "mcpServers": {
     "hexstrike-ai": {
+      "alwaysAllow": [],
+      "timeout": 300,
       "command": "python3",
       "args": [
         "/path/hexstrike_mcp.py",
         "--server",
         "http://IPADDRESS:8888"
       ],
-      "description": "HexStrike AI v6.0 - Advanced Cybersecurity Automation Platform. Turn off alwaysAllow if you dont want autonomous execution!",
-      "timeout": 300,
-      "alwaysAllow": []
+      "description": "HexStrike AI v6.0 - Advanced Cybersecurity Automation Platform. Turn off alwaysAllow if you dont want autonomous execution!"
     }
   }
 }
