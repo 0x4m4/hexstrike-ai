@@ -19,6 +19,8 @@ Framework: FastMCP integration for AI agent communication
 """
 
 import argparse
+import hmac
+import ipaddress
 import json
 import logging
 import os
@@ -93,6 +95,150 @@ logger = logging.getLogger(__name__)
 # Flask app configuration
 app = Flask(__name__)
 app.config['JSON_SORT_KEYS'] = False
+
+# ── Shared-secret auth gate ─────────────────────────────────────────────
+# HexStrike executes arbitrary commands/code on this host (/api/command,
+# /api/python/execute, etc). This tool is for authorized penetration
+# testing / ethical hacking use only — it must never accept requests it
+# can't authenticate, so the server refuses to start without a token
+# rather than silently running open.
+HEXSTRIKE_API_TOKEN = os.environ.get("HEXSTRIKE_API_TOKEN")
+if not HEXSTRIKE_API_TOKEN:
+    print("FATAL: HEXSTRIKE_API_TOKEN is not set. Refusing to start unauthenticated.")
+    print("Set it in your shell env (e.g. ~/.zshrc_secrets) before running this server.")
+    sys.exit(1)
+
+@app.before_request
+def _require_hexstrike_token():
+    supplied = request.headers.get("X-HexStrike-Token", "")
+    if not hmac.compare_digest(supplied, HEXSTRIKE_API_TOKEN):
+        return jsonify({"error": "unauthorized"}), 401
+
+# ── Engagement scope enforcement ────────────────────────────────────────
+# This tool is for authorized penetration testing / ethical hacking only.
+# Without a scope check, an AI agent chaining tool calls (or content it
+# scraped that contains injected instructions) can drift a target outside
+# the client's written authorization — that's the #1 real-world liability
+# risk for a solo pentester, not a code bug. Enforcement is opt-in via
+# HEXSTRIKE_SCOPE_FILE so existing labs/CTF use isn't broken by default,
+# but any real client engagement should set it.
+HEXSTRIKE_SCOPE_FILE = os.environ.get("HEXSTRIKE_SCOPE_FILE")
+_SCOPE_DOMAINS = set()
+_SCOPE_NETWORKS = []
+
+def _load_scope():
+    global _SCOPE_DOMAINS, _SCOPE_NETWORKS
+    if not HEXSTRIKE_SCOPE_FILE:
+        return
+    try:
+        with open(HEXSTRIKE_SCOPE_FILE) as f:
+            scope = json.load(f)
+        _SCOPE_DOMAINS = {d.lower().lstrip("*.") for d in scope.get("domains", [])}
+        _SCOPE_NETWORKS = [ipaddress.ip_network(n, strict=False) for n in scope.get("networks", [])]
+        logger.info(f"🎯 Scope loaded: {len(_SCOPE_DOMAINS)} domain(s), {len(_SCOPE_NETWORKS)} network(s) from {HEXSTRIKE_SCOPE_FILE}")
+    except Exception as e:
+        logger.error(f"💥 Failed to load scope file {HEXSTRIKE_SCOPE_FILE}: {e}")
+        raise
+
+_load_scope()
+
+_TARGET_KEYS = ("target", "host", "domain", "ip", "url", "rhost", "hostname")
+
+# ── Command-string target extraction ────────────────────────────────────
+# /api/command (and similar free-text endpoints) takes a raw shell string,
+# not structured params — "nmap bank.com" never populates a "target" key,
+# so the JSON-key scope check above can't see it. This is a heuristic
+# second pass over the command text itself. Deliberately conservative:
+# only domains ending in a known real TLD are treated as targets, so
+# ordinary filenames/flags in the command (results.txt, wordlist.txt,
+# nuclei-templates.yaml, config.ini) don't get misread as out-of-scope
+# hosts. It will miss obfuscated/encoded targets — it's a safety net for
+# the common case, not a guarantee.
+_KNOWN_TLDS = frozenset("""
+com net org io co gov edu mil info biz ai dev app xyz online site tech
+cloud shop store live us uk ca au de fr jp cn in br nl ru es it ch se no
+fi dk pl be at nz sg hk kr mx za me tv
+""".split())
+_CMD_DOMAIN_RE = re.compile(r"\b(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}\b")
+_CMD_IPV4_RE = re.compile(r"\b(?:(?:25[0-5]|2[0-4]\d|1?\d{1,2})\.){3}(?:25[0-5]|2[0-4]\d|1?\d{1,2})\b")
+
+def _extract_command_targets(command):
+    if not isinstance(command, str) or not command.strip():
+        return []
+    found = set()
+    for match in _CMD_DOMAIN_RE.findall(command):
+        tld = match.rsplit(".", 1)[-1].lower()
+        if tld in _KNOWN_TLDS:
+            found.add(match.lower())
+    for m in _CMD_IPV4_RE.finditer(command):
+        found.add(m.group(0))
+    return list(found)
+
+def _extract_targets(payload):
+    if not isinstance(payload, dict):
+        return []
+    found = []
+    for key in _TARGET_KEYS:
+        val = payload.get(key)
+        if isinstance(val, str) and val.strip():
+            found.append(val.strip())
+    if isinstance(payload.get("command"), str):
+        found.extend(_extract_command_targets(payload["command"]))
+    return list(dict.fromkeys(found))  # dedup, preserve order
+
+def _host_of(value):
+    v = re.sub(r"^[a-zA-Z][a-zA-Z0-9+.-]*://", "", value)  # strip scheme
+    v = v.split("/")[0].split("?")[0].split(":")[0]         # strip path/query/port
+    return v.lower()
+
+def _in_scope(value):
+    host = _host_of(value)
+    try:
+        ip = ipaddress.ip_address(host)
+        return any(ip in net for net in _SCOPE_NETWORKS)
+    except ValueError:
+        pass
+    return host in _SCOPE_DOMAINS or any(host.endswith("." + d) for d in _SCOPE_DOMAINS)
+
+@app.before_request
+def _enforce_scope():
+    if not HEXSTRIKE_SCOPE_FILE or not (_SCOPE_DOMAINS or _SCOPE_NETWORKS):
+        return  # scope enforcement not configured — opt-in, no-op by default
+    if request.path in ("/health", "/ping"):
+        return
+    payload = request.get_json(silent=True) or {}
+    targets = _extract_targets(payload)
+    out_of_scope = [t for t in targets if not _in_scope(t)]
+    if out_of_scope:
+        logger.warning(f"🚫 OUT-OF-SCOPE request blocked: {request.path} targets={out_of_scope}")
+        return jsonify({"error": "out_of_scope", "targets": out_of_scope}), 403
+
+# ── Audit log ────────────────────────────────────────────────────────────
+# Immutable-ish JSONL trail of every authenticated request: what ran,
+# against what, when. Needed for client deliverables and chain of custody,
+# not optional for a real engagement.
+_audit_logger = logging.getLogger("hexstrike.audit")
+_audit_logger.setLevel(logging.INFO)
+_audit_handler = logging.FileHandler(os.environ.get("HEXSTRIKE_AUDIT_LOG", "hexstrike_audit.jsonl"))
+_audit_handler.setFormatter(logging.Formatter("%(message)s"))
+_audit_logger.addHandler(_audit_handler)
+_audit_logger.propagate = False
+
+@app.after_request
+def _audit_log(response):
+    if request.path not in ("/health", "/ping"):
+        payload = request.get_json(silent=True) or {}
+        _audit_logger.info(json.dumps({
+            "ts": datetime.utcnow().isoformat() + "Z",
+            "remote_addr": request.remote_addr,
+            "method": request.method,
+            "path": request.path,
+            "targets": _extract_targets(payload),
+            "status": response.status_code,
+        }))
+    return response
+
+_SERVER_START_TIME = time.time()
 
 # API Configuration
 API_PORT = int(os.environ.get('HEXSTRIKE_PORT', 8888))
@@ -9020,6 +9166,17 @@ file_manager = FileOperationsManager()
 
 # API Routes
 
+@app.route("/ping", methods=["GET"])
+def ping():
+    """Lightweight liveness check — no tool detection, no subprocess calls.
+    Use this for hex-up startup polling and frequent status checks;
+    use /health when you actually need the full tool-availability sweep."""
+    return jsonify({
+        "status": "ok",
+        "version": "6.0.0",
+        "uptime_seconds": round(time.time() - _SERVER_START_TIME, 2)
+    })
+
 @app.route("/health", methods=["GET"])
 def health_check():
     """Health check endpoint with comprehensive tool detection"""
@@ -17260,6 +17417,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run the HexStrike AI API Server")
     parser.add_argument("--debug", action="store_true", help="Enable debug mode")
     parser.add_argument("--port", type=int, default=API_PORT, help=f"Port for the API server (default: {API_PORT})")
+    parser.add_argument("--host", type=str, default="127.0.0.1", help="Bind host (default: 127.0.0.1, loopback-only)")
     args = parser.parse_args()
 
     if args.debug:
@@ -17286,4 +17444,4 @@ if __name__ == "__main__":
         if line.strip():
             logger.info(line)
 
-    app.run(host="0.0.0.0", port=API_PORT, debug=DEBUG_MODE)
+    app.run(host=args.host, port=API_PORT, debug=DEBUG_MODE)

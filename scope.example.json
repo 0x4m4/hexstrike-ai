@@ -1,0 +1,4 @@
+{
+  "domains": ["example.com"],
+  "networks": ["10.10.0.0/24"]
+}
