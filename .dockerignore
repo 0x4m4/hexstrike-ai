@@ -1,0 +1,15 @@
+.git
+.venv
+node_modules
+.claude-flow
+.claude
+.swarm
+.mcp.json
+__pycache__
+*.pyc
+.env
+hexstrike.log
+package.json
+package-lock.json
+CLAUDE.md
+CLAUDE-FLOW.md
