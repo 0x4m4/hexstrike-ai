@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# hexstrike_mcp.py
 """
 HexStrike AI MCP Client - Enhanced AI Agent Communication Interface
 
@@ -160,34 +161,36 @@ class HexStrikeClient:
         self.session = requests.Session()
 
         # Try to connect to server with retries
-        connected = False
-        for i in range(MAX_RETRIES):
-            try:
-                logger.info(f"🔗 Attempting to connect to HexStrike AI API at {server_url} (attempt {i+1}/{MAX_RETRIES})")
-                # First try a direct connection test before using the health endpoint
+        # If running under an MCP host (stdio not attached to a TTY), skip HTTP health checks to avoid bootstrap delays.
+        if sys.stdin.isatty() or sys.stdout.isatty():
+            connected = False
+            for i in range(MAX_RETRIES):
                 try:
-                    test_response = self.session.get(f"{self.server_url}/health", timeout=5)
-                    test_response.raise_for_status()
-                    health_check = test_response.json()
-                    connected = True
-                    logger.info(f"🎯 Successfully connected to HexStrike AI API Server at {server_url}")
-                    logger.info(f"🏥 Server health status: {health_check.get('status', 'unknown')}")
-                    logger.info(f"📊 Server version: {health_check.get('version', 'unknown')}")
-                    break
-                except requests.exceptions.ConnectionError:
-                    logger.warning(f"🔌 Connection refused to {server_url}. Make sure the HexStrike AI server is running.")
-                    time.sleep(2)  # Wait before retrying
+                    logger.info(f"🔗 Attempting to connect to HexStrike AI API at {server_url} (attempt {i+1}/{MAX_RETRIES})")
+                    try:
+                        test_response = self.session.get(f"{self.server_url}/health", timeout=5)
+                        test_response.raise_for_status()
+                        health_check = test_response.json()
+                        connected = True
+                        logger.info(f"🎯 Successfully connected to HexStrike AI API Server at {server_url}")
+                        logger.info(f"🏥 Server health status: {health_check.get('status', 'unknown')}")
+                        logger.info(f"📊 Server version: {health_check.get('version', 'unknown')}")
+                        break
+                    except requests.exceptions.ConnectionError:
+                        logger.warning(f"🔌 Connection refused to {server_url}. Make sure the HexStrike AI server is running.")
+                        time.sleep(2)
+                    except Exception as e:
+                        logger.warning(f"⚠️  Connection test failed: {str(e)}")
+                        time.sleep(2)
                 except Exception as e:
-                    logger.warning(f"⚠️  Connection test failed: {str(e)}")
-                    time.sleep(2)  # Wait before retrying
-            except Exception as e:
-                logger.warning(f"❌ Connection attempt {i+1} failed: {str(e)}")
-                time.sleep(2)  # Wait before retrying
-
-        if not connected:
-            error_msg = f"Failed to establish connection to HexStrike AI API Server at {server_url} after {MAX_RETRIES} attempts"
-            logger.error(error_msg)
-            # We'll continue anyway to allow the MCP server to start, but tools will likely fail
+                    logger.warning(f"❌ Connection attempt {i+1} failed: {str(e)}")
+                    time.sleep(2)
+            if not connected:
+                error_msg = f"Failed to establish connection to HexStrike AI API Server at {server_url} after {MAX_RETRIES} attempts"
+                logger.error(error_msg)
+                # continue anyway; MCP stdio server will still start
+        else:
+            logger.info("🧪 Stdio host detected (non-TTY). Skipping HTTP health checks and starting MCP stdio immediately.")
 
     def safe_get(self, endpoint: str, params: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """
@@ -419,7 +422,7 @@ def setup_mcp_server(hexstrike_client: HexStrikeClient) -> FastMCP:
     # ============================================================================
 
     @mcp.tool()
-    def prowler_scan(provider: str = "aws", profile: str = "default", region: str = "", checks: str = "", output_dir: str = "/tmp/prowler_output", output_format: str = "json", additional_args: str = "") -> Dict[str, Any]:
+    def prowler_scan(provider: str = "aws", profile: str = "default", region: str = "", checks: str = "", output_dir: str = "/tmp/prowler_output", output_format: str = "json-ocsf", additional_args: str = "") -> Dict[str, Any]:
         """
         Execute Prowler for comprehensive cloud security assessment.
 
@@ -2672,46 +2675,6 @@ def setup_mcp_server(hexstrike_client: HexStrikeClient) -> FastMCP:
             logger.error(f"❌ Dalfox XSS scan failed")
         return result
 
-    @mcp.tool()
-    def httpx_probe(target: str, probe: bool = True, tech_detect: bool = False,
-                   status_code: bool = False, content_length: bool = False,
-                   title: bool = False, web_server: bool = False, threads: int = 50,
-                   additional_args: str = "") -> Dict[str, Any]:
-        """
-        Execute httpx for fast HTTP probing and technology detection.
-
-        Args:
-            target: Target file or single URL
-            probe: Enable probing
-            tech_detect: Enable technology detection
-            status_code: Show status codes
-            content_length: Show content length
-            title: Show page titles
-            web_server: Show web server
-            threads: Number of threads
-            additional_args: Additional httpx arguments
-
-        Returns:
-            Fast HTTP probing results with technology detection
-        """
-        data = {
-            "target": target,
-            "probe": probe,
-            "tech_detect": tech_detect,
-            "status_code": status_code,
-            "content_length": content_length,
-            "title": title,
-            "web_server": web_server,
-            "threads": threads,
-            "additional_args": additional_args
-        }
-        logger.info(f"🌍 Starting httpx probe: {target}")
-        result = hexstrike_client.safe_post("api/tools/httpx", data)
-        if result.get("success"):
-            logger.info(f"✅ httpx probe completed for {target}")
-        else:
-            logger.error(f"❌ httpx probe failed for {target}")
-        return result
 
     @mcp.tool()
     def anew_data_processing(input_data: str, output_file: str = "",
@@ -2907,7 +2870,7 @@ def setup_mcp_server(hexstrike_client: HexStrikeClient) -> FastMCP:
             logger.info(f"🤖 Generating {attack_type} payloads...")
 
             # Generate payloads for this attack type
-            payload_result = self.ai_generate_payload(attack_type, "advanced", "", target_url)
+            payload_result = ai_generate_payload(attack_type, "advanced", "", target_url)
 
             if payload_result.get("success"):
                 payload_data = payload_result.get("ai_payload_generation", {})
@@ -5459,7 +5422,16 @@ def main():
         mcp = setup_mcp_server(hexstrike_client)
         logger.info("🚀 Starting HexStrike AI MCP server")
         logger.info("🤖 Ready to serve AI agents with enhanced cybersecurity capabilities")
-        mcp.run()
+        # Minimal stdio fallback for MCP clients that require stdio transport.
+        try:
+            mcp.run()
+        except AttributeError:
+            # Older/newer FastMCP variants expose an async stdio runner.
+            import asyncio
+            if hasattr(mcp, "run_stdio"):
+                asyncio.run(mcp.run_stdio())
+            else:
+                raise
     except Exception as e:
         logger.error(f"💥 Error starting MCP server: {str(e)}")
         import traceback
