@@ -1,0 +1,53 @@
+{
+  "profiles": {
+    "Bug Bounty Hunting": [
+      "subfinder_scan",
+      "amass_scan",
+      "httpx_probe",
+      "gau_discovery",
+      "waybackurls_discovery",
+      "nuclei_scan",
+      "ffuf_scan",
+      "dirsearch_scan",
+      "bugbounty_reconnaissance_workflow",
+      "bugbounty_vulnerability_hunting",
+      "bugbounty_comprehensive_assessment",
+      "create_vulnerability_report"
+    ],
+    "Exploitation": [
+      "nmap_scan",
+      "metasploit_run",
+      "searchsploit_search",
+      "msfvenom_generate",
+      "hydra_attack",
+      "john_crack",
+      "hashcat_crack",
+      "sqlmap_scan",
+      "commix_scan",
+      "pwntools_exploit",
+      "generate_payload",
+      "ai_generate_payload"
+    ],
+    "Cloud Security": [
+      "prowler_scan",
+      "scout_suite_assessment",
+      "pacu_exploitation",
+      "cloudmapper_analysis",
+      "trivy_scan",
+      "checkov_iac_scan"
+    ],
+    "Full Recon": [
+      "nmap_scan",
+      "masscan_high_speed",
+      "rustscan_fast_scan",
+      "amass_scan",
+      "subfinder_scan",
+      "gobuster_scan",
+      "feroxbuster_scan",
+      "whatweb_scan",
+      "wafw00f_scan",
+      "nikto_scan",
+      "ai_reconnaissance_workflow"
+    ]
+  }
+}
