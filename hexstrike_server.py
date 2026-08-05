@@ -5705,9 +5705,12 @@ class ProcessManager:
 class PythonEnvironmentManager:
     """Manage Python virtual environments and dependencies"""
 
-    def __init__(self, base_dir: str = "/tmp/hexstrike_envs"):
+    def __init__(self, base_dir: str = None):
+        if base_dir is None:
+            import tempfile
+            base_dir = str(Path(tempfile.gettempdir()) / "hexstrike_envs")
         self.base_dir = Path(base_dir)
-        self.base_dir.mkdir(exist_ok=True)
+        self.base_dir.mkdir(exist_ok=True, parents=True)
 
     def create_venv(self, env_name: str) -> Path:
         """Create a new virtual environment"""
@@ -5721,6 +5724,9 @@ class PythonEnvironmentManager:
         """Install a package in the specified environment"""
         env_path = self.create_venv(env_name)
         pip_path = env_path / "bin" / "pip"
+        if not pip_path.exists():
+            # Windows uses Scripts\pip.exe
+            pip_path = env_path / "Scripts" / "pip.exe"
 
         try:
             result = subprocess.run([str(pip_path), "install", package],
@@ -5738,7 +5744,11 @@ class PythonEnvironmentManager:
     def get_python_path(self, env_name: str) -> str:
         """Get Python executable path for environment"""
         env_path = self.create_venv(env_name)
-        return str(env_path / "bin" / "python")
+        python_path = env_path / "bin" / "python"
+        if not python_path.exists():
+            # Windows
+            python_path = env_path / "Scripts" / "python.exe"
+        return str(python_path)
 
 # Global environment manager
 env_manager = PythonEnvironmentManager()
@@ -8928,9 +8938,12 @@ def _determine_operation_type(tool_name: str) -> str:
 class FileOperationsManager:
     """Handle file operations with security and validation"""
 
-    def __init__(self, base_dir: str = "/tmp/hexstrike_files"):
+    def __init__(self, base_dir: str = None):
+        if base_dir is None:
+            import tempfile
+            base_dir = str(Path(tempfile.gettempdir()) / "hexstrike_files")
         self.base_dir = Path(base_dir)
-        self.base_dir.mkdir(exist_ok=True)
+        self.base_dir.mkdir(exist_ok=True, parents=True)
         self.max_file_size = 100 * 1024 * 1024  # 100MB
 
     def create_file(self, filename: str, content: str, binary: bool = False) -> Dict[str, Any]:
@@ -9093,14 +9106,15 @@ def health_check():
         password_tools + binary_tools + forensics_tools + cloud_tools +
         osint_tools + exploitation_tools + api_tools + wireless_tools + additional_tools
     )
-    tools_status = {}
 
-    for tool in all_tools:
-        try:
-            result = execute_command(f"which {tool}", use_cache=True)
-            tools_status[tool] = result["success"]
-        except:
-            tools_status[tool] = False
+    # Cache tools_status for 60s — shutil.which is fast but no need to repeat every call
+    import shutil as _shutil, time as _time
+    _cached = getattr(health_check, "_tools_cache", None)
+    if _cached and (_time.time() - _cached["ts"]) < 60:
+        tools_status = _cached["data"]
+    else:
+        tools_status = {tool: (_shutil.which(tool) is not None) for tool in all_tools}
+        setattr(health_check, "_tools_cache", {"data": tools_status, "ts": _time.time()})
 
     all_essential_tools_available = all(tools_status[tool] for tool in essential_tools)
 
@@ -17286,4 +17300,4 @@ if __name__ == "__main__":
         if line.strip():
             logger.info(line)
 
-    app.run(host="0.0.0.0", port=API_PORT, debug=DEBUG_MODE)
+    app.run(host="0.0.0.0", port=API_PORT, debug=DEBUG_MODE, threaded=True)
