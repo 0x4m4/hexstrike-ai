@@ -19,6 +19,7 @@ Framework: FastMCP integration for AI agent communication
 """
 
 import argparse
+import hmac
 import json
 import logging
 import os
@@ -97,6 +98,36 @@ app.config['JSON_SORT_KEYS'] = False
 # API Configuration
 API_PORT = int(os.environ.get('HEXSTRIKE_PORT', 8888))
 API_HOST = os.environ.get('HEXSTRIKE_HOST', '127.0.0.1')
+
+# ============================================================================
+# AUTH (PATCH LOCAL 2026-08-06) — HexStrike ejecuta comandos arbitrarios sin
+# auth (shell=True). El bind loopback NO es suficiente (un forward ssh -L o un
+# MCP mal configurado expone el RCE). Este gate exige X-API-Key en TODAS las
+# rutas /api/* salvo /health. Fail-closed: sin HEXSTRIKE_API_KEY configurada
+# el server NO arranca (evita un despliegue accidental sin protección).
+# ============================================================================
+API_KEY = os.environ.get('HEXSTRIKE_API_KEY', '')
+if not API_KEY:
+    raise SystemExit(
+        "[AUTH] HEXSTRIKE_API_KEY no configurada. Negandose a arrancar: "
+        "HexStrike ejecuta comandos arbitrarios sin auth. Seta la variable "
+        "en la unit systemd (Environment=HEXSTRIKE_API_KEY=...) o en la env "
+        "del contenedor. Ver ~/hexstrike-ai/README-seguridad.md"
+    )
+
+PUBLIC_PATHS = {'/health'}
+
+@app.before_request
+def _hexstrike_auth_gate():
+    """Exige X-API-Key en /api/* (fail-closed). Compara en tiempo constante."""
+    path = request.path
+    if path in PUBLIC_PATHS or not path.startswith('/api'):
+        return None
+    supplied = request.headers.get('X-API-Key', '')
+    if not supplied or not hmac.compare_digest(supplied, API_KEY):
+        logger.warning("AUTH DENIED %s %s (ip=%s)", request.method, path, request.remote_addr)
+        return jsonify({"error": "Unauthorized: X-API-Key requerida"}), 401
+    return None
 
 # ============================================================================
 # MODERN VISUAL ENGINE (v2.0 ENHANCEMENT)
