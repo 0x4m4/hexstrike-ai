@@ -71,13 +71,17 @@ from mitmproxy.options import Options as MitmOptions
 # ============================================================================
 
 # Configure logging with fallback for permission issues
+# Rotación diaria (TimedRotatingFileHandler, 2026-08-06): hexstrike.log crecía
+# sin límite (4.8 MB+). Rota a medianoche y conserva 7 backups (hexstrike.log.1
+# … .7). Autocontenido — no requiere logrotate root, funciona bajo la user unit.
+from logging.handlers import TimedRotatingFileHandler
 try:
     logging.basicConfig(
         level=logging.INFO,
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
         handlers=[
             logging.StreamHandler(sys.stdout),
-            logging.FileHandler('hexstrike.log')
+            TimedRotatingFileHandler('hexstrike.log', when='midnight', backupCount=7)
         ]
     )
 except PermissionError:

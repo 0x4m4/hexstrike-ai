@@ -1,0 +1,19 @@
+# ============================================================================
+# hexstrike-ai — .gitignore (2026-08-06)
+# ============================================================================
+
+# Logs (hexstrike.log + backups rotados por TimedRotatingFileHandler)
+hexstrike.log
+hexstrike.log.*
+
+# Python bytecode
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# Entorno virtual (766 MB, deps del server — NO se commitea)
+hexstrike-env/
+
+# Datos y caches del server
+data/
+.cache/
