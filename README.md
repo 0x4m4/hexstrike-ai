@@ -127,6 +127,14 @@ pip3 install -r requirements.txt
 
 ```
 
+### Run the server in an isolated container
+
+```bash
+# Arranca hexstrike_server.py dentro de un contenedor aislado (sin red de
+# host, usuario no-root) — ver docs de seguridad del stack.
+bash run-container.sh
+```
+
 ### Installation and Setting Up Guide for various AI Clients:
 
 #### Installation & Demo Video
