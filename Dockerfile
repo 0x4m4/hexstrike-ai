@@ -23,6 +23,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     radare2 binwalk foremost steghide exiftool checksec \
     golang-go libcap2-bin \
     git curl wget ca-certificates \
+    arsenal-ng gef wpprobe xsstrike sstimap \
     && rm -rf /var/lib/apt/lists/*
 
 # ── Go-based tools (ProjectDiscovery etc.) ──────────────────────────────
@@ -53,6 +54,11 @@ RUN useradd -m -u 1000 -s /bin/bash hexstrike && \
     setcap cap_net_raw,cap_net_admin+eip /usr/bin/nmap && \
     setcap cap_net_raw,cap_net_admin+eip /usr/bin/masscan
 
+# gef (GDB Enhanced Features): the apt package only drops gef.py at
+# /usr/share/gdb/gef.py, it doesn't wire it into gdb's startup — normally
+# gef's own installer appends a `source` line to ~/.gdbinit, apt doesn't.
+RUN echo "source /usr/share/gdb/gef.py" >> /etc/gdb/gdbinit
+
 WORKDIR /app
 COPY requirements.txt .
 # venv, not system pip — Kali ships several Python packages (bcrypt etc.)
@@ -62,6 +68,24 @@ COPY requirements.txt .
 RUN python3 -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 RUN pip install --no-cache-dir -r requirements.txt
+# xsstrike pulls this in at runtime on first use if missing — bake it in
+# so a per-engagement container doesn't need outbound pip access mid-test.
+RUN pip install --no-cache-dir fuzzywuzzy
+# atomic-operator (MITRE ATT&CK/Atomic Red Team technique execution) isn't
+# in Kali's apt repo — PyPI-only. Two issues, both fixed here:
+# (1) its dependency atomic-operator-runner hard-pins pydantic 1.x
+#     (conflicts with mcp/fastmcp's pydantic 2.x requirement) — isolated
+#     into its own venv so it can't touch the main app's dependencies.
+# (2) its dependency `fire` still imports the stdlib `pipes` module, which
+#     was removed in Python 3.13 (Kali-rolling's default python3) — this
+#     is a known, still-open upstream bug (google/python-fire#444) with no
+#     fixed release. `pipes.quote` and `shlex.quote` are functionally
+#     identical (that's literally fire's documented migration path), so
+#     aliasing the import is a safe, minimal local patch.
+RUN python3 -m venv /opt/atomic-operator-venv && \
+    /opt/atomic-operator-venv/bin/pip install --no-cache-dir atomic-operator attrs && \
+    ln -s /opt/atomic-operator-venv/bin/atomic-operator /usr/local/bin/atomic-operator && \
+    find /opt/atomic-operator-venv -path "*/fire/*.py" -exec sed -i 's/^import pipes$/import shlex as pipes/' {} +
 
 COPY hexstrike_server.py hexstrike_mcp.py scope.example.json ./
 COPY entrypoint.sh /entrypoint.sh
