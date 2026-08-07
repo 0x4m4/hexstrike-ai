@@ -8964,14 +8964,29 @@ class FileOperationsManager:
     """Handle file operations with security and validation"""
 
     def __init__(self, base_dir: str = "/tmp/hexstrike_files"):
-        self.base_dir = Path(base_dir)
+        self.base_dir = Path(base_dir).resolve()
         self.base_dir.mkdir(exist_ok=True)
         self.max_file_size = 100 * 1024 * 1024  # 100MB
+
+    def _resolve_within_base(self, name: str) -> Path:
+        """Resuelve name contra base_dir y RECHAZA cualquier escape (path
+        traversal CWE-22, auditoría 2026-08-07: antes aceptaba
+        ../../etc/... fuera del root).
+        """
+        raw = Path(name)
+        if raw.is_absolute():
+            raise ValueError(f"ruta absoluta no permitida: {name!r}")
+        candidate = (self.base_dir / raw).resolve()
+        try:
+            candidate.relative_to(self.base_dir)
+        except ValueError:
+            raise ValueError(f"path fuera de base_dir: {name!r}")
+        return candidate
 
     def create_file(self, filename: str, content: str, binary: bool = False) -> Dict[str, Any]:
         """Create a file with the specified content"""
         try:
-            file_path = self.base_dir / filename
+            file_path = self._resolve_within_base(filename)
             file_path.parent.mkdir(parents=True, exist_ok=True)
 
             if len(content.encode()) > self.max_file_size:
@@ -8994,7 +9009,7 @@ class FileOperationsManager:
     def modify_file(self, filename: str, content: str, append: bool = False) -> Dict[str, Any]:
         """Modify an existing file"""
         try:
-            file_path = self.base_dir / filename
+            file_path = self._resolve_within_base(filename)
             if not file_path.exists():
                 return {"success": False, "error": "File does not exist"}
 
@@ -9012,7 +9027,7 @@ class FileOperationsManager:
     def delete_file(self, filename: str) -> Dict[str, Any]:
         """Delete a file or directory"""
         try:
-            file_path = self.base_dir / filename
+            file_path = self._resolve_within_base(filename)
             if not file_path.exists():
                 return {"success": False, "error": "File does not exist"}
 
@@ -9031,7 +9046,7 @@ class FileOperationsManager:
     def list_files(self, directory: str = ".") -> Dict[str, Any]:
         """List files in a directory"""
         try:
-            dir_path = self.base_dir / directory
+            dir_path = self._resolve_within_base(directory)
             if not dir_path.exists():
                 return {"success": False, "error": "Directory does not exist"}
 
