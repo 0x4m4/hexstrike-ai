@@ -1,0 +1,10 @@
+hexstrike_env/
+hexstrike-env/
+.git/
+*.log
+*.jsonl
+*.pid
+__pycache__/
+*.pyc
+.DS_Store
+scope.json

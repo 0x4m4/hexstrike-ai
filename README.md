@@ -222,6 +222,35 @@ curl -X POST http://localhost:8888/api/intelligence/analyze-target \
   -d '{"target": "example.com", "analysis_type": "comprehensive"}'
 ```
 
+### Docker (recommended for real engagements)
+
+The included `Dockerfile` builds a self-contained image (Kali base + the core tool set + the Go-based recon tools) and isolates the server from your host filesystem. This is the safer path if you're pointing this at anything beyond your own lab — the server executes arbitrary commands (`/api/command`), so contain the blast radius rather than running it bare-metal.
+
+```bash
+docker build -t hexstrike-ai:latest .
+```
+
+Run one container per engagement, each with its own scope file and its own output directory, so concurrent engagements can't cross-contaminate and every engagement has an inspectable audit trail:
+
+```bash
+mkdir -p ./engagements/acme-corp/workspace
+cp scope.example.json ./engagements/acme-corp/scope.json   # edit: authorized domains/CIDRs only
+
+docker run -d --name hexstrike-acme-corp \
+  -p 127.0.0.1:8888:8888 \
+  --cap-add=NET_RAW --cap-add=NET_ADMIN \
+  -v "$(pwd)/engagements/acme-corp/workspace:/tmp/hexstrike_files" \
+  -v "$(pwd)/engagements/acme-corp/scope.json:/app/scope.json:ro" \
+  -e HEXSTRIKE_API_TOKEN="$HEXSTRIKE_API_TOKEN" \
+  -e HEXSTRIKE_SCOPE_FILE=/app/scope.json \
+  -e HEXSTRIKE_AUDIT_LOG=/tmp/hexstrike_files/audit.jsonl \
+  hexstrike-ai:latest
+```
+
+Tool output and the audit log both land in `./engagements/acme-corp/workspace` on the host — inspectable, and gone (well, archived, not scanning) as soon as you `docker rm` the container. `--cap-add=NET_RAW --cap-add=NET_ADMIN` is what lets `nmap`/`masscan` do raw-socket scans (SYN scans etc.) despite the container running as a non-root user — the image doesn't grant that capability container-wide, it's set directly on those two binaries via `setcap`.
+
+The `0.0.0.0` bind you'll see if you inspect the image is intentional and not a contradiction of the loopback-only default described above — Docker's network namespace means it's harmless in isolation; the `-p 127.0.0.1:8888:8888` mapping is what actually determines host-level exposure, and that's loopback-only here too.
+
 ---
 
 ## AI Client Integration Setup
