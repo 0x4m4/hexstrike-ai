@@ -23,7 +23,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     radare2 binwalk foremost steghide exiftool checksec \
     golang-go libcap2-bin \
     git curl wget ca-certificates \
-    arsenal-ng gef wpprobe xsstrike sstimap \
+    arsenal-ng gef wpprobe xsstrike sstimap python3-atomic-operator \
     && rm -rf /var/lib/apt/lists/*
 
 # ── Go-based tools (ProjectDiscovery etc.) ──────────────────────────────
@@ -71,21 +71,18 @@ RUN pip install --no-cache-dir -r requirements.txt
 # xsstrike pulls this in at runtime on first use if missing — bake it in
 # so a per-engagement container doesn't need outbound pip access mid-test.
 RUN pip install --no-cache-dir fuzzywuzzy
-# atomic-operator (MITRE ATT&CK/Atomic Red Team technique execution) isn't
-# in Kali's apt repo — PyPI-only. Two issues, both fixed here:
-# (1) its dependency atomic-operator-runner hard-pins pydantic 1.x
-#     (conflicts with mcp/fastmcp's pydantic 2.x requirement) — isolated
-#     into its own venv so it can't touch the main app's dependencies.
-# (2) its dependency `fire` still imports the stdlib `pipes` module, which
-#     was removed in Python 3.13 (Kali-rolling's default python3) — this
-#     is a known, still-open upstream bug (google/python-fire#444) with no
-#     fixed release. `pipes.quote` and `shlex.quote` are functionally
-#     identical (that's literally fire's documented migration path), so
-#     aliasing the import is a safe, minimal local patch.
-RUN python3 -m venv /opt/atomic-operator-venv && \
-    /opt/atomic-operator-venv/bin/pip install --no-cache-dir atomic-operator attrs && \
-    ln -s /opt/atomic-operator-venv/bin/atomic-operator /usr/local/bin/atomic-operator && \
-    find /opt/atomic-operator-venv -path "*/fire/*.py" -exec sed -i 's/^import pipes$/import shlex as pipes/' {} +
+# atomic-operator itself comes from apt (python3-atomic-operator, above) —
+# NOT pip. Its dependency chain (atomic-operator-runner pins pydantic 1.x;
+# its other dependency `fire` still imports the stdlib `pipes` module,
+# removed in Python 3.13/Kali-rolling's default python3 — a known,
+# still-open upstream bug, google/python-fire#444) would conflict badly
+# with mcp/fastmcp's pydantic 2.x requirement if installed into this venv
+# via pip — confirmed by hand, it silently downgrades pydantic and breaks
+# hexstrike_mcp.py's imports at runtime. Kali's own apt packaging already
+# resolves both problems correctly (confirmed by hand: apt installs into
+# system dist-packages, completely separate from this venv, and imports
+# clean with no patching needed) — apt is the correct install path here,
+# not pip.
 
 COPY hexstrike_server.py hexstrike_mcp.py scope.example.json ./
 COPY entrypoint.sh /entrypoint.sh
