@@ -182,8 +182,16 @@ def _extract_targets(payload):
         val = payload.get(key)
         if isinstance(val, str) and val.strip():
             found.append(val.strip())
-    if isinstance(payload.get("command"), str):
-        found.extend(_extract_command_targets(payload["command"]))
+    # Scan EVERY string field, not just "command" — endpoints vary in what
+    # they call their free-text field (command, script, code, payload,
+    # query, ...). Found in the wild: /api/python/execute uses "script",
+    # which wasn't covered by a command-only check and let arbitrary
+    # Python (making its own HTTP requests to any target) bypass scope
+    # enforcement entirely. Scanning every string value closes that gap
+    # and any similarly-shaped endpoint we haven't specifically audited.
+    for key, val in payload.items():
+        if isinstance(val, str) and val.strip():
+            found.extend(_extract_command_targets(val))
     return list(dict.fromkeys(found))  # dedup, preserve order
 
 def _host_of(value):
@@ -228,13 +236,22 @@ _audit_logger.propagate = False
 def _audit_log(response):
     if request.path not in ("/health", "/ping"):
         payload = request.get_json(silent=True) or {}
+        response_snippet = None
+        try:
+            if not response.direct_passthrough:
+                response_snippet = response.get_data(as_text=True)[:2000]
+        except Exception:
+            response_snippet = "<unreadable/binary response>"
         _audit_logger.info(json.dumps({
             "ts": datetime.utcnow().isoformat() + "Z",
             "remote_addr": request.remote_addr,
             "method": request.method,
             "path": request.path,
             "targets": _extract_targets(payload),
+            "command": payload.get("command") if isinstance(payload, dict) else None,
+            "params": {k: v for k, v in payload.items() if k != "command"} if isinstance(payload, dict) else None,
             "status": response.status_code,
+            "response_snippet": response_snippet,
         }))
     return response
 
