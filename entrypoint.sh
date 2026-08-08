@@ -16,4 +16,4 @@ else
     echo "🎯 Scope enforcement active: ${HEXSTRIKE_SCOPE_FILE}"
 fi
 
-exec python3 hexstrike_server.py --host 0.0.0.0 --port 8888
+exec /opt/venv/bin/python3 hexstrike_server.py --host 0.0.0.0 --port 8888

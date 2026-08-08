@@ -16,7 +16,7 @@ ENV PYTHONUNBUFFERED=1
 RUN apt-get update && apt-get install -y --no-install-recommends \
     python3 python3-pip python3-venv python3-dev build-essential \
     nmap masscan \
-    gobuster dirb nikto whatweb wafw00f sslscan \
+    gobuster nikto whatweb wafw00f sslscan \
     sqlmap wpscan \
     hydra john hashcat medusa \
     smbmap enum4linux responder \
@@ -24,7 +24,21 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     golang-go libcap2-bin \
     git curl wget ca-certificates \
     arsenal-ng gef wpprobe xsstrike sstimap python3-atomic-operator \
+    amass feroxbuster python3-impacket netexec certipy-ad \
     && rm -rf /var/lib/apt/lists/*
+
+# RustScan isn't in Kali's apt repo (checked the live index directly) —
+# it ships prebuilt releases on GitHub instead, as rustscan.deb.zip (a
+# .deb wrapped in a zip, not a raw .deb — worth knowing, the naming
+# isn't what you'd guess). Using GitHub's stable /latest/download/ redirect
+# rather than the releases API, which is rate-limited per-IP and this
+# build already got throttled by it once this session. python3 (already
+# installed above) handles the unzip so this doesn't need a new apt
+# package just for one archive.
+RUN curl -sL https://github.com/RustScan/RustScan/releases/latest/download/rustscan.deb.zip -o /tmp/rustscan.zip \
+    && python3 -m zipfile -e /tmp/rustscan.zip /tmp/rustscan_extracted/ \
+    && dpkg -i /tmp/rustscan_extracted/*.deb \
+    && rm -rf /tmp/rustscan.zip /tmp/rustscan_extracted
 
 # ── Go-based tools (ProjectDiscovery etc.) ──────────────────────────────
 # Each install is capped at 3min and non-fatal: a single stalled module
@@ -59,18 +73,46 @@ RUN useradd -m -u 1000 -s /bin/bash hexstrike && \
 # gef's own installer appends a `source` line to ~/.gdbinit, apt doesn't.
 RUN echo "source /usr/share/gdb/gef.py" >> /etc/gdb/gdbinit
 
+# amass's apt wrapper (/usr/bin/amass) checks for libpostal's data dir and,
+# if missing, shells out to `sudo libpostal_data download all` — which
+# fails outright under the non-root hexstrike user, and even as root would
+# pull ~1-2GB just for one optional address-normalization feature amass
+# barely uses (its actual recon functionality — DNS enum, ASN lookups,
+# cert-transparency, subdomain brute-force — doesn't touch libpostal at
+# all). Satisfying the wrapper's existence check with an empty sentinel
+# avoids both the sudo failure and the multi-GB download; only the
+# address-parsing-specific amass features would be affected, not the
+# ones this is actually installed for.
+RUN mkdir -p /var/lib/libpostal && touch /usr/share/libpostal/transliteration
+
 WORKDIR /app
 COPY requirements.txt .
 # venv, not system pip — Kali ships several Python packages (bcrypt etc.)
 # as dpkg-managed system packages that pip can't safely uninstall/upgrade
 # even with --break-system-packages (PEP 668). Isolating into a venv
 # avoids that whole conflict class.
+#
+# IMPORTANT: deliberately NOT prepending /opt/venv/bin to the global PATH
+# here (as an earlier version of this file did). Several apt-packaged
+# tools (confirmed: impacket-secretsdump and friends) ship thin shell
+# wrappers that call bare `python3` rather than an absolute path — with
+# venv-first PATH, those silently resolve to THIS isolated venv instead of
+# system python3, and since venvs don't see system dist-packages, they
+# fail with ModuleNotFoundError for a library that's actually installed
+# and present. Root-caused by hand: verified the wrapper's shebang/exec
+# line, verified the library was genuinely on disk, verified system
+# python3's sys.path included dist-packages, isolated it to the PATH
+# shadowing. Fix: reference the venv by absolute path (/opt/venv/bin/pip,
+# /opt/venv/bin/python3 in entrypoint.sh) everywhere WE need it, and leave
+# bare `python3` on PATH resolving to the system interpreter so every
+# other apt-packaged tool's wrapper keeps working as its maintainer
+# intended. This likely isn't impacket-specific — any Kali tool with a
+# similar wrapper pattern was at risk before this fix.
 RUN python3 -m venv /opt/venv
-ENV PATH="/opt/venv/bin:$PATH"
-RUN pip install --no-cache-dir -r requirements.txt
+RUN /opt/venv/bin/pip install --no-cache-dir -r requirements.txt
 # xsstrike pulls this in at runtime on first use if missing — bake it in
 # so a per-engagement container doesn't need outbound pip access mid-test.
-RUN pip install --no-cache-dir fuzzywuzzy
+RUN /opt/venv/bin/pip install --no-cache-dir fuzzywuzzy
 # atomic-operator itself comes from apt (python3-atomic-operator, above) —
 # NOT pip. Its dependency chain (atomic-operator-runner pins pydantic 1.x;
 # its other dependency `fire` still imports the stdlib `pipes` module,
