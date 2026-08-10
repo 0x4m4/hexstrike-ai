@@ -46,7 +46,13 @@ RUN curl -sL https://github.com/RustScan/RustScan/releases/latest/download/rusts
 # reported in the build log — rerun `docker build` later to retry them,
 # or add more here with the same pattern.
 ENV GOPATH=/opt/go
-ENV PATH=$PATH:/opt/go/bin
+# /opt/go/bin goes FIRST, not appended. apt/pip install same-named CLIs for
+# unrelated tools (pip's httpx[cli] HTTP client vs. ProjectDiscovery's httpx
+# recon scanner is the concrete case that shipped broken — appended-PATH
+# order let the pip shim silently shadow the real binary). Putting our Go
+# tools first makes every `go install` binary in this list authoritative,
+# not just httpx.
+ENV PATH=/opt/go/bin:$PATH
 ENV GOPROXY=https://proxy.golang.org,direct
 RUN --mount=type=cache,target=/root/go/pkg/mod \
     --mount=type=cache,target=/root/.cache/go-build \
@@ -55,9 +61,10 @@ RUN --mount=type=cache,target=/root/go/pkg/mod \
         "github.com/ffuf/ffuf/v2" \
         "github.com/projectdiscovery/subfinder/v2/cmd/subfinder" \
         "github.com/projectdiscovery/nuclei/v3/cmd/nuclei" \
+        "github.com/tomnomnom/waybackurls" \
     ; do \
         echo "→ go install $pkg"; \
-        timeout 180 go install "${pkg}@latest" || echo "⚠️  SKIPPED (timeout/failed): $pkg"; \
+        timeout 300 go install "${pkg}@latest" 2>&1 | tail -20 || echo "⚠️  SKIPPED (timeout/failed): $pkg"; \
     done
 
 # ── Non-root execution ───────────────────────────────────────────────────
