@@ -46,6 +46,7 @@ import psutil
 import signal
 import requests
 import re
+import shlex
 import socket
 import urllib.parse
 from dataclasses import dataclass, field
@@ -126,6 +127,18 @@ HEXSTRIKE_SCOPE_FILE = os.environ.get("HEXSTRIKE_SCOPE_FILE")
 _SCOPE_DOMAINS = set()
 _SCOPE_NETWORKS = []
 
+# Absolute path to ProjectDiscovery's Go httpx binary. The image also has
+# pip's httpx[cli] package on PATH ahead of /opt/go/bin (same command name,
+# unrelated tool — an HTTP client CLI, not a recon scanner), so a bare
+# "httpx" call silently runs the wrong binary. Overridable via env for
+# non-default image layouts.
+HEXSTRIKE_HTTPX_BIN = os.environ.get("HEXSTRIKE_HTTPX_BIN", "/opt/go/bin/httpx")
+
+# Deterministic bound (minutes) for amass enum. Kept comfortably under the
+# 300s generic command-timeout so amass exits on its own with whatever
+# results it has, rather than getting SIGKILLed mid-write by the wrapper.
+HEXSTRIKE_AMASS_TIMEOUT_MIN = int(os.environ.get("HEXSTRIKE_AMASS_TIMEOUT_MIN", "4"))
+
 def _load_scope():
     global _SCOPE_DOMAINS, _SCOPE_NETWORKS
     if not HEXSTRIKE_SCOPE_FILE:
@@ -181,7 +194,12 @@ def _extract_targets(payload):
     for key in _TARGET_KEYS:
         val = payload.get(key)
         if isinstance(val, str) and val.strip():
-            found.append(val.strip())
+            # Batch tools (httpx, dnsx, etc.) accept comma-separated hosts
+            # in a single target/host field. Splitting here so each host is
+            # scope-checked individually — an unsplit CSV string never
+            # matches a single-domain scope entry and the whole request
+            # gets falsely blocked as out-of-scope.
+            found.extend(p.strip() for p in val.split(",") if p.strip())
     # Scan EVERY string field, not just "command" — endpoints vary in what
     # they call their free-text field (command, script, code, payload,
     # query, ...). Found in the wild: /api/python/execute uses "script",
@@ -10121,8 +10139,16 @@ def execute_httpx_scan(target, params):
     """Execute httpx scan with optimized parameters"""
     try:
         additional_args = params.get('additional_args', '-tech-detect -status-code')
-        # Use shell command with pipe for httpx
-        cmd = f"echo {target} | httpx {additional_args}"
+        # HEXSTRIKE_HTTPX_BIN pins the absolute path to ProjectDiscovery's Go
+        # httpx binary. A bare "httpx" is ambiguous: pip's httpx[cli] package
+        # installs a same-named console script earlier on PATH (/usr/bin),
+        # which silently shadows the real recon tool and fails with a
+        # click-style "No such option" error instead of running the scan.
+        # Targets are piped via stdin (one per line) rather than -l, since
+        # -l expects a filename, not an inline host list.
+        targets = [t.strip() for t in str(target).split(",") if t.strip()]
+        stdin_hosts = "\\n".join(targets)
+        cmd = f"printf '%b' {shlex.quote(stdin_hosts)} | {HEXSTRIKE_HTTPX_BIN} {additional_args}"
 
         return execute_command(cmd)
     except Exception as e:
@@ -10195,6 +10221,13 @@ def execute_amass_scan(target, params):
         cmd_parts = ['amass', 'enum', '-d', target]
         if additional_args:
             cmd_parts.extend(additional_args.split())
+        # amass's own -timeout (minutes) bounds runtime deterministically —
+        # without it, passive/active enum can run well past the generic
+        # execute_command wrapper's window and get hard-killed mid-write
+        # instead of exiting cleanly with partial results. Only added when
+        # the caller hasn't already set one via additional_args.
+        if "-timeout" not in cmd_parts:
+            cmd_parts.extend(["-timeout", str(HEXSTRIKE_AMASS_TIMEOUT_MIN)])
 
         return execute_command(' '.join(cmd_parts))
     except Exception as e:
@@ -11523,6 +11556,12 @@ def amass():
 
         if additional_args:
             command += f" {additional_args}"
+
+        # See execute_amass_scan() for why: bound runtime with amass's own
+        # -timeout so it exits deterministically instead of getting
+        # hard-killed by the generic command wrapper mid-write.
+        if "-timeout" not in command:
+            command += f" -timeout {HEXSTRIKE_AMASS_TIMEOUT_MIN}"
 
         logger.info(f"🔍 Starting Amass {mode}: {domain}")
         result = execute_command(command)
@@ -13325,7 +13364,12 @@ def httpx():
             logger.warning("🌐 httpx called without target parameter")
             return jsonify({"error": "Target parameter is required"}), 400
 
-        command = f"httpx -l {target} -t {threads}"
+        # See execute_httpx_scan() for why: absolute path avoids the
+        # pip httpx[cli] PATH collision, and stdin piping replaces -l
+        # (which expects a filename, not an inline comma/space list).
+        targets = [t.strip() for t in re.split(r"[,\s]+", str(target)) if t.strip()]
+        stdin_hosts = "\\n".join(targets)
+        command = f"printf '%b' {shlex.quote(stdin_hosts)} | {HEXSTRIKE_HTTPX_BIN} -t {threads}"
 
         if probe:
             command += " -probe"
