@@ -22,6 +22,7 @@ import argparse
 import json
 import logging
 import os
+import tempfile
 import subprocess
 import sys
 import traceback
@@ -5705,9 +5706,11 @@ class ProcessManager:
 class PythonEnvironmentManager:
     """Manage Python virtual environments and dependencies"""
 
-    def __init__(self, base_dir: str = "/tmp/hexstrike_envs"):
+    def __init__(self, base_dir: str = None):
+        if base_dir is None:
+            base_dir = str(Path(tempfile.gettempdir()) / "hexstrike_envs")
         self.base_dir = Path(base_dir)
-        self.base_dir.mkdir(exist_ok=True)
+        self.base_dir.mkdir(parents=True, exist_ok=True)
 
     def create_venv(self, env_name: str) -> Path:
         """Create a new virtual environment"""
@@ -8928,9 +8931,11 @@ def _determine_operation_type(tool_name: str) -> str:
 class FileOperationsManager:
     """Handle file operations with security and validation"""
 
-    def __init__(self, base_dir: str = "/tmp/hexstrike_files"):
+    def __init__(self, base_dir: str = None):
+        if base_dir is None:
+            base_dir = str(Path(tempfile.gettempdir()) / "hexstrike_files")
         self.base_dir = Path(base_dir)
-        self.base_dir.mkdir(exist_ok=True)
+        self.base_dir.mkdir(parents=True, exist_ok=True)
         self.max_file_size = 100 * 1024 * 1024  # 100MB
 
     def create_file(self, filename: str, content: str, binary: bool = False) -> Dict[str, Any]:
@@ -13684,7 +13689,7 @@ class BrowserAgent:
             time.sleep(wait_time)
 
             # Take screenshot
-            screenshot_path = f"/tmp/hexstrike_screenshot_{int(time.time())}.png"
+            screenshot_path = str(Path(tempfile.gettempdir()) / f"hexstrike_screenshot_{int(time.time())}.png")
             self.driver.save_screenshot(screenshot_path)
             self.screenshots.append(screenshot_path)
 
@@ -14186,7 +14191,7 @@ def browser_agent_endpoint():
                     400,
                 )
 
-            screenshot_path = f"/tmp/hexstrike_screenshot_{int(time.time())}.png"
+            screenshot_path = str(Path(tempfile.gettempdir()) / f"hexstrike_screenshot_{int(time.time())}.png")
             browser_agent.driver.save_screenshot(screenshot_path)
 
             return jsonify(
