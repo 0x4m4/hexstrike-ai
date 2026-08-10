@@ -190,7 +190,10 @@ sudo apt update && sudo apt install google-chrome-stable
 ### Start the Server
 
 ```bash
-# Start the MCP server
+# Required: set an auth token — the server refuses to start without one
+export HEXSTRIKE_API_TOKEN=$(python3 -c "import secrets; print(secrets.token_urlsafe(32))")
+
+# Start the MCP server (loopback-only by default)
 python3 hexstrike_server.py
 
 # Optional: Start with debug mode
@@ -198,19 +201,55 @@ python3 hexstrike_server.py --debug
 
 # Optional: Custom port configuration
 python3 hexstrike_server.py --port 8888
+
+# Optional: allowlist authorized engagement targets (see scope.example.json)
+export HEXSTRIKE_SCOPE_FILE=/path/to/scope.json
 ```
 
 ### Verify Installation
 
 ```bash
-# Test server health
-curl http://localhost:8888/health
+# Test server liveness (fast, no tool sweep)
+curl -H "X-HexStrike-Token: $HEXSTRIKE_API_TOKEN" http://localhost:8888/ping
+
+# Test server health (full tool-availability sweep, ~30s)
+curl -H "X-HexStrike-Token: $HEXSTRIKE_API_TOKEN" http://localhost:8888/health
 
 # Test AI agent capabilities
 curl -X POST http://localhost:8888/api/intelligence/analyze-target \
   -H "Content-Type: application/json" \
+  -H "X-HexStrike-Token: $HEXSTRIKE_API_TOKEN" \
   -d '{"target": "example.com", "analysis_type": "comprehensive"}'
 ```
+
+### Docker (recommended for real engagements)
+
+The included `Dockerfile` builds a self-contained image (Kali base + the core tool set + the Go-based recon tools) and isolates the server from your host filesystem. This is the safer path if you're pointing this at anything beyond your own lab — the server executes arbitrary commands (`/api/command`), so contain the blast radius rather than running it bare-metal.
+
+```bash
+docker build -t hexstrike-ai:latest .
+```
+
+Run one container per engagement, each with its own scope file and its own output directory, so concurrent engagements can't cross-contaminate and every engagement has an inspectable audit trail:
+
+```bash
+mkdir -p ./engagements/acme-corp/workspace
+cp scope.example.json ./engagements/acme-corp/scope.json   # edit: authorized domains/CIDRs only
+
+docker run -d --name hexstrike-acme-corp \
+  -p 127.0.0.1:8888:8888 \
+  --cap-add=NET_RAW --cap-add=NET_ADMIN \
+  -v "$(pwd)/engagements/acme-corp/workspace:/tmp/hexstrike_files" \
+  -v "$(pwd)/engagements/acme-corp/scope.json:/app/scope.json:ro" \
+  -e HEXSTRIKE_API_TOKEN="$HEXSTRIKE_API_TOKEN" \
+  -e HEXSTRIKE_SCOPE_FILE=/app/scope.json \
+  -e HEXSTRIKE_AUDIT_LOG=/tmp/hexstrike_files/audit.jsonl \
+  hexstrike-ai:latest
+```
+
+Tool output and the audit log both land in `./engagements/acme-corp/workspace` on the host — inspectable, and gone (well, archived, not scanning) as soon as you `docker rm` the container. `--cap-add=NET_RAW --cap-add=NET_ADMIN` is what lets `nmap`/`masscan` do raw-socket scans (SYN scans etc.) despite the container running as a non-root user — the image doesn't grant that capability container-wide, it's set directly on those two binaries via `setcap`.
+
+The `0.0.0.0` bind you'll see if you inspect the image is intentional and not a contradiction of the loopback-only default described above — Docker's network namespace means it's harmless in isolation; the `-p 127.0.0.1:8888:8888` mapping is what actually determines host-level exposure, and that's loopback-only here too.
 
 ---
 
@@ -507,6 +546,7 @@ Configure VS Code settings in `.vscode/settings.json`:
 | Endpoint | Method | Description |
 |----------|--------|-------------|
 | `/health` | GET | Server health check with tool availability |
+| `/ping` | GET | Lightweight liveness check (no tool sweep, instant) |
 | `/api/command` | POST | Execute arbitrary commands with caching |
 | `/api/telemetry` | GET | System performance metrics |
 | `/api/cache/stats` | GET | Cache performance statistics |
@@ -647,7 +687,20 @@ python3 hexstrike_mcp.py --debug
 - Run in isolated environments or dedicated security testing VMs
 - AI agents can execute arbitrary security tools - ensure proper oversight
 - Monitor AI agent activities through the real-time dashboard
-- Consider implementing authentication for production deployments
+
+### Built-in Hardening
+
+The server ships with the following on by default or available via env vars — set these up before pointing this at anything real:
+
+| Control | Env Var | Default | Notes |
+|---|---|---|---|
+| Bind address | `HEXSTRIKE_HOST` / `--host` | `127.0.0.1` | Server **refuses to run open on `0.0.0.0`** unless you explicitly pass a different `--host`. Loopback-only by default. |
+| Shared-secret auth | `HEXSTRIKE_API_TOKEN` | **required** | Server exits at startup if unset — it will not run unauthenticated. Every route (including `/health`, `/ping`) requires header `X-HexStrike-Token: <token>`. Generate with `python3 -c "import secrets; print(secrets.token_urlsafe(32))"`. |
+| Liveness check | — | `/ping` | Lightweight, instant. `/health` does a full ~30s tool-availability sweep — use `/ping` for polling/monitoring, `/health` for diagnostics. |
+| Engagement scope | `HEXSTRIKE_SCOPE_FILE` | off (opt-in) | Points to a JSON file (`{"domains": [...], "networks": ["CIDR", ...]}` — see `scope.example.json`) allowlisting authorized targets. Requests referencing an out-of-scope host — via structured params **or** parsed out of a raw command string — get `403`. Set this per engagement; it is the single most important control if you're running this against client-owned infrastructure. |
+| Audit log | `HEXSTRIKE_AUDIT_LOG` | `hexstrike_audit.jsonl` | JSONL, one line per authenticated request: timestamp, source IP, method, path, extracted targets, response status. Keep it for engagement records. |
+
+None of this replaces running the server on isolated infrastructure — it reduces the blast radius of the server being reachable or misused, it doesn't sandbox the 150+ tools it invokes.
 
 ### Legal & Ethical Use
 

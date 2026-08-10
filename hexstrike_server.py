@@ -19,6 +19,8 @@ Framework: FastMCP integration for AI agent communication
 """
 
 import argparse
+import hmac
+import ipaddress
 import json
 import logging
 import os
@@ -44,6 +46,7 @@ import psutil
 import signal
 import requests
 import re
+import shlex
 import socket
 import urllib.parse
 from dataclasses import dataclass, field
@@ -93,6 +96,184 @@ logger = logging.getLogger(__name__)
 # Flask app configuration
 app = Flask(__name__)
 app.config['JSON_SORT_KEYS'] = False
+
+# ── Shared-secret auth gate ─────────────────────────────────────────────
+# HexStrike executes arbitrary commands/code on this host (/api/command,
+# /api/python/execute, etc). This tool is for authorized penetration
+# testing / ethical hacking use only — it must never accept requests it
+# can't authenticate, so the server refuses to start without a token
+# rather than silently running open.
+HEXSTRIKE_API_TOKEN = os.environ.get("HEXSTRIKE_API_TOKEN")
+if not HEXSTRIKE_API_TOKEN:
+    print("FATAL: HEXSTRIKE_API_TOKEN is not set. Refusing to start unauthenticated.")
+    print("Set it in your shell env (e.g. ~/.zshrc_secrets) before running this server.")
+    sys.exit(1)
+
+@app.before_request
+def _require_hexstrike_token():
+    supplied = request.headers.get("X-HexStrike-Token", "")
+    if not hmac.compare_digest(supplied, HEXSTRIKE_API_TOKEN):
+        return jsonify({"error": "unauthorized"}), 401
+
+# ── Engagement scope enforcement ────────────────────────────────────────
+# This tool is for authorized penetration testing / ethical hacking only.
+# Without a scope check, an AI agent chaining tool calls (or content it
+# scraped that contains injected instructions) can drift a target outside
+# the client's written authorization — that's the #1 real-world liability
+# risk for a solo pentester, not a code bug. Enforcement is opt-in via
+# HEXSTRIKE_SCOPE_FILE so existing labs/CTF use isn't broken by default,
+# but any real client engagement should set it.
+HEXSTRIKE_SCOPE_FILE = os.environ.get("HEXSTRIKE_SCOPE_FILE")
+_SCOPE_DOMAINS = set()
+_SCOPE_NETWORKS = []
+
+# Absolute path to ProjectDiscovery's Go httpx binary. The image also has
+# pip's httpx[cli] package on PATH ahead of /opt/go/bin (same command name,
+# unrelated tool — an HTTP client CLI, not a recon scanner), so a bare
+# "httpx" call silently runs the wrong binary. Overridable via env for
+# non-default image layouts.
+HEXSTRIKE_HTTPX_BIN = os.environ.get("HEXSTRIKE_HTTPX_BIN", "/opt/go/bin/httpx")
+
+# Deterministic bound (minutes) for amass enum. Kept comfortably under the
+# 300s generic command-timeout so amass exits on its own with whatever
+# results it has, rather than getting SIGKILLed mid-write by the wrapper.
+HEXSTRIKE_AMASS_TIMEOUT_MIN = int(os.environ.get("HEXSTRIKE_AMASS_TIMEOUT_MIN", "4"))
+
+def _load_scope():
+    global _SCOPE_DOMAINS, _SCOPE_NETWORKS
+    if not HEXSTRIKE_SCOPE_FILE:
+        return
+    try:
+        with open(HEXSTRIKE_SCOPE_FILE) as f:
+            scope = json.load(f)
+        _SCOPE_DOMAINS = {d.lower().lstrip("*.") for d in scope.get("domains", [])}
+        _SCOPE_NETWORKS = [ipaddress.ip_network(n, strict=False) for n in scope.get("networks", [])]
+        logger.info(f"🎯 Scope loaded: {len(_SCOPE_DOMAINS)} domain(s), {len(_SCOPE_NETWORKS)} network(s) from {HEXSTRIKE_SCOPE_FILE}")
+    except Exception as e:
+        logger.error(f"💥 Failed to load scope file {HEXSTRIKE_SCOPE_FILE}: {e}")
+        raise
+
+_load_scope()
+
+_TARGET_KEYS = ("target", "host", "domain", "ip", "url", "rhost", "hostname")
+
+# ── Command-string target extraction ────────────────────────────────────
+# /api/command (and similar free-text endpoints) takes a raw shell string,
+# not structured params — "nmap bank.com" never populates a "target" key,
+# so the JSON-key scope check above can't see it. This is a heuristic
+# second pass over the command text itself. Deliberately conservative:
+# only domains ending in a known real TLD are treated as targets, so
+# ordinary filenames/flags in the command (results.txt, wordlist.txt,
+# nuclei-templates.yaml, config.ini) don't get misread as out-of-scope
+# hosts. It will miss obfuscated/encoded targets — it's a safety net for
+# the common case, not a guarantee.
+_KNOWN_TLDS = frozenset("""
+com net org io co gov edu mil info biz ai dev app xyz online site tech
+cloud shop store live us uk ca au de fr jp cn in br nl ru es it ch se no
+fi dk pl be at nz sg hk kr mx za me tv
+""".split())
+_CMD_DOMAIN_RE = re.compile(r"\b(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}\b")
+_CMD_IPV4_RE = re.compile(r"\b(?:(?:25[0-5]|2[0-4]\d|1?\d{1,2})\.){3}(?:25[0-5]|2[0-4]\d|1?\d{1,2})\b")
+
+def _extract_command_targets(command):
+    if not isinstance(command, str) or not command.strip():
+        return []
+    found = set()
+    for match in _CMD_DOMAIN_RE.findall(command):
+        tld = match.rsplit(".", 1)[-1].lower()
+        if tld in _KNOWN_TLDS:
+            found.add(match.lower())
+    for m in _CMD_IPV4_RE.finditer(command):
+        found.add(m.group(0))
+    return list(found)
+
+def _extract_targets(payload):
+    if not isinstance(payload, dict):
+        return []
+    found = []
+    for key in _TARGET_KEYS:
+        val = payload.get(key)
+        if isinstance(val, str) and val.strip():
+            # Batch tools (httpx, dnsx, etc.) accept comma-separated hosts
+            # in a single target/host field. Splitting here so each host is
+            # scope-checked individually — an unsplit CSV string never
+            # matches a single-domain scope entry and the whole request
+            # gets falsely blocked as out-of-scope.
+            found.extend(p.strip() for p in val.split(",") if p.strip())
+    # Scan EVERY string field, not just "command" — endpoints vary in what
+    # they call their free-text field (command, script, code, payload,
+    # query, ...). Found in the wild: /api/python/execute uses "script",
+    # which wasn't covered by a command-only check and let arbitrary
+    # Python (making its own HTTP requests to any target) bypass scope
+    # enforcement entirely. Scanning every string value closes that gap
+    # and any similarly-shaped endpoint we haven't specifically audited.
+    for key, val in payload.items():
+        if isinstance(val, str) and val.strip():
+            found.extend(_extract_command_targets(val))
+    return list(dict.fromkeys(found))  # dedup, preserve order
+
+def _host_of(value):
+    v = re.sub(r"^[a-zA-Z][a-zA-Z0-9+.-]*://", "", value)  # strip scheme
+    v = v.split("/")[0].split("?")[0].split(":")[0]         # strip path/query/port
+    return v.lower()
+
+def _in_scope(value):
+    host = _host_of(value)
+    try:
+        ip = ipaddress.ip_address(host)
+        return any(ip in net for net in _SCOPE_NETWORKS)
+    except ValueError:
+        pass
+    return host in _SCOPE_DOMAINS or any(host.endswith("." + d) for d in _SCOPE_DOMAINS)
+
+@app.before_request
+def _enforce_scope():
+    if not HEXSTRIKE_SCOPE_FILE or not (_SCOPE_DOMAINS or _SCOPE_NETWORKS):
+        return  # scope enforcement not configured — opt-in, no-op by default
+    if request.path in ("/health", "/ping"):
+        return
+    payload = request.get_json(silent=True) or {}
+    targets = _extract_targets(payload)
+    out_of_scope = [t for t in targets if not _in_scope(t)]
+    if out_of_scope:
+        logger.warning(f"🚫 OUT-OF-SCOPE request blocked: {request.path} targets={out_of_scope}")
+        return jsonify({"error": "out_of_scope", "targets": out_of_scope}), 403
+
+# ── Audit log ────────────────────────────────────────────────────────────
+# Immutable-ish JSONL trail of every authenticated request: what ran,
+# against what, when. Needed for client deliverables and chain of custody,
+# not optional for a real engagement.
+_audit_logger = logging.getLogger("hexstrike.audit")
+_audit_logger.setLevel(logging.INFO)
+_audit_handler = logging.FileHandler(os.environ.get("HEXSTRIKE_AUDIT_LOG", "hexstrike_audit.jsonl"))
+_audit_handler.setFormatter(logging.Formatter("%(message)s"))
+_audit_logger.addHandler(_audit_handler)
+_audit_logger.propagate = False
+
+@app.after_request
+def _audit_log(response):
+    if request.path not in ("/health", "/ping"):
+        payload = request.get_json(silent=True) or {}
+        response_snippet = None
+        try:
+            if not response.direct_passthrough:
+                response_snippet = response.get_data(as_text=True)[:2000]
+        except Exception:
+            response_snippet = "<unreadable/binary response>"
+        _audit_logger.info(json.dumps({
+            "ts": datetime.utcnow().isoformat() + "Z",
+            "remote_addr": request.remote_addr,
+            "method": request.method,
+            "path": request.path,
+            "targets": _extract_targets(payload),
+            "command": payload.get("command") if isinstance(payload, dict) else None,
+            "params": {k: v for k, v in payload.items() if k != "command"} if isinstance(payload, dict) else None,
+            "status": response.status_code,
+            "response_snippet": response_snippet,
+        }))
+    return response
+
+_SERVER_START_TIME = time.time()
 
 # API Configuration
 API_PORT = int(os.environ.get('HEXSTRIKE_PORT', 8888))
@@ -9020,6 +9201,17 @@ file_manager = FileOperationsManager()
 
 # API Routes
 
+@app.route("/ping", methods=["GET"])
+def ping():
+    """Lightweight liveness check — no tool detection, no subprocess calls.
+    Use this for hex-up startup polling and frequent status checks;
+    use /health when you actually need the full tool-availability sweep."""
+    return jsonify({
+        "status": "ok",
+        "version": "6.0.0",
+        "uptime_seconds": round(time.time() - _SERVER_START_TIME, 2)
+    })
+
 @app.route("/health", methods=["GET"])
 def health_check():
     """Health check endpoint with comprehensive tool detection"""
@@ -9947,8 +10139,16 @@ def execute_httpx_scan(target, params):
     """Execute httpx scan with optimized parameters"""
     try:
         additional_args = params.get('additional_args', '-tech-detect -status-code')
-        # Use shell command with pipe for httpx
-        cmd = f"echo {target} | httpx {additional_args}"
+        # HEXSTRIKE_HTTPX_BIN pins the absolute path to ProjectDiscovery's Go
+        # httpx binary. A bare "httpx" is ambiguous: pip's httpx[cli] package
+        # installs a same-named console script earlier on PATH (/usr/bin),
+        # which silently shadows the real recon tool and fails with a
+        # click-style "No such option" error instead of running the scan.
+        # Targets are piped via stdin (one per line) rather than -l, since
+        # -l expects a filename, not an inline host list.
+        targets = [t.strip() for t in str(target).split(",") if t.strip()]
+        stdin_hosts = "\\n".join(targets)
+        cmd = f"printf '%b' {shlex.quote(stdin_hosts)} | {HEXSTRIKE_HTTPX_BIN} {additional_args}"
 
         return execute_command(cmd)
     except Exception as e:
@@ -10021,6 +10221,13 @@ def execute_amass_scan(target, params):
         cmd_parts = ['amass', 'enum', '-d', target]
         if additional_args:
             cmd_parts.extend(additional_args.split())
+        # amass's own -timeout (minutes) bounds runtime deterministically —
+        # without it, passive/active enum can run well past the generic
+        # execute_command wrapper's window and get hard-killed mid-write
+        # instead of exiting cleanly with partial results. Only added when
+        # the caller hasn't already set one via additional_args.
+        if "-timeout" not in cmd_parts:
+            cmd_parts.extend(["-timeout", str(HEXSTRIKE_AMASS_TIMEOUT_MIN)])
 
         return execute_command(' '.join(cmd_parts))
     except Exception as e:
@@ -11349,6 +11556,12 @@ def amass():
 
         if additional_args:
             command += f" {additional_args}"
+
+        # See execute_amass_scan() for why: bound runtime with amass's own
+        # -timeout so it exits deterministically instead of getting
+        # hard-killed by the generic command wrapper mid-write.
+        if "-timeout" not in command:
+            command += f" -timeout {HEXSTRIKE_AMASS_TIMEOUT_MIN}"
 
         logger.info(f"🔍 Starting Amass {mode}: {domain}")
         result = execute_command(command)
@@ -13151,7 +13364,12 @@ def httpx():
             logger.warning("🌐 httpx called without target parameter")
             return jsonify({"error": "Target parameter is required"}), 400
 
-        command = f"httpx -l {target} -t {threads}"
+        # See execute_httpx_scan() for why: absolute path avoids the
+        # pip httpx[cli] PATH collision, and stdin piping replaces -l
+        # (which expects a filename, not an inline comma/space list).
+        targets = [t.strip() for t in re.split(r"[,\s]+", str(target)) if t.strip()]
+        stdin_hosts = "\\n".join(targets)
+        command = f"printf '%b' {shlex.quote(stdin_hosts)} | {HEXSTRIKE_HTTPX_BIN} -t {threads}"
 
         if probe:
             command += " -probe"
@@ -17260,6 +17478,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run the HexStrike AI API Server")
     parser.add_argument("--debug", action="store_true", help="Enable debug mode")
     parser.add_argument("--port", type=int, default=API_PORT, help=f"Port for the API server (default: {API_PORT})")
+    parser.add_argument("--host", type=str, default="127.0.0.1", help="Bind host (default: 127.0.0.1, loopback-only)")
     args = parser.parse_args()
 
     if args.debug:
@@ -17286,4 +17505,4 @@ if __name__ == "__main__":
         if line.strip():
             logger.info(line)
 
-    app.run(host="0.0.0.0", port=API_PORT, debug=DEBUG_MODE)
+    app.run(host=args.host, port=API_PORT, debug=DEBUG_MODE)
