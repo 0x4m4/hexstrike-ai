@@ -112,6 +112,14 @@ graph TD
 
 ## Installation
 
+> **🐳 Docker (community-contributed):** prefer a self-contained image? A
+> Kali-based container that bundles the 150+ tools and exposes them as a
+> **Streamable HTTP MCP server** by default (set `OPENAPI=true` for an OpenAPI
+> surface via [mcpo](https://github.com/open-webui/mcpo)) — with an optional
+> Mullvad VPN kill-switch — lives in [`contrib/docker/`](contrib/docker/README.md).
+> Build it with `docker build -f contrib/docker/Dockerfile -t hexstrike-ai-mcp .`
+> from the repo root.
+
 ### Quick Setup to Run the hexstrike MCPs Server
 
 ```bash
