@@ -1,0 +1,57 @@
+services:
+  hexstrike:
+    # Build context is the repo root so the Dockerfile can COPY the patched
+    # hexstrike_mcp.py from the repo root. Run `docker compose` from this
+    # directory (contrib/docker/); the paths below are relative to it.
+    build:
+      context: ../..
+      dockerfile: contrib/docker/Dockerfile
+    image: hexstrike-ai-mcp:latest
+    container_name: hexstrike-ai-mcp
+    restart: unless-stopped
+    ports:
+      # Front-end transport -> http://localhost:<PUBLISH_PORT>.
+      #   default        : Streamable HTTP MCP server, endpoint /mcp
+      #   OPENAPI=true   : OpenAPI via mcpo, docs at /docs
+      # Override the host port, e.g. PUBLISH_PORT=8334 docker compose up.
+      - "${PUBLISH_PORT:-8000}:8000"
+      # hexstrike Flask API: UNAUTHENTICATED arbitrary-command + file endpoints.
+      # Bound to loopback only so the RCE surface is not reachable remotely;
+      # only the front-end (optionally API-key gated in OPENAPI mode) is
+      # published network-wide.
+      - "127.0.0.1:8888:8888"   # hexstrike Flask API (optional / local debug)
+    environment:
+      - PORT=8000
+      - HEXSTRIKE_PORT=8888
+      # Transport: default is a Streamable HTTP MCP server (endpoint /mcp).
+      # Set OPENAPI=true to instead expose OpenAPI via mcpo (docs at /docs).
+      - OPENAPI=${OPENAPI:-}
+      # Bearer key required on every request in OPENAPI mode. Leave empty/unset
+      # for an open endpoint; ignored in the default MCP mode. From the host:
+      #   MCPO_API_KEY=... OPENAPI=true docker compose up
+      - MCPO_API_KEY=${MCPO_API_KEY:-}
+      # --- Mullvad VPN egress (optional) -------------------------------------
+      # Set MULLVAD_ACCOUNT to route ALL container-initiated traffic through
+      # Mullvad WireGuard. MULLVAD_LOCATION defaults to "ca" (Canada); it may
+      # be a country code, a city code, or a full relay hostname. Optionally
+      # reuse a pre-registered key via MULLVAD_PRIVATE_KEY + MULLVAD_ADDRESS.
+      - MULLVAD_ACCOUNT=${MULLVAD_ACCOUNT:-}
+      - MULLVAD_LOCATION=${MULLVAD_LOCATION:-ca}
+      - MULLVAD_PRIVATE_KEY=${MULLVAD_PRIVATE_KEY:-}
+      - MULLVAD_ADDRESS=${MULLVAD_ADDRESS:-}
+      - MULLVAD_KILLSWITCH=${MULLVAD_KILLSWITCH:-1}
+    # WireGuard needs a tun device + the ability to set the src_valid_mark
+    # sysctl for policy routing. (The host must have the wireguard module.)
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    sysctls:
+      - net.ipv4.conf.all.src_valid_mark=1
+    # Chromium (Selenium browser agent + aquatone) needs a large /dev/shm,
+    # otherwise headless Chrome crashes with "session deleted / out of memory".
+    shm_size: '2gb'
+    # Many bundled tools use raw sockets / SYN scans (nmap -sS, masscan,
+    # responder, arp-scan). Grant the capabilities so those work; drop them
+    # if you only ever run connect-scan / non-privileged tooling.
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW

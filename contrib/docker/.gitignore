@@ -1,0 +1,6 @@
+# Local runtime secrets / overrides — never commit these.
+# Copy .env.example -> .env and fill in real values there.
+.env
+.env.*
+!.env.example
+*.log

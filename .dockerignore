@@ -1,0 +1,17 @@
+# Build context is the repo root (see contrib/docker/README.md), but the image
+# clones the HexStrike app inside the build and only overlays hexstrike_mcp.py.
+# So the daemon needs almost nothing from here — keep the context small.
+.git
+.github
+.gitignore
+.dockerignore
+assets/
+*.md
+**/__pycache__/
+*.pyc
+*.log
+.impeccable/
+# Never ship local secrets/overrides even though they're git-ignored too.
+contrib/docker/.env
+contrib/docker/.env.*
+!contrib/docker/.env.example
