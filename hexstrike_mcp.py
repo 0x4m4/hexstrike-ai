@@ -5459,7 +5459,24 @@ def main():
         mcp = setup_mcp_server(hexstrike_client)
         logger.info("🚀 Starting HexStrike AI MCP server")
         logger.info("🤖 Ready to serve AI agents with enhanced cybersecurity capabilities")
-        mcp.run()
+
+        # Transport selection (opt-in; default is unchanged from upstream):
+        #   STREAMABLE_HTTP truthy -> publish a Streamable HTTP MCP server
+        #       directly on the exposed port (no stdio, no mcpo in front).
+        #       Endpoint: http://<host>:<port>/mcp
+        #   otherwise (incl. NO env vars set) -> plain stdio `mcp.run()`, i.e.
+        #       exactly the original behavior for anyone running this directly.
+        if os.environ.get("STREAMABLE_HTTP", "").strip().lower() in ("1", "true", "yes", "on"):
+            http_host = os.environ.get("STREAMABLE_HTTP_HOST", "0.0.0.0")
+            http_port = int(os.environ.get("STREAMABLE_HTTP_PORT",
+                                           os.environ.get("MCPO_PORT", "8000")))
+            mcp.settings.host = http_host
+            mcp.settings.port = http_port
+            logger.info(f"🌐 Transport: streamable-http on {http_host}:{http_port} (MCP endpoint: /mcp)")
+            mcp.run(transport="streamable-http")
+        else:
+            logger.info("🔌 Transport: stdio (for mcpo / direct MCP stdio clients)")
+            mcp.run()
     except Exception as e:
         logger.error(f"💥 Error starting MCP server: {str(e)}")
         import traceback
