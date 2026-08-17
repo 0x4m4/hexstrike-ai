@@ -755,7 +755,7 @@ MIT License - see LICENSE file for details.
 
 ## 🌟 **Star History**
 
-[![Star History Chart](https://api.star-history.com/svg?repos=0x4m4/hexstrike-ai&type=Date)](https://star-history.com/#0x4m4/hexstrike-ai&Date)
+[![Star History Chart](https://star-history.dera.page/svg?repos=0x4m4/hexstrike-ai&type=Date)](https://star-history.dera.page/#0x4m4/hexstrike-ai&Date)
 
 ### **📊 Project Statistics**
 
