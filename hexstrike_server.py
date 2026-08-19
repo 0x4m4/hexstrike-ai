@@ -10062,11 +10062,24 @@ def execute_dalfox_scan(target, params):
     """Execute dalfox scan with optimized parameters"""
     try:
         additional_args = params.get('additional_args', '')
-        cmd_parts = ['dalfox', 'url', target]
+        # PATCH LOCAL 2026-08-19: dalfox v3.2.1 cambió la sintaxis — ahora
+        # exige 'url --url <URL> --silence <TARGET>' (antes 'dalfox url
+        # <target>' fallaba con 'required arguments --url'). Detectado en la
+        # prueba real del target web vía smart-scan.
+        cmd_parts = ['dalfox', 'url', '--url', target, '--silence']
         if additional_args:
             cmd_parts.extend(additional_args.split())
 
-        return execute_command(' '.join(cmd_parts))
+        result = execute_command(' '.join(cmd_parts))
+        # PATCH LOCAL 2026-08-19 (2º): dalfox usa rc=1 para señalar que
+        # ENCONTRÓ hallazgos (convención de exit code: 0 = sin vulns, 1 =
+        # vulns encontradas). El executor marca success=(rc==0) y descartaba
+        # los POC encontrados. Normalizar: rc!=0 con stdout no vacío =
+        # ejecución exitosa con hallazgos.
+        if not result.get('success') and result.get('stdout'):
+            result['success'] = True
+            result['note'] = 'dalfox rc!=0 pero stdout con hallazgos (convención de exit code del tool)'
+        return result
     except Exception as e:
         return {"success": False, "error": str(e)}
 
