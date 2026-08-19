@@ -9760,6 +9760,12 @@ def intelligent_smart_scan():
                 # Map tool names to their actual execution functions
                 tool_execution_map = {
                     'nmap': lambda: execute_nmap_scan(target, optimized_params),
+                    # PATCH LOCAL 2026-08-19: el decision engine elige
+                    # 'nmap-advanced' para hosts (priority 3 en attack chains)
+                    # pero no estaba en el execution map → smart-scan fallaba
+                    # con 'Tool nmap-advanced not implemented'. Alias a la
+                    # función nmap real.
+                    'nmap-advanced': lambda: execute_nmap_scan(target, optimized_params),
                     'gobuster': lambda: execute_gobuster_scan(target, optimized_params),
                     'nuclei': lambda: execute_nuclei_scan(target, optimized_params),
                     'nikto': lambda: execute_nikto_scan(target, optimized_params),
