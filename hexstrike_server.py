@@ -1286,10 +1286,15 @@ class IntelligentDecisionEngine:
             params["version_detection"] = True
 
         # Add NSE scripts based on target type
+        # vulners (2026-08-22): cruza versiones de servicios con CVEs en
+        # tiempo real (API vulners.com) — el paso que faltaba para cerrar
+        # versión → CVE en el scan. Requiere -sV (version_detection).
         if profile.target_type == TargetType.WEB_APPLICATION:
-            params["nse_scripts"] = "http-*,ssl-*"
+            params["nse_scripts"] = "http-*,ssl-*,vulners"
         elif profile.target_type == TargetType.NETWORK_HOST:
-            params["nse_scripts"] = "default,discovery,safe"
+            params["nse_scripts"] = "default,discovery,safe,vulners"
+        else:
+            params["nse_scripts"] = "vulners"
 
         return params
 
@@ -9883,12 +9888,19 @@ def execute_nmap_scan(target, params):
     try:
         scan_type = params.get('scan_type', '-sV')
         ports = params.get('ports', '')
+        nse_scripts = params.get('nse_scripts', '')
         additional_args = params.get('additional_args', '')
 
         # Build nmap command
         cmd_parts = ['nmap', scan_type]
         if ports:
             cmd_parts.extend(['-p', ports])
+        # nse_scripts cableado (2026-08-22): el optimizer lo generaba
+        # (ej. 'vuln,exploit' en aggressive, 'http-*,ssl-*' en web) pero
+        # execute_nmap_scan lo ignoraba — los NSE nunca corrían en la ruta
+        # del decision engine (solo en el endpoint /api/tools/nmap-advanced).
+        if nse_scripts:
+            cmd_parts.append(f"--script={nse_scripts}")
         if additional_args:
             cmd_parts.extend(additional_args.split())
         cmd_parts.append(target)
