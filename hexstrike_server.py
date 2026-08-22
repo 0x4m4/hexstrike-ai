@@ -10413,6 +10413,7 @@ def nmap():
         target = params.get("target", "")
         scan_type = params.get("scan_type", "-sCV")
         ports = params.get("ports", "")
+        nse_scripts = params.get("nse_scripts", "")
         additional_args = params.get("additional_args", "-T4 -Pn")
         use_recovery = params.get("use_recovery", True)
 
@@ -10426,6 +10427,12 @@ def nmap():
 
         if ports:
             command += f" -p {ports}"
+
+        # nse_scripts (2026-08-22): vulners cruza versiones con CVEs — el
+        # endpoint simple no lo exponía; ahora acepta --script= igual que
+        # nmap-advanced.
+        if nse_scripts:
+            command += f" --script={nse_scripts}"
 
         if additional_args:
             command += f" {additional_args}"
