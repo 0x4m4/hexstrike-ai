@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HexStrike · BrowserPod Security GUI</title>
+<style>
+:root{--bg:#0b0e14;--raised:#131a24;--raised2:#1a2332;--border:#232e3f;--ink:#d7e2f0;--muted:#5f7688;--accent:#38e8d0;--accent2:#7f9cf5;--warn:#f59e0b;--danger:#f43f5e;--ok:#22c55e}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;height:100vh;overflow:hidden}
+#app{display:flex;flex-direction:column;height:100vh}
+header{display:flex;align-items:center;gap:12px;padding:10px 16px;border-bottom:1px solid var(--border);background:var(--raised)}
+header .logo{color:var(--accent);font-weight:700;font-size:15px;letter-spacing:1px}
+header .sub{color:var(--muted);font-size:11px}
+header .spacer{flex:1}
+.badge{padding:3px 10px;border-radius:999px;font-size:11px;border:1px solid var(--border)}
+.badge.ok{color:var(--accent);border-color:rgba(56,232,208,.4)}
+.badge.down{color:var(--danger);border-color:rgba(244,63,94,.4)}
+main{flex:1;display:flex;overflow:hidden}
+#palette{width:250px;border-right:1px solid var(--border);background:var(--raised);padding:12px;overflow-y:auto}
+#palette h3{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:10px}
+.tool{background:var(--raised2);border:1px solid var(--border);border-radius:8px;padding:10px;margin-bottom:8px}
+.tool .tname{color:var(--accent);font-weight:600;margin-bottom:6px}
+.tool label{display:block;font-size:11px;color:var(--muted);margin:6px 0 3px}
+.tool input{width:100%;background:var(--bg);border:1px solid var(--border);color:var(--ink);border-radius:5px;padding:5px 8px;font-family:inherit;font-size:12px}
+.tool button{width:100%;margin-top:8px;background:var(--accent);color:#04121a;border:none;border-radius:5px;padding:6px;font-weight:700;cursor:pointer;font-family:inherit}
+.tool button:hover{filter:brightness(1.15)}
+.tool button:disabled{opacity:.4;cursor:not-allowed}
+#stage{flex:1;display:flex;flex-direction:column;overflow:hidden}
+#podbar{display:flex;align-items:center;gap:10px;padding:8px 14px;border-bottom:1px solid var(--border);font-size:12px;color:var(--muted);background:var(--raised)}
+#podbar .dot{width:8px;height:8px;border-radius:50%;background:var(--muted)}
+#podbar .dot.on{background:var(--accent);box-shadow:0 0 8px var(--accent)}
+#pod{flex:1;position:relative;overflow:hidden}
+#pod .placeholder{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;color:var(--muted)}
+#pod .placeholder .big{font-size:34px}
+#pod .placeholder .hint{font-size:12px;max-width:420px;text-align:center;line-height:1.6}
+#pod .placeholder button{background:var(--accent);color:#04121a;border:none;border-radius:6px;padding:10px 18px;font-weight:700;cursor:pointer;font-family:inherit;font-size:13px}
+#pod .placeholder code{color:var(--accent);background:var(--raised2);padding:2px 6px;border-radius:4px}
+#panel{width:330px;border-left:1px solid var(--border);background:var(--raised);display:flex;flex-direction:column}
+#panel h3{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);padding:12px 14px 6px;border-bottom:1px solid var(--border)}
+#proposals{flex:1;overflow-y:auto;padding:8px}
+.proposal{background:var(--raised2);border:1px solid rgba(255,158,11,.35);border-radius:8px;padding:10px;margin-bottom:8px}
+.proposal .ptool{color:var(--warn);font-weight:700;margin-bottom:4px}
+.proposal .pdesc{color:var(--muted);font-size:11px;margin-bottom:6px}
+.proposal .pparams{color:var(--muted);font-size:11px;word-break:break-all;margin-bottom:8px;background:var(--bg);padding:6px;border-radius:4px}
+.proposal .pactions{display:flex;gap:8px}
+.proposal button{flex:1;border:none;border-radius:5px;padding:6px;font-weight:700;cursor:pointer;font-family:inherit}
+.proposal .yes{background:var(--accent);color:#04121a}
+.proposal .no{background:var(--raised2);color:var(--danger);border:1px solid var(--danger)}
+#log{height:190px;border-top:1px solid var(--border);background:#05070b;overflow-y:auto;padding:8px 12px;font-size:12px;line-height:1.5}
+#log .l{margin:2px 0;word-break:break-all;white-space:pre-wrap}
+#log .l.in{color:var(--accent)}
+#log .l.out{color:#9fb3c8}
+#log .l.err{color:var(--danger)}
+#log .l.warn{color:var(--warn)}
+#log .l.meta{color:var(--muted)}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <span class="logo">⚡ HexStrike · BrowserPod Security GUI</span>
+    <span class="sub">WASM sandbox · gated tool dispatch · human confirm</span>
+    <span class="spacer"></span>
+    <span class="badge" id="hxBadge">hexstrike …</span>
+  </header>
+  <main>
+    <div id="palette">
+      <h3>gated tools · require confirm</h3>
+      <div id="tools"></div>
+    </div>
+    <div id="stage">
+      <div id="podbar">
+        <span class="dot" id="podDot"></span>
+        <span id="podState">sandbox not booted</span>
+      </div>
+      <div id="pod">
+        <div id="podPlaceholder" class="placeholder">
+          <div class="big">🛡️</div>
+          <div class="hint">
+            <b>Security BrowserPod.</b> Boot a WASM Node.js sandbox in this tab —
+            no install, no host process. HexStrike tools stay gated: propose from
+            the left palette, confirm in the right panel.
+            <br><br>
+            <button onclick="bootPod()">⛁ boot browserpod</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="panel">
+      <h3>pending proposals — human confirm</h3>
+      <div id="proposals"><div class="hint" style="padding:12px;color:var(--muted);font-size:12px">nothing pending — fire a gated tool to propose</div></div>
+    </div>
+  </main>
+  <div id="log"><div class="l meta">hexstrike security console — gated dispatch log</div></div>
+</div>
+<script type="module">
+const API = '';
+const $ = s => document.querySelector(s);
+function log(msg, cls){
+  const d = document.createElement('div');
+  d.className = 'l ' + cls;
+  d.textContent = msg;
+  $('#log').appendChild(d);
+  $('#log').scrollTop = $('#log').scrollHeight;
+}
+const TOOL_DEFS = [
+  {tool:'nmap', label:'nmap', fields:[['target','127.0.0.1'],['port','']]},
+  {tool:'nuclei', label:'nuclei', fields:[['target','https://example.com'],['template','']]},
+  {tool:'gobuster', label:'gobuster', fields:[['target','https://example.com'],['wordlist','']]},
+  {tool:'sqlmap', label:'sqlmap', fields:[['target','http://example.com?id=1'],['level','1']]},
+  {tool:'nikto', label:'nikto', fields:[['target','https://example.com']]},
+  {tool:'hydra', label:'hydra', fields:[['target','127.0.0.1'],['service','ssh'],['userlist',''],['passlist','']]},
+  {tool:'metasploit', label:'metasploit', fields:[['target','127.0.0.1'],['module','auxiliary/scanner/portscan/tcp']]},
+  {tool:'nmap_intelligent', label:'nmap · intelligent', fields:[['target','127.0.0.1']]},
+  {tool:'recon_workflow', label:'recon · workflow', fields:[['target','example.com']]},
+];
+function renderTools(){
+  const host = $('#tools');
+  TOOL_DEFS.forEach(d => {
+    const card = document.createElement('div'); card.className = 'tool';
+    const tname = document.createElement('div'); tname.className = 'tname'; tname.textContent = d.label;
+    card.appendChild(tname);
+    d.fields.forEach(f => {
+      const lab = document.createElement('label'); lab.textContent = f[0];
+      const inp = document.createElement('input'); inp.dataset.k = f[0]; inp.value = f[1]; inp.placeholder = f[1];
+      card.appendChild(lab); card.appendChild(inp);
+    });
+    const btn = document.createElement('button');
+    btn.textContent = 'propose ' + d.label;
+    btn.onclick = () => {
+      const params = {};
+      card.querySelectorAll('input').forEach(i => params[i.dataset.k] = i.value.trim());
+      propose(d.tool, params, btn);
+    };
+    card.appendChild(btn); host.appendChild(card);
+  });
+}
+async function propose(tool, params, btn){
+  btn.disabled = true;
+  log('propose ' + tool + ' ' + JSON.stringify(params), 'meta');
+  try{
+    const r = await fetch(API + '/api/run', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({tool, params})});
+    const j = await r.json();
+    if (j.proposal){ renderProposals(); log('proposal ' + tool + ' — awaiting confirm', 'warn'); }
+    else log('propose rejected: ' + j.error, 'err');
+  }catch(e){ log('propose failed: ' + e, 'err'); }
+  btn.disabled = false;
+}
+async function renderProposals(){
+  try{
+    const j = await (await fetch(API + '/api/tools')).json();
+    const host = $('#proposals'); host.innerHTML = '';
+    if (!j.pending.length){
+      host.innerHTML = '<div class="hint" style="padding:12px;color:var(--muted);font-size:12px">nothing pending — fire a gated tool to propose</div>';
+      return;
+    }
+    j.pending.forEach(p => {
+      const el = document.createElement('div'); el.className = 'proposal';
+      el.innerHTML = '<div class="ptool">⚡ ' + p.tool + '</div><div class="pdesc">' + (p.describe || '') + '</div><div class="pparams">' + JSON.stringify(p.params) + '</div>';
+      const acts = document.createElement('div'); acts.className = 'pactions';
+      const yes = document.createElement('button'); yes.className = 'yes'; yes.textContent = 'confirm & run';
+      yes.onclick = () => decide(p.token, true);
+      const no = document.createElement('button'); no.className = 'no'; no.textContent = 'cancel';
+      no.onclick = () => decide(p.token, false);
+      acts.append(yes, no); el.appendChild(acts); host.appendChild(el);
+    });
+  }catch(e){}
+}
+async function decide(token, run){
+  const path = run ? '/api/run/confirm' : '/api/run/cancel';
+  try{
+    const r = await fetch(API + path, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({token})});
+    const j = await r.json();
+    if (j.ok) log(run ? 'confirmed → ' + JSON.stringify(j.result || {}).slice(0,400) : 'cancelled ' + token, run ? 'in' : 'meta');
+    else log('gate: ' + j.error, 'err');
+  }catch(e){ log('decision failed: ' + e, 'err'); }
+  renderProposals();
+}
+async function health(){
+  try{
+    const j = await (await fetch(API + '/health')).json();
+    const b = $('#hxBadge');
+    b.textContent = j.hexstrike ? 'hexstrike ✓' : 'hexstrike ✗';
+    b.className = 'badge ' + (j.hexstrike ? 'ok' : 'down');
+  }catch(e){ $('#hxBadge').textContent = 'hexstrike ✗'; $('#hxBadge').className = 'badge down'; }
+}
+let pod = null;
+async function bootPod(){
+  const state = $('#podState'); const dot = $('#podDot');
+  state.textContent = 'booting wasm sandbox…'; dot.className = 'dot';
+  try{
+    const { BrowserPod } = await import('https://rt.browserpod.io/3.0.1/browserpod.js');
+    const bootOpts = {};
+    if (import.meta.env && import.meta.env.VITE_BP_APIKEY) bootOpts['apiKey'] = import.meta.env.VITE_BP_APIKEY;
+    pod = await BrowserPod.boot(bootOpts);
+    state.textContent = 'browserpod online'; dot.className = 'dot on';
+    const ph = $('#podPlaceholder'); if (ph) ph.remove();
+    const pre = document.createElement('pre');
+    pre.style.cssText = 'flex:1;overflow-y:auto;padding:12px;margin:0;font-family:ui-monospace,monospace;font-size:12px;color:var(--accent);background:var(--bg);white-space:pre-wrap;word-break:break-all';
+    $('#pod').appendChild(pre);
+    await pod.createDefaultTerminal(pre);
+    log('browserpod booted — sandbox ready', 'in');
+  }catch(e){
+    state.textContent = 'sandbox failed — retry with an API key';
+    dot.className = 'dot';
+    log('browserpod boot failed: ' + e.message, 'err');
+  }
+}
+renderTools(); renderProposals(); health();
+setInterval(health, 15000); setInterval(renderProposals, 5000);
+</script>
+</body>
+</html>
