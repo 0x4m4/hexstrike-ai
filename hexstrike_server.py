@@ -9085,13 +9085,14 @@ def health_check():
 
     network_tools = [
         "rustscan", "masscan", "autorecon", "nbtscan", "arp-scan", "responder",
-        "nxc", "enum4linux-ng", "rpcclient", "enum4linux"
+        "nxc", "enum4linux-ng", "rpcclient", "enum4linux", "testssl"
     ]
 
     web_security_tools = [
         "ffuf", "feroxbuster", "dirsearch", "dotdotpwn", "xsser", "wfuzz",
         "gau", "waybackurls", "arjun", "paramspider", "x8", "jaeles", "dalfox",
-        "httpx", "wafw00f", "burpsuite", "zaproxy", "katana", "hakrawler"
+        "httpx", "wafw00f", "burpsuite", "zaproxy", "katana", "hakrawler",
+        "sstimap-scan", "xsstrike-scan"
     ]
 
     vuln_scanning_tools = [
@@ -9121,8 +9122,8 @@ def health_check():
 
     osint_tools = [
         "amass", "subfinder", "fierce", "dnsenum", "theharvester", "sherlock",
-        "social-analyzer", "recon-ng", "maltego", "spiderfoot", "shodan-cli",
-        "censys-cli", "have-i-been-pwned"
+        "social-analyzer", "recon-ng", "maltego", "spiderfoot", "shodan",
+        "shodan-scan", "censys-cli", "have-i-been-pwned"
     ]
 
     exploitation_tools = [
@@ -9140,7 +9141,8 @@ def health_check():
     additional_tools = [
         "smbmap", "volatility", "sleuthkit", "autopsy", "evil-winrm",
         "paramspider", "airmon-ng", "airodump-ng", "aireplay-ng", "aircrack-ng",
-        "msfvenom", "msfconsole", "graphql-scanner", "jwt-analyzer"
+        "msfvenom", "msfconsole", "graphql-scanner", "jwt-analyzer",
+        "oletools-scan"
     ]
 
     all_tools = (
@@ -9150,12 +9152,25 @@ def health_check():
     )
     tools_status = {}
 
+    # Detección directa por rutas conocidas (no depende del PATH del subprocess)
+    _search_dirs = [
+        os.path.expanduser("~/bin"),
+        os.path.expanduser("~/.local/bin"),
+        "/usr/local/bin",
+        "/usr/bin",
+        "/bin",
+        "/usr/sbin",
+        "/sbin",
+    ]
+
+    def _tool_exists(name):
+        for d in _search_dirs:
+            if os.path.isfile(os.path.join(d, name)):
+                return True
+        return False
+
     for tool in all_tools:
-        try:
-            result = execute_command(f"which {tool}", use_cache=True)
-            tools_status[tool] = result["success"]
-        except:
-            tools_status[tool] = False
+        tools_status[tool] = _tool_exists(tool)
 
     all_essential_tools_available = all(tools_status[tool] for tool in essential_tools)
 
