@@ -3644,7 +3644,7 @@ class CTFToolManager:
             "recon-ng": "recon-ng",
             "maltego": "maltego",
             "spiderfoot": "spiderfoot",
-            "shodan": "shodan search",
+            "shodan": "shodan host",
             "censys": "censys search",
             "whois": "whois",
             "dig": "dig",
