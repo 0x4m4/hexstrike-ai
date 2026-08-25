@@ -9092,7 +9092,7 @@ def health_check():
         "ffuf", "feroxbuster", "dirsearch", "dotdotpwn", "xsser", "wfuzz",
         "gau", "waybackurls", "arjun", "paramspider", "x8", "jaeles", "dalfox",
         "httpx", "wafw00f", "burpsuite", "zaproxy", "katana", "hakrawler",
-        "sstimap-scan", "xsstrike-scan"
+        "sstimap-scan", "xsstrike-scan", "mcp-probe"
     ]
 
     vuln_scanning_tools = [
