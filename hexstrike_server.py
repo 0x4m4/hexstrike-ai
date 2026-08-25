@@ -2881,7 +2881,7 @@ class CTFWorkflowManager:
             },
             "osint": {
                 "search_engines": ["google-dorking", "shodan", "censys"],
-                "social_media": ["sherlock", "social-analyzer"],
+                "social_media": ["sherlock", "social-analyzer", "holehe"],
                 "image_analysis": ["reverse-image-search", "exif-analysis"],
                 "domain_analysis": ["whois", "dns-analysis", "certificate-transparency"],
                 "geolocation": ["geoint", "osm-analysis", "satellite-imagery"]
@@ -3638,7 +3638,8 @@ class CTFToolManager:
             "dotpeek": "dotpeek",
 
             # OSINT and Reconnaissance Tools
-            "sherlock": "sherlock",
+            "sherlock": "sherlock-scan",
+            "holehe": "holehe-scan",
             "social-analyzer": "social-analyzer",
             "theHarvester": "theHarvester -d {} -b all",
             "recon-ng": "recon-ng",
@@ -9123,7 +9124,7 @@ def health_check():
     osint_tools = [
         "amass", "subfinder", "fierce", "dnsenum", "theharvester", "sherlock",
         "social-analyzer", "recon-ng", "maltego", "spiderfoot", "shodan",
-        "shodan-scan", "censys-cli", "have-i-been-pwned"
+        "shodan-scan", "censys-cli", "have-i-been-pwned", "holehe"
     ]
 
     exploitation_tools = [
