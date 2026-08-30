@@ -1,0 +1,13 @@
+# Local backup files
+*.bak
+*.bak-*
+
+# Log files
+*.log
+
+# Local office / scratch documents
+*.odt
+
+# Personal launcher scripts (contain machine-specific paths)
+start_hexstrike_server.sh
+start_hexstrike_mcp.sh
