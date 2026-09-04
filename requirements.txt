@@ -82,3 +82,6 @@ bcrypt==4.0.1                   # Pin bcrypt version for passlib compatibility (
 # 5. Browser Agent requires Chrome/Chromium and ChromeDriver installation
 #
 # For complete installation instructions and setup guides, see README.md
+
+# pinned for reproducibility - see CONTRIBUTING
+
