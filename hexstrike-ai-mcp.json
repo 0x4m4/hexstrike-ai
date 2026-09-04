@@ -12,13 +12,12 @@
       "alwaysAllow": []
     },
     "metasploit": {
-      "command": "/home/medin/metasploit-mcp-env/bin/metasploit-mcp",
+      "command": "/home/medin/bin/metasploit-mcp-run.sh",
       "args": [
         "--transport",
         "stdio"
       ],
       "env": {
-        "MSF_PASSWORD": "***REMOVED***",
         "MSF_SERVER": "127.0.0.1",
         "MSF_PORT": "55553",
         "MSF_SSL": "false"
@@ -38,8 +37,7 @@
       ],
       "env": {
         "ADAPTIX_SERVER": "127.0.0.1:4321",
-        "ADAPTIX_USER": "operator1",
-        "ADAPTIX_PASS": "***REMOVED***"
+        "ADAPTIX_USER": "operator1"
       },
       "description": "AdaptixC2 - C2 framework (listeners, agents, tasks, commands)",
       "timeout": 300,
