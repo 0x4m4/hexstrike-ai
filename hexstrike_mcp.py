@@ -164,6 +164,7 @@ class HexStrikeClient:
         if self.api_key:
             self.session.headers['X-API-Key'] = self.api_key
 
+
         # Try to connect to server with retries
         connected = False
         for i in range(MAX_RETRIES):

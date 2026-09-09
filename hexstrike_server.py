@@ -8989,6 +8989,7 @@ class FileOperationsManager:
             raise ValueError(f"path fuera de base_dir: {name!r}")
         return candidate
 
+
     def create_file(self, filename: str, content: str, binary: bool = False) -> Dict[str, Any]:
         """Create a file with the specified content"""
         try:
@@ -10449,6 +10450,7 @@ def nmap():
         # nmap-advanced.
         if nse_scripts:
             command += f" --script={nse_scripts}"
+
 
         if additional_args:
             command += f" {additional_args}"
