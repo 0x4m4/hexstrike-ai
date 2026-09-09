@@ -22,6 +22,7 @@ import argparse
 import json
 import logging
 import os
+import shlex
 import subprocess
 import sys
 import traceback
@@ -64,6 +65,34 @@ import mitmproxy
 from mitmproxy import http as mitmhttp
 from mitmproxy.tools.dump import DumpMaster
 from mitmproxy.options import Options as MitmOptions
+
+# ============================================================================
+# SHELL ARGUMENT SANITIZATION
+# ============================================================================
+
+
+def safe_additional_args(value):
+    """Quote each whitespace-separated token of a client-supplied
+    'additional_args'-style parameter before it is concatenated into a
+    shell=True command string.
+
+    These endpoints let a caller pass a string of extra CLI flags (e.g.
+    "-T4 -Pn") that is appended to the command unquoted. Splitting into
+    tokens with shlex.split() and quoting each with shlex.quote()
+    preserves the intended one-argument-per-token semantics while making
+    it impossible for any token to break out of the tool invocation
+    (";", "|", "$()", backticks, etc. are all neutralized once quoted).
+    """
+    if not value:
+        return value
+    try:
+        tokens = shlex.split(value)
+    except ValueError:
+        # Unbalanced quotes: treat the whole string as one opaque token
+        # rather than passing it through unsanitized.
+        tokens = [value]
+    return " ".join(shlex.quote(tok) for tok in tokens)
+
 
 # ============================================================================
 # LOGGING CONFIGURATION (MUST BE FIRST)
@@ -9827,8 +9856,7 @@ def execute_nmap_scan(target, params):
     try:
         scan_type = params.get('scan_type', '-sV')
         ports = params.get('ports', '')
-        additional_args = params.get('additional_args', '')
-
+        additional_args = safe_additional_args(params.get('additional_args', ''))
         # Build nmap command
         cmd_parts = ['nmap', scan_type]
         if ports:
@@ -9846,8 +9874,7 @@ def execute_gobuster_scan(target, params):
     try:
         mode = params.get('mode', 'dir')
         wordlist = params.get('wordlist', '/usr/share/wordlists/dirb/common.txt')
-        additional_args = params.get('additional_args', '')
-
+        additional_args = safe_additional_args(params.get('additional_args', ''))
         cmd_parts = ['gobuster', mode, '-u', target, '-w', wordlist]
         if additional_args:
             cmd_parts.extend(additional_args.split())
@@ -9861,8 +9888,7 @@ def execute_nuclei_scan(target, params):
     try:
         severity = params.get('severity', '')
         tags = params.get('tags', '')
-        additional_args = params.get('additional_args', '')
-
+        additional_args = safe_additional_args(params.get('additional_args', ''))
         cmd_parts = ['nuclei', '-u', target]
         if severity:
             cmd_parts.extend(['-severity', severity])
@@ -9878,7 +9904,7 @@ def execute_nuclei_scan(target, params):
 def execute_nikto_scan(target, params):
     """Execute nikto scan with optimized parameters"""
     try:
-        additional_args = params.get('additional_args', '')
+        additional_args = safe_additional_args(params.get('additional_args', ''))
         cmd_parts = ['nikto', '-h', target]
         if additional_args:
             cmd_parts.extend(additional_args.split())
@@ -9890,7 +9916,7 @@ def execute_nikto_scan(target, params):
 def execute_sqlmap_scan(target, params):
     """Execute sqlmap scan with optimized parameters"""
     try:
-        additional_args = params.get('additional_args', '--batch --random-agent')
+        additional_args = safe_additional_args(params.get('additional_args', '--batch --random-agent'))
         cmd_parts = ['sqlmap', '-u', target]
         if additional_args:
             cmd_parts.extend(additional_args.split())
@@ -9903,8 +9929,7 @@ def execute_ffuf_scan(target, params):
     """Execute ffuf scan with optimized parameters"""
     try:
         wordlist = params.get('wordlist', '/usr/share/wordlists/dirb/common.txt')
-        additional_args = params.get('additional_args', '')
-
+        additional_args = safe_additional_args(params.get('additional_args', ''))
         # Ensure target has FUZZ placeholder
         if 'FUZZ' not in target:
             target = target.rstrip('/') + '/FUZZ'
@@ -9921,8 +9946,7 @@ def execute_feroxbuster_scan(target, params):
     """Execute feroxbuster scan with optimized parameters"""
     try:
         wordlist = params.get('wordlist', '/usr/share/wordlists/dirb/common.txt')
-        additional_args = params.get('additional_args', '')
-
+        additional_args = safe_additional_args(params.get('additional_args', ''))
         cmd_parts = ['feroxbuster', '-u', target, '-w', wordlist]
         if additional_args:
             cmd_parts.extend(additional_args.split())
@@ -9934,7 +9958,7 @@ def execute_feroxbuster_scan(target, params):
 def execute_katana_scan(target, params):
     """Execute katana scan with optimized parameters"""
     try:
-        additional_args = params.get('additional_args', '')
+        additional_args = safe_additional_args(params.get('additional_args', ''))
         cmd_parts = ['katana', '-u', target]
         if additional_args:
             cmd_parts.extend(additional_args.split())
@@ -9946,7 +9970,7 @@ def execute_katana_scan(target, params):
 def execute_httpx_scan(target, params):
     """Execute httpx scan with optimized parameters"""
     try:
-        additional_args = params.get('additional_args', '-tech-detect -status-code')
+        additional_args = safe_additional_args(params.get('additional_args', '-tech-detect -status-code'))
         # Use shell command with pipe for httpx
         cmd = f"echo {target} | httpx {additional_args}"
 
@@ -9957,7 +9981,7 @@ def execute_httpx_scan(target, params):
 def execute_wpscan_scan(target, params):
     """Execute wpscan scan with optimized parameters"""
     try:
-        additional_args = params.get('additional_args', '--enumerate p,t,u')
+        additional_args = safe_additional_args(params.get('additional_args', '--enumerate p,t,u'))
         cmd_parts = ['wpscan', '--url', target]
         if additional_args:
             cmd_parts.extend(additional_args.split())
@@ -9969,7 +9993,7 @@ def execute_wpscan_scan(target, params):
 def execute_dirsearch_scan(target, params):
     """Execute dirsearch scan with optimized parameters"""
     try:
-        additional_args = params.get('additional_args', '')
+        additional_args = safe_additional_args(params.get('additional_args', ''))
         cmd_parts = ['dirsearch', '-u', target]
         if additional_args:
             cmd_parts.extend(additional_args.split())
@@ -9981,7 +10005,7 @@ def execute_dirsearch_scan(target, params):
 def execute_arjun_scan(target, params):
     """Execute arjun scan with optimized parameters"""
     try:
-        additional_args = params.get('additional_args', '')
+        additional_args = safe_additional_args(params.get('additional_args', ''))
         cmd_parts = ['arjun', '-u', target]
         if additional_args:
             cmd_parts.extend(additional_args.split())
@@ -9993,7 +10017,7 @@ def execute_arjun_scan(target, params):
 def execute_paramspider_scan(target, params):
     """Execute paramspider scan with optimized parameters"""
     try:
-        additional_args = params.get('additional_args', '')
+        additional_args = safe_additional_args(params.get('additional_args', ''))
         cmd_parts = ['paramspider', '-d', target]
         if additional_args:
             cmd_parts.extend(additional_args.split())
@@ -10005,7 +10029,7 @@ def execute_paramspider_scan(target, params):
 def execute_dalfox_scan(target, params):
     """Execute dalfox scan with optimized parameters"""
     try:
-        additional_args = params.get('additional_args', '')
+        additional_args = safe_additional_args(params.get('additional_args', ''))
         cmd_parts = ['dalfox', 'url', target]
         if additional_args:
             cmd_parts.extend(additional_args.split())
@@ -10017,7 +10041,7 @@ def execute_dalfox_scan(target, params):
 def execute_amass_scan(target, params):
     """Execute amass scan with optimized parameters"""
     try:
-        additional_args = params.get('additional_args', '')
+        additional_args = safe_additional_args(params.get('additional_args', ''))
         cmd_parts = ['amass', 'enum', '-d', target]
         if additional_args:
             cmd_parts.extend(additional_args.split())
@@ -10029,7 +10053,7 @@ def execute_amass_scan(target, params):
 def execute_subfinder_scan(target, params):
     """Execute subfinder scan with optimized parameters"""
     try:
-        additional_args = params.get('additional_args', '')
+        additional_args = safe_additional_args(params.get('additional_args', ''))
         cmd_parts = ['subfinder', '-d', target]
         if additional_args:
             cmd_parts.extend(additional_args.split())
@@ -10332,7 +10356,7 @@ def nmap():
         target = params.get("target", "")
         scan_type = params.get("scan_type", "-sCV")
         ports = params.get("ports", "")
-        additional_args = params.get("additional_args", "-T4 -Pn")
+        additional_args = safe_additional_args(params.get("additional_args", "-T4 -Pn"))
         use_recovery = params.get("use_recovery", True)
 
         if not target:
@@ -10382,7 +10406,7 @@ def gobuster():
         url = params.get("url", "")
         mode = params.get("mode", "dir")
         wordlist = params.get("wordlist", "/usr/share/wordlists/dirb/common.txt")
-        additional_args = params.get("additional_args", "")
+        additional_args = safe_additional_args(params.get("additional_args", ""))
         use_recovery = params.get("use_recovery", True)
 
         if not url:
@@ -10435,7 +10459,7 @@ def nuclei():
         severity = params.get("severity", "")
         tags = params.get("tags", "")
         template = params.get("template", "")
-        additional_args = params.get("additional_args", "")
+        additional_args = safe_additional_args(params.get("additional_args", ""))
         use_recovery = params.get("use_recovery", True)
 
         if not target:
@@ -10497,8 +10521,7 @@ def prowler():
         checks = params.get("checks", "")
         output_dir = params.get("output_dir", "/tmp/prowler_output")
         output_format = params.get("output_format", "json")
-        additional_args = params.get("additional_args", "")
-
+        additional_args = safe_additional_args(params.get("additional_args", ""))
         # Ensure output directory exists
         Path(output_dir).mkdir(parents=True, exist_ok=True)
 
@@ -10540,8 +10563,7 @@ def trivy():
         output_format = params.get("output_format", "json")
         severity = params.get("severity", "")
         output_file = params.get("output_file", "")
-        additional_args = params.get("additional_args", "")
-
+        additional_args = safe_additional_args(params.get("additional_args", ""))
         if not target:
             logger.warning("🎯 Trivy called without target parameter")
             return jsonify({
@@ -10588,8 +10610,7 @@ def scout_suite():
         report_dir = params.get("report_dir", "/tmp/scout-suite")
         services = params.get("services", "")
         exceptions = params.get("exceptions", "")
-        additional_args = params.get("additional_args", "")
-
+        additional_args = safe_additional_args(params.get("additional_args", ""))
         # Ensure report directory exists
         Path(report_dir).mkdir(parents=True, exist_ok=True)
 
@@ -10626,8 +10647,7 @@ def cloudmapper():
         action = params.get("action", "collect")  # collect, prepare, webserver, find_admins, etc.
         account = params.get("account", "")
         config = params.get("config", "config.json")
-        additional_args = params.get("additional_args", "")
-
+        additional_args = safe_additional_args(params.get("additional_args", ""))
         if not account and action != "webserver":
             logger.warning("☁️  CloudMapper called without account parameter")
             return jsonify({"error": "Account parameter is required for most actions"}), 400
@@ -10660,8 +10680,7 @@ def pacu():
         modules = params.get("modules", "")
         data_services = params.get("data_services", "")
         regions = params.get("regions", "")
-        additional_args = params.get("additional_args", "")
-
+        additional_args = safe_additional_args(params.get("additional_args", ""))
         # Create Pacu command sequence
         commands = []
         commands.append(f"set_session {session_name}")
@@ -10714,8 +10733,7 @@ def kube_hunter():
         interface = params.get("interface", "")
         active = params.get("active", False)
         report = params.get("report", "json")
-        additional_args = params.get("additional_args", "")
-
+        additional_args = safe_additional_args(params.get("additional_args", ""))
         command = "kube-hunter"
 
         if target:
@@ -10756,8 +10774,7 @@ def kube_bench():
         version = params.get("version", "")
         config_dir = params.get("config_dir", "")
         output_format = params.get("output_format", "json")
-        additional_args = params.get("additional_args", "")
-
+        additional_args = safe_additional_args(params.get("additional_args", ""))
         command = "kube-bench"
 
         if targets:
@@ -10791,8 +10808,7 @@ def docker_bench_security():
         checks = params.get("checks", "")  # Specific checks to run
         exclude = params.get("exclude", "")  # Checks to exclude
         output_file = params.get("output_file", "/tmp/docker-bench-results.json")
-        additional_args = params.get("additional_args", "")
-
+        additional_args = safe_additional_args(params.get("additional_args", ""))
         command = "docker-bench-security"
 
         if checks:
@@ -10824,8 +10840,7 @@ def clair():
         image = params.get("image", "")
         config = params.get("config", "/etc/clair/config.yaml")
         output_format = params.get("output_format", "json")
-        additional_args = params.get("additional_args", "")
-
+        additional_args = safe_additional_args(params.get("additional_args", ""))
         if not image:
             logger.warning("🐳 Clair called without image parameter")
             return jsonify({"error": "Image parameter is required"}), 400
@@ -10859,8 +10874,7 @@ def falco():
         rules_file = params.get("rules_file", "")
         output_format = params.get("output_format", "json")
         duration = params.get("duration", 60)  # seconds
-        additional_args = params.get("additional_args", "")
-
+        additional_args = safe_additional_args(params.get("additional_args", ""))
         command = f"timeout {duration} falco"
 
         if config_file:
@@ -10893,8 +10907,7 @@ def checkov():
         check = params.get("check", "")
         skip_check = params.get("skip_check", "")
         output_format = params.get("output_format", "json")
-        additional_args = params.get("additional_args", "")
-
+        additional_args = safe_additional_args(params.get("additional_args", ""))
         command = f"checkov -d {directory}"
 
         if framework:
@@ -10930,8 +10943,7 @@ def terrascan():
         policy_type = params.get("policy_type", "")
         output_format = params.get("output_format", "json")
         severity = params.get("severity", "")
-        additional_args = params.get("additional_args", "")
-
+        additional_args = safe_additional_args(params.get("additional_args", ""))
         command = f"terrascan scan -t {scan_type} -d {iac_dir}"
 
         if policy_type:
@@ -10961,8 +10973,7 @@ def dirb():
         params = request.json
         url = params.get("url", "")
         wordlist = params.get("wordlist", "/usr/share/wordlists/dirb/common.txt")
-        additional_args = params.get("additional_args", "")
-
+        additional_args = safe_additional_args(params.get("additional_args", ""))
         if not url:
             logger.warning("🌐 Dirb called without URL parameter")
             return jsonify({
@@ -10990,8 +11001,7 @@ def nikto():
     try:
         params = request.json
         target = params.get("target", "")
-        additional_args = params.get("additional_args", "")
-
+        additional_args = safe_additional_args(params.get("additional_args", ""))
         if not target:
             logger.warning("🎯 Nikto called without target parameter")
             return jsonify({
@@ -11020,8 +11030,7 @@ def sqlmap():
         params = request.json
         url = params.get("url", "")
         data = params.get("data", "")
-        additional_args = params.get("additional_args", "")
-
+        additional_args = safe_additional_args(params.get("additional_args", ""))
         if not url:
             logger.warning("🎯 SQLMap called without URL parameter")
             return jsonify({
@@ -11101,8 +11110,7 @@ def hydra():
         username_file = params.get("username_file", "")
         password = params.get("password", "")
         password_file = params.get("password_file", "")
-        additional_args = params.get("additional_args", "")
-
+        additional_args = safe_additional_args(params.get("additional_args", ""))
         if not target or not service:
             logger.warning("🎯 Hydra called without target or service parameter")
             return jsonify({
@@ -11150,8 +11158,7 @@ def john():
         hash_file = params.get("hash_file", "")
         wordlist = params.get("wordlist", "/usr/share/wordlists/rockyou.txt")
         format_type = params.get("format", "")
-        additional_args = params.get("additional_args", "")
-
+        additional_args = safe_additional_args(params.get("additional_args", ""))
         if not hash_file:
             logger.warning("🔐 John called without hash_file parameter")
             return jsonify({
@@ -11187,8 +11194,7 @@ def wpscan():
     try:
         params = request.json
         url = params.get("url", "")
-        additional_args = params.get("additional_args", "")
-
+        additional_args = safe_additional_args(params.get("additional_args", ""))
         if not url:
             logger.warning("🌐 WPScan called without URL parameter")
             return jsonify({
@@ -11216,8 +11222,7 @@ def enum4linux():
     try:
         params = request.json
         target = params.get("target", "")
-        additional_args = params.get("additional_args", "-a")
-
+        additional_args = safe_additional_args(params.get("additional_args", "-a"))
         if not target:
             logger.warning("🎯 Enum4linux called without target parameter")
             return jsonify({
@@ -11245,8 +11250,7 @@ def ffuf():
         wordlist = params.get("wordlist", "/usr/share/wordlists/dirb/common.txt")
         mode = params.get("mode", "directory")
         match_codes = params.get("match_codes", "200,204,301,302,307,401,403")
-        additional_args = params.get("additional_args", "")
-
+        additional_args = safe_additional_args(params.get("additional_args", ""))
         if not url:
             logger.warning("🌐 FFuf called without URL parameter")
             return jsonify({
@@ -11290,8 +11294,7 @@ def netexec():
         password = params.get("password", "")
         hash_value = params.get("hash", "")
         module = params.get("module", "")
-        additional_args = params.get("additional_args", "")
-
+        additional_args = safe_additional_args(params.get("additional_args", ""))
         if not target:
             logger.warning("🎯 NetExec called without target parameter")
             return jsonify({
@@ -11332,8 +11335,7 @@ def amass():
         params = request.json
         domain = params.get("domain", "")
         mode = params.get("mode", "enum")
-        additional_args = params.get("additional_args", "")
-
+        additional_args = safe_additional_args(params.get("additional_args", ""))
         if not domain:
             logger.warning("🌐 Amass called without domain parameter")
             return jsonify({
@@ -11370,8 +11372,7 @@ def hashcat():
         attack_mode = params.get("attack_mode", "0")
         wordlist = params.get("wordlist", "/usr/share/wordlists/rockyou.txt")
         mask = params.get("mask", "")
-        additional_args = params.get("additional_args", "")
-
+        additional_args = safe_additional_args(params.get("additional_args", ""))
         if not hash_file:
             logger.warning("🔐 Hashcat called without hash_file parameter")
             return jsonify({
@@ -11412,8 +11413,7 @@ def subfinder():
         domain = params.get("domain", "")
         silent = params.get("silent", True)
         all_sources = params.get("all_sources", False)
-        additional_args = params.get("additional_args", "")
-
+        additional_args = safe_additional_args(params.get("additional_args", ""))
         if not domain:
             logger.warning("🌐 Subfinder called without domain parameter")
             return jsonify({
@@ -11450,8 +11450,7 @@ def smbmap():
         username = params.get("username", "")
         password = params.get("password", "")
         domain = params.get("domain", "")
-        additional_args = params.get("additional_args", "")
-
+        additional_args = safe_additional_args(params.get("additional_args", ""))
         if not target:
             logger.warning("🎯 SMBMap called without target parameter")
             return jsonify({
@@ -11497,8 +11496,7 @@ def rustscan():
         batch_size = params.get("batch_size", 4500)
         timeout = params.get("timeout", 1500)
         scripts = params.get("scripts", "")
-        additional_args = params.get("additional_args", "")
-
+        additional_args = safe_additional_args(params.get("additional_args", ""))
         if not target:
             logger.warning("🎯 Rustscan called without target parameter")
             return jsonify({"error": "Target parameter is required"}), 400
@@ -11534,8 +11532,7 @@ def masscan():
         router_mac = params.get("router_mac", "")
         source_ip = params.get("source_ip", "")
         banners = params.get("banners", False)
-        additional_args = params.get("additional_args", "")
-
+        additional_args = safe_additional_args(params.get("additional_args", ""))
         if not target:
             logger.warning("🎯 Masscan called without target parameter")
             return jsonify({"error": "Target parameter is required"}), 400
@@ -11579,8 +11576,7 @@ def nmap_advanced():
         version_detection = params.get("version_detection", False)
         aggressive = params.get("aggressive", False)
         stealth = params.get("stealth", False)
-        additional_args = params.get("additional_args", "")
-
+        additional_args = safe_additional_args(params.get("additional_args", ""))
         if not target:
             logger.warning("🎯 Advanced Nmap called without target parameter")
             return jsonify({"error": "Target parameter is required"}), 400
@@ -11631,8 +11627,7 @@ def autorecon():
         service_scans = params.get("service_scans", "default")
         heartbeat = params.get("heartbeat", 60)
         timeout = params.get("timeout", 300)
-        additional_args = params.get("additional_args", "")
-
+        additional_args = safe_additional_args(params.get("additional_args", ""))
         if not target:
             logger.warning("🎯 AutoRecon called without target parameter")
             return jsonify({"error": "Target parameter is required"}), 400
@@ -11669,8 +11664,7 @@ def enum4linux_ng():
         users = params.get("users", True)
         groups = params.get("groups", True)
         policy = params.get("policy", True)
-        additional_args = params.get("additional_args", "")
-
+        additional_args = safe_additional_args(params.get("additional_args", ""))
         if not target:
             logger.warning("🎯 Enum4linux-ng called without target parameter")
             return jsonify({"error": "Target parameter is required"}), 400
@@ -11721,8 +11715,7 @@ def rpcclient():
         password = params.get("password", "")
         domain = params.get("domain", "")
         commands = params.get("commands", "enumdomusers;enumdomgroups;querydominfo")
-        additional_args = params.get("additional_args", "")
-
+        additional_args = safe_additional_args(params.get("additional_args", ""))
         if not target:
             logger.warning("🎯 rpcclient called without target parameter")
             return jsonify({"error": "Target parameter is required"}), 400
@@ -11763,8 +11756,7 @@ def nbtscan():
         target = params.get("target", "")
         verbose = params.get("verbose", False)
         timeout = params.get("timeout", 2)
-        additional_args = params.get("additional_args", "")
-
+        additional_args = safe_additional_args(params.get("additional_args", ""))
         if not target:
             logger.warning("🎯 nbtscan called without target parameter")
             return jsonify({"error": "Target parameter is required"}), 400
@@ -11797,8 +11789,7 @@ def arp_scan():
         local_network = params.get("local_network", False)
         timeout = params.get("timeout", 500)
         retry = params.get("retry", 3)
-        additional_args = params.get("additional_args", "")
-
+        additional_args = safe_additional_args(params.get("additional_args", ""))
         if not target and not local_network:
             logger.warning("🎯 arp-scan called without target parameter")
             return jsonify({"error": "Target parameter or local_network flag is required"}), 400
@@ -11835,8 +11826,7 @@ def responder():
         force_wpad_auth = params.get("force_wpad_auth", False)
         fingerprint = params.get("fingerprint", False)
         duration = params.get("duration", 300)  # 5 minutes default
-        additional_args = params.get("additional_args", "")
-
+        additional_args = safe_additional_args(params.get("additional_args", ""))
         if not interface:
             logger.warning("🎯 Responder called without interface parameter")
             return jsonify({"error": "Interface parameter is required"}), 400
@@ -11874,8 +11864,7 @@ def volatility():
         memory_file = params.get("memory_file", "")
         plugin = params.get("plugin", "")
         profile = params.get("profile", "")
-        additional_args = params.get("additional_args", "")
-
+        additional_args = safe_additional_args(params.get("additional_args", ""))
         if not memory_file:
             logger.warning("🧠 Volatility called without memory_file parameter")
             return jsonify({
@@ -11918,8 +11907,7 @@ def msfvenom():
         output_file = params.get("output_file", "")
         encoder = params.get("encoder", "")
         iterations = params.get("iterations", "")
-        additional_args = params.get("additional_args", "")
-
+        additional_args = safe_additional_args(params.get("additional_args", ""))
         if not payload:
             logger.warning("🚀 MSFVenom called without payload parameter")
             return jsonify({
@@ -11965,8 +11953,7 @@ def gdb():
         binary = params.get("binary", "")
         commands = params.get("commands", "")
         script_file = params.get("script_file", "")
-        additional_args = params.get("additional_args", "")
-
+        additional_args = safe_additional_args(params.get("additional_args", ""))
         if not binary:
             logger.warning("🔧 GDB called without binary parameter")
             return jsonify({
@@ -12013,8 +12000,7 @@ def radare2():
         params = request.json
         binary = params.get("binary", "")
         commands = params.get("commands", "")
-        additional_args = params.get("additional_args", "")
-
+        additional_args = safe_additional_args(params.get("additional_args", ""))
         if not binary:
             logger.warning("🔧 Radare2 called without binary parameter")
             return jsonify({
@@ -12056,8 +12042,7 @@ def binwalk():
         params = request.json
         file_path = params.get("file_path", "")
         extract = params.get("extract", False)
-        additional_args = params.get("additional_args", "")
-
+        additional_args = safe_additional_args(params.get("additional_args", ""))
         if not file_path:
             logger.warning("🔧 Binwalk called without file_path parameter")
             return jsonify({
@@ -12091,8 +12076,7 @@ def ropgadget():
         params = request.json
         binary = params.get("binary", "")
         gadget_type = params.get("gadget_type", "")
-        additional_args = params.get("additional_args", "")
-
+        additional_args = safe_additional_args(params.get("additional_args", ""))
         if not binary:
             logger.warning("🔧 ROPgadget called without binary parameter")
             return jsonify({
@@ -12150,8 +12134,7 @@ def xxd():
         file_path = params.get("file_path", "")
         offset = params.get("offset", "0")
         length = params.get("length", "")
-        additional_args = params.get("additional_args", "")
-
+        additional_args = safe_additional_args(params.get("additional_args", ""))
         if not file_path:
             logger.warning("🔧 XXD called without file_path parameter")
             return jsonify({
@@ -12185,8 +12168,7 @@ def strings():
         params = request.json
         file_path = params.get("file_path", "")
         min_len = params.get("min_len", 4)
-        additional_args = params.get("additional_args", "")
-
+        additional_args = safe_additional_args(params.get("additional_args", ""))
         if not file_path:
             logger.warning("🔧 Strings called without file_path parameter")
             return jsonify({
@@ -12217,8 +12199,7 @@ def objdump():
         params = request.json
         binary = params.get("binary", "")
         disassemble = params.get("disassemble", True)
-        additional_args = params.get("additional_args", "")
-
+        additional_args = safe_additional_args(params.get("additional_args", ""))
         if not binary:
             logger.warning("🔧 Objdump called without binary parameter")
             return jsonify({
@@ -12261,8 +12242,7 @@ def ghidra():
         script_file = params.get("script_file", "")
         analysis_timeout = params.get("analysis_timeout", 300)
         output_format = params.get("output_format", "xml")
-        additional_args = params.get("additional_args", "")
-
+        additional_args = safe_additional_args(params.get("additional_args", ""))
         if not binary:
             logger.warning("🔧 Ghidra called without binary parameter")
             return jsonify({"error": "Binary parameter is required"}), 400
@@ -12301,8 +12281,7 @@ def pwntools():
         target_host = params.get("target_host", "")
         target_port = params.get("target_port", 0)
         exploit_type = params.get("exploit_type", "local")  # local, remote, format_string, rop
-        additional_args = params.get("additional_args", "")
-
+        additional_args = safe_additional_args(params.get("additional_args", ""))
         if not script_content and not target_binary:
             logger.warning("🔧 Pwntools called without script content or target binary")
             return jsonify({"error": "Script content or target binary is required"}), 400
@@ -12373,8 +12352,7 @@ def one_gadget():
         params = request.json
         libc_path = params.get("libc_path", "")
         level = params.get("level", 1)  # 0, 1, 2 for different constraint levels
-        additional_args = params.get("additional_args", "")
-
+        additional_args = safe_additional_args(params.get("additional_args", ""))
         if not libc_path:
             logger.warning("🔧 one_gadget called without libc_path parameter")
             return jsonify({"error": "libc_path parameter is required"}), 400
@@ -12400,8 +12378,7 @@ def libc_database():
         action = params.get("action", "find")  # find, dump, download
         symbols = params.get("symbols", "")  # format: "symbol1:offset1 symbol2:offset2"
         libc_id = params.get("libc_id", "")
-        additional_args = params.get("additional_args", "")
-
+        additional_args = safe_additional_args(params.get("additional_args", ""))
         if action == "find" and not symbols:
             logger.warning("🔧 libc-database find called without symbols")
             return jsonify({"error": "Symbols parameter is required for find action"}), 400
@@ -12442,8 +12419,7 @@ def gdb_peda():
         commands = params.get("commands", "")
         attach_pid = params.get("attach_pid", 0)
         core_file = params.get("core_file", "")
-        additional_args = params.get("additional_args", "")
-
+        additional_args = safe_additional_args(params.get("additional_args", ""))
         if not binary and not attach_pid and not core_file:
             logger.warning("🔧 GDB-PEDA called without binary, PID, or core file")
             return jsonify({"error": "Binary, PID, or core file parameter is required"}), 400
@@ -12505,8 +12481,7 @@ def angr():
         find_address = params.get("find_address", "")
         avoid_addresses = params.get("avoid_addresses", "")
         analysis_type = params.get("analysis_type", "symbolic")  # symbolic, cfg, static
-        additional_args = params.get("additional_args", "")
-
+        additional_args = safe_additional_args(params.get("additional_args", ""))
         if not binary:
             logger.warning("🔧 angr called without binary parameter")
             return jsonify({"error": "Binary parameter is required"}), 400
@@ -12596,8 +12571,7 @@ def ropper():
         quality = params.get("quality", 1)  # 1-5, higher = better quality
         arch = params.get("arch", "")  # x86, x86_64, arm, etc.
         search_string = params.get("search_string", "")
-        additional_args = params.get("additional_args", "")
-
+        additional_args = safe_additional_args(params.get("additional_args", ""))
         if not binary:
             logger.warning("🔧 ropper called without binary parameter")
             return jsonify({"error": "Binary parameter is required"}), 400
@@ -12642,8 +12616,7 @@ def pwninit():
         libc = params.get("libc", "")
         ld = params.get("ld", "")
         template_type = params.get("template_type", "python")  # python, c
-        additional_args = params.get("additional_args", "")
-
+        additional_args = safe_additional_args(params.get("additional_args", ""))
         if not binary:
             logger.warning("🔧 pwninit called without binary parameter")
             return jsonify({"error": "Binary parameter is required"}), 400
@@ -12682,8 +12655,7 @@ def feroxbuster():
         url = params.get("url", "")
         wordlist = params.get("wordlist", "/usr/share/wordlists/dirb/common.txt")
         threads = params.get("threads", 10)
-        additional_args = params.get("additional_args", "")
-
+        additional_args = safe_additional_args(params.get("additional_args", ""))
         if not url:
             logger.warning("🌐 Feroxbuster called without URL parameter")
             return jsonify({
@@ -12712,8 +12684,7 @@ def dotdotpwn():
         params = request.json
         target = params.get("target", "")
         module = params.get("module", "http")
-        additional_args = params.get("additional_args", "")
-
+        additional_args = safe_additional_args(params.get("additional_args", ""))
         if not target:
             logger.warning("🎯 DotDotPwn called without target parameter")
             return jsonify({
@@ -12744,8 +12715,7 @@ def xsser():
         params = request.json
         url = params.get("url", "")
         params_str = params.get("params", "")
-        additional_args = params.get("additional_args", "")
-
+        additional_args = safe_additional_args(params.get("additional_args", ""))
         if not url:
             logger.warning("🌐 XSSer called without URL parameter")
             return jsonify({
@@ -12777,8 +12747,7 @@ def wfuzz():
         params = request.json
         url = params.get("url", "")
         wordlist = params.get("wordlist", "/usr/share/wordlists/dirb/common.txt")
-        additional_args = params.get("additional_args", "")
-
+        additional_args = safe_additional_args(params.get("additional_args", ""))
         if not url:
             logger.warning("🌐 Wfuzz called without URL parameter")
             return jsonify({
@@ -12814,8 +12783,7 @@ def dirsearch():
         wordlist = params.get("wordlist", "/usr/share/wordlists/dirsearch/common.txt")
         threads = params.get("threads", 30)
         recursive = params.get("recursive", False)
-        additional_args = params.get("additional_args", "")
-
+        additional_args = safe_additional_args(params.get("additional_args", ""))
         if not url:
             logger.warning("🌐 Dirsearch called without URL parameter")
             return jsonify({"error": "URL parameter is required"}), 400
@@ -12846,8 +12814,7 @@ def katana():
         js_crawl = params.get("js_crawl", True)
         form_extraction = params.get("form_extraction", True)
         output_format = params.get("output_format", "json")
-        additional_args = params.get("additional_args", "")
-
+        additional_args = safe_additional_args(params.get("additional_args", ""))
         if not url:
             logger.warning("🌐 Katana called without URL parameter")
             return jsonify({"error": "URL parameter is required"}), 400
@@ -12883,8 +12850,7 @@ def gau():
         providers = params.get("providers", "wayback,commoncrawl,otx,urlscan")
         include_subs = params.get("include_subs", True)
         blacklist = params.get("blacklist", "png,jpg,gif,jpeg,swf,woff,svg,pdf,css,ico")
-        additional_args = params.get("additional_args", "")
-
+        additional_args = safe_additional_args(params.get("additional_args", ""))
         if not domain:
             logger.warning("🌐 Gau called without domain parameter")
             return jsonify({"error": "Domain parameter is required"}), 400
@@ -12919,8 +12885,7 @@ def waybackurls():
         domain = params.get("domain", "")
         get_versions = params.get("get_versions", False)
         no_subs = params.get("no_subs", False)
-        additional_args = params.get("additional_args", "")
-
+        additional_args = safe_additional_args(params.get("additional_args", ""))
         if not domain:
             logger.warning("🌐 Waybackurls called without domain parameter")
             return jsonify({"error": "Domain parameter is required"}), 400
@@ -12955,8 +12920,7 @@ def arjun():
         delay = params.get("delay", 0)
         threads = params.get("threads", 25)
         stable = params.get("stable", False)
-        additional_args = params.get("additional_args", "")
-
+        additional_args = safe_additional_args(params.get("additional_args", ""))
         if not url:
             logger.warning("🌐 Arjun called without URL parameter")
             return jsonify({"error": "URL parameter is required"}), 400
@@ -12992,8 +12956,7 @@ def paramspider():
         level = params.get("level", 2)
         exclude = params.get("exclude", "png,jpg,gif,jpeg,swf,woff,svg,pdf,css,ico")
         output = params.get("output", "")
-        additional_args = params.get("additional_args", "")
-
+        additional_args = safe_additional_args(params.get("additional_args", ""))
         if not domain:
             logger.warning("🌐 ParamSpider called without domain parameter")
             return jsonify({"error": "Domain parameter is required"}), 400
@@ -13027,8 +12990,7 @@ def x8():
         method = params.get("method", "GET")
         body = params.get("body", "")
         headers = params.get("headers", "")
-        additional_args = params.get("additional_args", "")
-
+        additional_args = safe_additional_args(params.get("additional_args", ""))
         if not url:
             logger.warning("🌐 x8 called without URL parameter")
             return jsonify({"error": "URL parameter is required"}), 400
@@ -13062,8 +13024,7 @@ def jaeles():
         config = params.get("config", "")
         threads = params.get("threads", 20)
         timeout = params.get("timeout", 20)
-        additional_args = params.get("additional_args", "")
-
+        additional_args = safe_additional_args(params.get("additional_args", ""))
         if not url:
             logger.warning("🌐 Jaeles called without URL parameter")
             return jsonify({"error": "URL parameter is required"}), 400
@@ -13098,8 +13059,7 @@ def dalfox():
         mining_dom = params.get("mining_dom", True)
         mining_dict = params.get("mining_dict", True)
         custom_payload = params.get("custom_payload", "")
-        additional_args = params.get("additional_args", "")
-
+        additional_args = safe_additional_args(params.get("additional_args", ""))
         if not url and not pipe_mode:
             logger.warning("🌐 Dalfox called without URL parameter")
             return jsonify({"error": "URL parameter is required"}), 400
@@ -13145,8 +13105,7 @@ def httpx():
         title = params.get("title", False)
         web_server = params.get("web_server", False)
         threads = params.get("threads", 50)
-        additional_args = params.get("additional_args", "")
-
+        additional_args = safe_additional_args(params.get("additional_args", ""))
         if not target:
             logger.warning("🌐 httpx called without target parameter")
             return jsonify({"error": "Target parameter is required"}), 400
@@ -13189,8 +13148,7 @@ def anew():
         params = request.json
         input_data = params.get("input_data", "")
         output_file = params.get("output_file", "")
-        additional_args = params.get("additional_args", "")
-
+        additional_args = safe_additional_args(params.get("additional_args", ""))
         if not input_data:
             logger.warning("📝 Anew called without input data")
             return jsonify({"error": "Input data is required"}), 400
@@ -13218,8 +13176,7 @@ def qsreplace():
         params = request.json
         urls = params.get("urls", "")
         replacement = params.get("replacement", "FUZZ")
-        additional_args = params.get("additional_args", "")
-
+        additional_args = safe_additional_args(params.get("additional_args", ""))
         if not urls:
             logger.warning("🌐 qsreplace called without URLs")
             return jsonify({"error": "URLs parameter is required"}), 400
@@ -13245,8 +13202,7 @@ def uro():
         urls = params.get("urls", "")
         whitelist = params.get("whitelist", "")
         blacklist = params.get("blacklist", "")
-        additional_args = params.get("additional_args", "")
-
+        additional_args = safe_additional_args(params.get("additional_args", ""))
         if not urls:
             logger.warning("🌐 uro called without URLs")
             return jsonify({"error": "URLs parameter is required"}), 400
@@ -14328,8 +14284,7 @@ def zap():
         host = params.get("host", "0.0.0.0")
         format_type = params.get("format", "xml")
         output_file = params.get("output_file", "")
-        additional_args = params.get("additional_args", "")
-
+        additional_args = safe_additional_args(params.get("additional_args", ""))
         if not target and scan_type != "daemon":
             logger.warning("🎯 ZAP called without target parameter")
             return jsonify({
@@ -14371,8 +14326,7 @@ def wafw00f():
     try:
         params = request.json
         target = params.get("target", "")
-        additional_args = params.get("additional_args", "")
-
+        additional_args = safe_additional_args(params.get("additional_args", ""))
         if not target:
             logger.warning("🛡️ Wafw00f called without target parameter")
             return jsonify({
@@ -14401,8 +14355,7 @@ def fierce():
         params = request.json
         domain = params.get("domain", "")
         dns_server = params.get("dns_server", "")
-        additional_args = params.get("additional_args", "")
-
+        additional_args = safe_additional_args(params.get("additional_args", ""))
         if not domain:
             logger.warning("🌐 Fierce called without domain parameter")
             return jsonify({
@@ -14435,8 +14388,7 @@ def dnsenum():
         domain = params.get("domain", "")
         dns_server = params.get("dns_server", "")
         wordlist = params.get("wordlist", "")
-        additional_args = params.get("additional_args", "")
-
+        additional_args = safe_additional_args(params.get("additional_args", ""))
         if not domain:
             logger.warning("🌐 DNSenum called without domain parameter")
             return jsonify({
@@ -15240,8 +15192,7 @@ def volatility3():
         memory_file = params.get("memory_file", "")
         plugin = params.get("plugin", "")
         output_file = params.get("output_file", "")
-        additional_args = params.get("additional_args", "")
-
+        additional_args = safe_additional_args(params.get("additional_args", ""))
         if not memory_file:
             logger.warning("🧠 Volatility3 called without memory_file parameter")
             return jsonify({
@@ -15280,8 +15231,7 @@ def foremost():
         input_file = params.get("input_file", "")
         output_dir = params.get("output_dir", "/tmp/foremost_output")
         file_types = params.get("file_types", "")
-        additional_args = params.get("additional_args", "")
-
+        additional_args = safe_additional_args(params.get("additional_args", ""))
         if not input_file:
             logger.warning("📁 Foremost called without input_file parameter")
             return jsonify({
@@ -15322,8 +15272,7 @@ def steghide():
         embed_file = params.get("embed_file", "")
         passphrase = params.get("passphrase", "")
         output_file = params.get("output_file", "")
-        additional_args = params.get("additional_args", "")
-
+        additional_args = safe_additional_args(params.get("additional_args", ""))
         if not cover_file:
             logger.warning("🖼️ Steghide called without cover_file parameter")
             return jsonify({
@@ -15369,8 +15318,7 @@ def exiftool():
         file_path = params.get("file_path", "")
         output_format = params.get("output_format", "")  # json, xml, csv
         tags = params.get("tags", "")
-        additional_args = params.get("additional_args", "")
-
+        additional_args = safe_additional_args(params.get("additional_args", ""))
         if not file_path:
             logger.warning("📷 ExifTool called without file_path parameter")
             return jsonify({
@@ -15409,8 +15357,7 @@ def hashpump():
         data = params.get("data", "")
         key_length = params.get("key_length", "")
         append_data = params.get("append_data", "")
-        additional_args = params.get("additional_args", "")
-
+        additional_args = safe_additional_args(params.get("additional_args", ""))
         if not all([signature, data, key_length, append_data]):
             logger.warning("🔐 HashPump called without required parameters")
             return jsonify({
@@ -15457,8 +15404,7 @@ def hakrawler():
         robots = params.get("robots", True)
         sitemap = params.get("sitemap", True)
         wayback = params.get("wayback", False)
-        additional_args = params.get("additional_args", "")
-
+        additional_args = safe_additional_args(params.get("additional_args", ""))
         if not url:
             logger.warning("🕷️ Hakrawler called without URL parameter")
             return jsonify({
