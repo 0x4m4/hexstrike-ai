@@ -12,7 +12,11 @@
 flask>=2.3.0,<4.0.0             # Web framework for API server (flask import)
 requests>=2.31.0,<3.0.0         # HTTP library (requests import)
 psutil>=5.9.0,<6.0.0            # System utilities (psutil import)
-fastmcp>=0.2.0,<1.0.0           # MCP framework (from mcp.server.fastmcp import FastMCP)
+mcp>=1.29.0,<2.0.0              # MCP framework (provee mcp.server.fastmcp.FastMCP)
+# NOTA (2026-09-11): aquí decía `fastmcp>=0.2.0,<1.0.0`, que era el paquete
+# EQUIVOCADO: el código importa `mcp.server.fastmcp` (del paquete `mcp`) y el
+# `fastmcp` standalone no lo requería nadie (pip: Required-by vacío). Se quitó
+# por tener 14 CVEs abiertos y no usarse; reinstalarlo reabriría esas alertas.
 
 # ============================================================================
 # WEB SCRAPING & AUTOMATION (ACTUALLY USED)
@@ -36,6 +40,8 @@ mitmproxy>=9.0.0,<11.0.0        # HTTP proxy (mitmproxy imports)
 # ============================================================================
 pwntools>=4.10.0,<5.0.0         # Binary exploitation (from pwn import *)
 angr>=9.2.0,<10.0.0             # Binary analysis (import angr)
+pycparser<3                     # angr 9.2.x asigna clex.filename y pycparser 3.0 lo volvió
+                                # propiedad de solo lectura → `import angr` revienta (2026-09-11)
 bcrypt==4.0.1                   # Pin bcrypt version for passlib compatibility (fixes pwntools dependency issue)
 
 # ============================================================================

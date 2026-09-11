@@ -19,6 +19,7 @@ Framework: FastMCP integration for AI agent communication
 """
 
 import argparse
+import hmac
 import json
 import logging
 import os
@@ -70,13 +71,17 @@ from mitmproxy.options import Options as MitmOptions
 # ============================================================================
 
 # Configure logging with fallback for permission issues
+# Rotación diaria (TimedRotatingFileHandler, 2026-08-06): hexstrike.log crecía
+# sin límite (4.8 MB+). Rota a medianoche y conserva 7 backups (hexstrike.log.1
+# … .7). Autocontenido — no requiere logrotate root, funciona bajo la user unit.
+from logging.handlers import TimedRotatingFileHandler
 try:
     logging.basicConfig(
         level=logging.INFO,
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
         handlers=[
             logging.StreamHandler(sys.stdout),
-            logging.FileHandler('hexstrike.log')
+            TimedRotatingFileHandler('hexstrike.log', when='midnight', backupCount=7)
         ]
     )
 except PermissionError:
@@ -97,6 +102,114 @@ app.config['JSON_SORT_KEYS'] = False
 # API Configuration
 API_PORT = int(os.environ.get('HEXSTRIKE_PORT', 8888))
 API_HOST = os.environ.get('HEXSTRIKE_HOST', '127.0.0.1')
+
+# ============================================================================
+# AUTH (PATCH LOCAL 2026-08-06) — HexStrike ejecuta comandos arbitrarios sin
+# auth (shell=True). El bind loopback NO es suficiente (un forward ssh -L o un
+# MCP mal configurado expone el RCE). Este gate exige X-API-Key en TODAS las
+# rutas /api/* salvo /health. Fail-closed: sin HEXSTRIKE_API_KEY configurada
+# el server NO arranca (evita un despliegue accidental sin protección).
+# ============================================================================
+API_KEY = os.environ.get('HEXSTRIKE_API_KEY', '')
+if not API_KEY:
+    raise SystemExit(
+        "[AUTH] HEXSTRIKE_API_KEY no configurada. Negandose a arrancar: "
+        "HexStrike ejecuta comandos arbitrarios sin auth. Seta la variable "
+        "en la unit systemd (Environment=HEXSTRIKE_API_KEY=...) o en la env "
+        "del contenedor. Ver ~/hexstrike-ai/README-seguridad.md"
+    )
+
+PUBLIC_PATHS = {'/health'}
+
+@app.before_request
+def _hexstrike_auth_gate():
+    """Exige X-API-Key en /api/* (fail-closed). Compara en tiempo constante."""
+    path = request.path
+    if path in PUBLIC_PATHS or not path.startswith('/api'):
+        return None
+    supplied = request.headers.get('X-API-Key', '')
+    if not supplied or not hmac.compare_digest(supplied, API_KEY):
+        logger.warning("AUTH DENIED %s %s (ip=%s)", request.method, path, request.remote_addr)
+        return jsonify({"error": "Unauthorized: X-API-Key requerida"}), 401
+    return None
+
+# ============================================================================
+# SHELL INPUT GATE (PATCH LOCAL 2026-09-09) — los endpoints /api/tools/* y
+# /api/intelligence/* concatenan parámetros del request en comandos shell=True.
+# Valida en el punto de entrada (OWASP OS_Command_Injection): cualquier campo
+# que fluya a un comando debe matchear la allowlist o el request se rechaza
+# con 400 antes de ejecutar nada. Defensa en profundidad: complementa la
+# validación inline de cada execute_*_scan.
+# ============================================================================
+# Campos de valor libre (credenciales, listas, shares, queries): la
+# allowlist estricta los rechazaría con caracteres legítimos (!@#...), pero
+# siguen siendo sinks de shell → se bloquean SOLO los metacaracteres de
+# inyección.
+_TOOL_FREE_VALUE_FIELDS = frozenset((
+    'user', 'userlist', 'pass', 'password', 'passlist', 'share', 'shares',
+    'username', 'username_file', 'password_file', 'users', 'hash', 'mask',
+    'commands', 'data', 'query', 'options',
+))
+# Campos con allowlist específica por dominio (patrones propios de la tool)
+_TOOL_SPECIAL_FIELDS = frozenset(('additional_args', 'ports', 'nse_scripts', 'commands'))
+# Metacaracteres que permiten romper un comando shell (inyección real)
+_SHELL_INJECTION_CHARS = set(';&|$`()<>\'\"\n\r\t')
+
+
+def _validate_free_value(value: str, field: str) -> str:
+    """Valida un valor de credencial/lista: bloquea metacaracteres de
+    inyección de shell pero permite caracteres legítimos como !@#."""
+    if not value:
+        return value
+    bad = [c for c in value if c in _SHELL_INJECTION_CHARS]
+    if bad:
+        raise ValueError(
+            f"Campo {field!r} contiene metacaracteres de shell no permitidos "
+            f"(inyección bloqueada): {''.join(sorted(set(bad)))}"
+        )
+    return value
+
+
+def _shell_input_gate():
+    """Valida TODOS los campos string de POSTs a /api/tools/* y
+    /api/intelligence/*. Cualquier string del JSON puede terminar concatenado
+    en un comando shell=True (los endpoints los leen con params.get y arman
+    comandos f-string); por eso el gate valida todo campo string, no una
+    lista manual (que quedaría obsoleta al agregar endpoints). Tipos no
+    string (bool/int/dict/list) se saltan: en el código se convierten a
+    constantes de flags, no a valores crudos."""
+    path = request.path
+    if request.method != 'POST' or not (
+        path.startswith('/api/tools/') or path.startswith('/api/intelligence/')
+    ):
+        return None
+    try:
+        data = request.get_json(silent=True)
+        if not isinstance(data, dict):
+            return None
+        for field, value in data.items():
+            if value is None or not isinstance(value, str) or not value:
+                continue
+            if field in _TOOL_SPECIAL_FIELDS:
+                if field == 'additional_args':
+                    _validate_additional_args(value)
+                elif field == 'ports':
+                    _validate_token(value, field, _PORTS_RE)
+                elif field == 'commands':
+                    _validate_token(value, field, _RPCCLIENT_COMMANDS_RE)
+                else:  # nse_scripts
+                    _validate_token(value, field, _NSE_SCRIPTS_RE)
+            elif field in _TOOL_FREE_VALUE_FIELDS:
+                _validate_free_value(value, field)
+            else:
+                _validate_token(value, field)
+    except ValueError as e:
+        logger.warning("SHELL INPUT REJECTED %s %s: %s", request.method, path, e)
+        return jsonify({"error": str(e), "success": False}), 400
+    return None
+
+
+app.before_request(_shell_input_gate)
 
 # ============================================================================
 # MODERN VISUAL ENGINE (v2.0 ENHANCEMENT)
@@ -1251,10 +1364,15 @@ class IntelligentDecisionEngine:
             params["version_detection"] = True
 
         # Add NSE scripts based on target type
+        # vulners (2026-08-22): cruza versiones de servicios con CVEs en
+        # tiempo real (API vulners.com) — el paso que faltaba para cerrar
+        # versión → CVE en el scan. Requiere -sV (version_detection).
         if profile.target_type == TargetType.WEB_APPLICATION:
-            params["nse_scripts"] = "http-*,ssl-*"
+            params["nse_scripts"] = "http-*,ssl-*,vulners"
         elif profile.target_type == TargetType.NETWORK_HOST:
-            params["nse_scripts"] = "default,discovery,safe"
+            params["nse_scripts"] = "default,discovery,safe,vulners"
+        else:
+            params["nse_scripts"] = "vulners"
 
         return params
 
@@ -2841,7 +2959,7 @@ class CTFWorkflowManager:
             },
             "osint": {
                 "search_engines": ["google-dorking", "shodan", "censys"],
-                "social_media": ["sherlock", "social-analyzer"],
+                "social_media": ["sherlock", "social-analyzer", "holehe"],
                 "image_analysis": ["reverse-image-search", "exif-analysis"],
                 "domain_analysis": ["whois", "dns-analysis", "certificate-transparency"],
                 "geolocation": ["geoint", "osm-analysis", "satellite-imagery"]
@@ -3598,13 +3716,14 @@ class CTFToolManager:
             "dotpeek": "dotpeek",
 
             # OSINT and Reconnaissance Tools
-            "sherlock": "sherlock",
+            "sherlock": "sherlock-scan",
+            "holehe": "holehe-scan",
             "social-analyzer": "social-analyzer",
             "theHarvester": "theHarvester -d {} -b all",
             "recon-ng": "recon-ng",
             "maltego": "maltego",
             "spiderfoot": "spiderfoot",
-            "shodan": "shodan search",
+            "shodan": "shodan host",
             "censys": "censys search",
             "whois": "whois",
             "dig": "dig",
@@ -8929,14 +9048,30 @@ class FileOperationsManager:
     """Handle file operations with security and validation"""
 
     def __init__(self, base_dir: str = "/tmp/hexstrike_files"):
-        self.base_dir = Path(base_dir)
+        self.base_dir = Path(base_dir).resolve()
         self.base_dir.mkdir(exist_ok=True)
         self.max_file_size = 100 * 1024 * 1024  # 100MB
+
+    def _resolve_within_base(self, name: str) -> Path:
+        """Resuelve name contra base_dir y RECHAZA cualquier escape (path
+        traversal CWE-22, auditoría 2026-08-07: antes aceptaba
+        ../../etc/... fuera del root).
+        """
+        raw = Path(name)
+        if raw.is_absolute():
+            raise ValueError(f"ruta absoluta no permitida: {name!r}")
+        candidate = (self.base_dir / raw).resolve()
+        try:
+            candidate.relative_to(self.base_dir)
+        except ValueError:
+            raise ValueError(f"path fuera de base_dir: {name!r}")
+        return candidate
+
 
     def create_file(self, filename: str, content: str, binary: bool = False) -> Dict[str, Any]:
         """Create a file with the specified content"""
         try:
-            file_path = self.base_dir / filename
+            file_path = self._resolve_within_base(filename)
             file_path.parent.mkdir(parents=True, exist_ok=True)
 
             if len(content.encode()) > self.max_file_size:
@@ -8959,7 +9094,7 @@ class FileOperationsManager:
     def modify_file(self, filename: str, content: str, append: bool = False) -> Dict[str, Any]:
         """Modify an existing file"""
         try:
-            file_path = self.base_dir / filename
+            file_path = self._resolve_within_base(filename)
             if not file_path.exists():
                 return {"success": False, "error": "File does not exist"}
 
@@ -8977,7 +9112,7 @@ class FileOperationsManager:
     def delete_file(self, filename: str) -> Dict[str, Any]:
         """Delete a file or directory"""
         try:
-            file_path = self.base_dir / filename
+            file_path = self._resolve_within_base(filename)
             if not file_path.exists():
                 return {"success": False, "error": "File does not exist"}
 
@@ -8996,7 +9131,7 @@ class FileOperationsManager:
     def list_files(self, directory: str = ".") -> Dict[str, Any]:
         """List files in a directory"""
         try:
-            dir_path = self.base_dir / directory
+            dir_path = self._resolve_within_base(directory)
             if not dir_path.exists():
                 return {"success": False, "error": "Directory does not exist"}
 
@@ -9030,13 +9165,14 @@ def health_check():
 
     network_tools = [
         "rustscan", "masscan", "autorecon", "nbtscan", "arp-scan", "responder",
-        "nxc", "enum4linux-ng", "rpcclient", "enum4linux"
+        "nxc", "enum4linux-ng", "rpcclient", "enum4linux", "testssl"
     ]
 
     web_security_tools = [
         "ffuf", "feroxbuster", "dirsearch", "dotdotpwn", "xsser", "wfuzz",
         "gau", "waybackurls", "arjun", "paramspider", "x8", "jaeles", "dalfox",
-        "httpx", "wafw00f", "burpsuite", "zaproxy", "katana", "hakrawler"
+        "httpx", "wafw00f", "burpsuite", "zaproxy", "katana", "hakrawler",
+        "sstimap-scan", "xsstrike-scan", "mcp-probe"
     ]
 
     vuln_scanning_tools = [
@@ -9066,8 +9202,8 @@ def health_check():
 
     osint_tools = [
         "amass", "subfinder", "fierce", "dnsenum", "theharvester", "sherlock",
-        "social-analyzer", "recon-ng", "maltego", "spiderfoot", "shodan-cli",
-        "censys-cli", "have-i-been-pwned"
+        "social-analyzer", "recon-ng", "maltego", "spiderfoot", "shodan",
+        "shodan-scan", "censys-cli", "have-i-been-pwned", "holehe"
     ]
 
     exploitation_tools = [
@@ -9085,7 +9221,8 @@ def health_check():
     additional_tools = [
         "smbmap", "volatility", "sleuthkit", "autopsy", "evil-winrm",
         "paramspider", "airmon-ng", "airodump-ng", "aireplay-ng", "aircrack-ng",
-        "msfvenom", "msfconsole", "graphql-scanner", "jwt-analyzer"
+        "msfvenom", "msfconsole", "graphql-scanner", "jwt-analyzer",
+        "oletools-scan"
     ]
 
     all_tools = (
@@ -9095,12 +9232,25 @@ def health_check():
     )
     tools_status = {}
 
+    # Detección directa por rutas conocidas (no depende del PATH del subprocess)
+    _search_dirs = [
+        os.path.expanduser("~/bin"),
+        os.path.expanduser("~/.local/bin"),
+        "/usr/local/bin",
+        "/usr/bin",
+        "/bin",
+        "/usr/sbin",
+        "/sbin",
+    ]
+
+    def _tool_exists(name):
+        for d in _search_dirs:
+            if os.path.isfile(os.path.join(d, name)):
+                return True
+        return False
+
     for tool in all_tools:
-        try:
-            result = execute_command(f"which {tool}", use_cache=True)
-            tools_status[tool] = result["success"]
-        except:
-            tools_status[tool] = False
+        tools_status[tool] = _tool_exists(tool)
 
     all_essential_tools_available = all(tools_status[tool] for tool in essential_tools)
 
@@ -9710,6 +9860,12 @@ def intelligent_smart_scan():
                 # Map tool names to their actual execution functions
                 tool_execution_map = {
                     'nmap': lambda: execute_nmap_scan(target, optimized_params),
+                    # PATCH LOCAL 2026-08-19: el decision engine elige
+                    # 'nmap-advanced' para hosts (priority 3 en attack chains)
+                    # pero no estaba en el execution map → smart-scan fallaba
+                    # con 'Tool nmap-advanced not implemented'. Alias a la
+                    # función nmap real.
+                    'nmap-advanced': lambda: execute_nmap_scan(target, optimized_params),
                     'gobuster': lambda: execute_gobuster_scan(target, optimized_params),
                     'nuclei': lambda: execute_nuclei_scan(target, optimized_params),
                     'nikto': lambda: execute_nikto_scan(target, optimized_params),
@@ -9819,20 +9975,76 @@ def intelligent_smart_scan():
 
     except Exception as e:
         logger.error(f"💥 Error in intelligent smart scan: {str(e)}")
-        return jsonify({"error": f"Server error: {str(e)}", "success": False}), 500
+        return jsonify({"error": f"Server error: {str(e)}", "success": False}), 500# Helper functions for intelligent smart scan tool execution
 
-# Helper functions for intelligent smart scan tool execution
+# ============================================================================
+# Validación de inputs de shell (OS Command Injection, OWASP ch03)
+# Allowlist estricta: un token de comando NO puede contener metacaracteres de
+# shell (;&|$`()<>'"\*?[]{},~, #, espacios) ni caracteres de control. El
+# framework concatena target/additional_args en comandos shell=True, así que
+# todo input que llegue a un sink se valida contra allowlist y falla cerrado
+# (ValueError → el caller devuelve error, nunca se ejecuta el comando).
+# ============================================================================
+_SAFE_TOKEN_RE = re.compile(r'^[A-Za-z0-9@:%._+/=,-]+$')
+_NSE_SCRIPTS_RE = re.compile(r'^[A-Za-z0-9,_*-]+$')
+_PORTS_RE = re.compile(r'^[0-9,-]+$')
+# commands de rpcclient: lista de identificadores separados por ';' (formato
+# nativo del tool). Se permite ';' y ':' (rango de ids) pero nada más.
+_RPCCLIENT_COMMANDS_RE = re.compile(r'^[A-Za-z0-9_;:,.-]+$')
+
+
+def _validate_token(value: str, field: str, pattern=None) -> str:
+    """Valida un valor contra allowlist. Lanza ValueError si no matchea."""
+    if not value:
+        return value
+    pat = pattern or _SAFE_TOKEN_RE
+    if not pat.match(value):
+        raise ValueError(
+            f"Campo {field!r} contiene caracteres no permitidos "
+            f"(inyección de shell bloqueada): {value!r}"
+        )
+    return value
+
+
+def _validate_additional_args(args: str, field: str = "additional_args") -> str:
+    """Valida additional_args: cada token debe ser un flag/valor seguro."""
+    if not args:
+        return args
+    bad = [c for c in args if c in _SHELL_INJECTION_CHARS]
+    if bad:
+        raise ValueError(
+            f"Campo {field!r} contiene metacaracteres de shell no permitidos "
+            f"(inyección bloqueada): {''.join(sorted(set(bad)))}"
+        )
+    for token in args.split():
+        _validate_token(token, field)
+    return args
+
+
+def _validate_target(target: str) -> str:
+    """Valida target/url: host, IP o URL sin metacaracteres de shell."""
+    return _validate_token(target, "target")
+
+
 def execute_nmap_scan(target, params):
     """Execute nmap scan with optimized parameters"""
     try:
-        scan_type = params.get('scan_type', '-sV')
-        ports = params.get('ports', '')
-        additional_args = params.get('additional_args', '')
+        _validate_target(target)
+        scan_type = _validate_token(params.get('scan_type', '-sV'), 'scan_type')
+        ports = _validate_token(params.get('ports', ''), 'ports', _PORTS_RE)
+        nse_scripts = _validate_token(params.get('nse_scripts', ''), 'nse_scripts', _NSE_SCRIPTS_RE)
+        additional_args = _validate_additional_args(params.get('additional_args', ''))
 
         # Build nmap command
         cmd_parts = ['nmap', scan_type]
         if ports:
             cmd_parts.extend(['-p', ports])
+        # nse_scripts cableado (2026-08-22): el optimizer lo generaba
+        # (ej. 'vuln,exploit' en aggressive, 'http-*,ssl-*' en web) pero
+        # execute_nmap_scan lo ignoraba — los NSE nunca corrían en la ruta
+        # del decision engine (solo en el endpoint /api/tools/nmap-advanced).
+        if nse_scripts:
+            cmd_parts.append(f"--script={nse_scripts}")
         if additional_args:
             cmd_parts.extend(additional_args.split())
         cmd_parts.append(target)
@@ -9844,9 +10056,10 @@ def execute_nmap_scan(target, params):
 def execute_gobuster_scan(target, params):
     """Execute gobuster scan with optimized parameters"""
     try:
-        mode = params.get('mode', 'dir')
-        wordlist = params.get('wordlist', '/usr/share/wordlists/dirb/common.txt')
-        additional_args = params.get('additional_args', '')
+        _validate_target(target)
+        mode = _validate_token(params.get('mode', 'dir'), 'mode')
+        wordlist = _validate_token(params.get('wordlist', '/usr/share/wordlists/dirb/common.txt'), 'wordlist')
+        additional_args = _validate_additional_args(params.get('additional_args', ''))
 
         cmd_parts = ['gobuster', mode, '-u', target, '-w', wordlist]
         if additional_args:
@@ -9859,9 +10072,10 @@ def execute_gobuster_scan(target, params):
 def execute_nuclei_scan(target, params):
     """Execute nuclei scan with optimized parameters"""
     try:
-        severity = params.get('severity', '')
-        tags = params.get('tags', '')
-        additional_args = params.get('additional_args', '')
+        _validate_target(target)
+        severity = _validate_token(params.get('severity', ''), 'severity')
+        tags = _validate_token(params.get('tags', ''), 'tags')
+        additional_args = _validate_additional_args(params.get('additional_args', ''))
 
         cmd_parts = ['nuclei', '-u', target]
         if severity:
@@ -9878,7 +10092,8 @@ def execute_nuclei_scan(target, params):
 def execute_nikto_scan(target, params):
     """Execute nikto scan with optimized parameters"""
     try:
-        additional_args = params.get('additional_args', '')
+        _validate_target(target)
+        additional_args = _validate_additional_args(params.get('additional_args', ''))
         cmd_parts = ['nikto', '-h', target]
         if additional_args:
             cmd_parts.extend(additional_args.split())
@@ -9890,7 +10105,8 @@ def execute_nikto_scan(target, params):
 def execute_sqlmap_scan(target, params):
     """Execute sqlmap scan with optimized parameters"""
     try:
-        additional_args = params.get('additional_args', '--batch --random-agent')
+        _validate_target(target)
+        additional_args = _validate_additional_args(params.get('additional_args', '--batch --random-agent'))
         cmd_parts = ['sqlmap', '-u', target]
         if additional_args:
             cmd_parts.extend(additional_args.split())
@@ -9902,8 +10118,9 @@ def execute_sqlmap_scan(target, params):
 def execute_ffuf_scan(target, params):
     """Execute ffuf scan with optimized parameters"""
     try:
-        wordlist = params.get('wordlist', '/usr/share/wordlists/dirb/common.txt')
-        additional_args = params.get('additional_args', '')
+        _validate_target(target)
+        wordlist = _validate_token(params.get('wordlist', '/usr/share/wordlists/dirb/common.txt'), 'wordlist')
+        additional_args = _validate_additional_args(params.get('additional_args', ''))
 
         # Ensure target has FUZZ placeholder
         if 'FUZZ' not in target:
@@ -9920,8 +10137,9 @@ def execute_ffuf_scan(target, params):
 def execute_feroxbuster_scan(target, params):
     """Execute feroxbuster scan with optimized parameters"""
     try:
-        wordlist = params.get('wordlist', '/usr/share/wordlists/dirb/common.txt')
-        additional_args = params.get('additional_args', '')
+        _validate_target(target)
+        wordlist = _validate_token(params.get('wordlist', '/usr/share/wordlists/dirb/common.txt'), 'wordlist')
+        additional_args = _validate_additional_args(params.get('additional_args', ''))
 
         cmd_parts = ['feroxbuster', '-u', target, '-w', wordlist]
         if additional_args:
@@ -9934,7 +10152,8 @@ def execute_feroxbuster_scan(target, params):
 def execute_katana_scan(target, params):
     """Execute katana scan with optimized parameters"""
     try:
-        additional_args = params.get('additional_args', '')
+        _validate_target(target)
+        additional_args = _validate_additional_args(params.get('additional_args', ''))
         cmd_parts = ['katana', '-u', target]
         if additional_args:
             cmd_parts.extend(additional_args.split())
@@ -9946,7 +10165,8 @@ def execute_katana_scan(target, params):
 def execute_httpx_scan(target, params):
     """Execute httpx scan with optimized parameters"""
     try:
-        additional_args = params.get('additional_args', '-tech-detect -status-code')
+        _validate_target(target)
+        additional_args = _validate_additional_args(params.get('additional_args', '-tech-detect -status-code'))
         # Use shell command with pipe for httpx
         cmd = f"echo {target} | httpx {additional_args}"
 
@@ -9957,7 +10177,8 @@ def execute_httpx_scan(target, params):
 def execute_wpscan_scan(target, params):
     """Execute wpscan scan with optimized parameters"""
     try:
-        additional_args = params.get('additional_args', '--enumerate p,t,u')
+        _validate_target(target)
+        additional_args = _validate_additional_args(params.get('additional_args', '--enumerate p,t,u'))
         cmd_parts = ['wpscan', '--url', target]
         if additional_args:
             cmd_parts.extend(additional_args.split())
@@ -9969,7 +10190,8 @@ def execute_wpscan_scan(target, params):
 def execute_dirsearch_scan(target, params):
     """Execute dirsearch scan with optimized parameters"""
     try:
-        additional_args = params.get('additional_args', '')
+        _validate_target(target)
+        additional_args = _validate_additional_args(params.get('additional_args', ''))
         cmd_parts = ['dirsearch', '-u', target]
         if additional_args:
             cmd_parts.extend(additional_args.split())
@@ -9981,7 +10203,8 @@ def execute_dirsearch_scan(target, params):
 def execute_arjun_scan(target, params):
     """Execute arjun scan with optimized parameters"""
     try:
-        additional_args = params.get('additional_args', '')
+        _validate_target(target)
+        additional_args = _validate_additional_args(params.get('additional_args', ''))
         cmd_parts = ['arjun', '-u', target]
         if additional_args:
             cmd_parts.extend(additional_args.split())
@@ -9993,7 +10216,8 @@ def execute_arjun_scan(target, params):
 def execute_paramspider_scan(target, params):
     """Execute paramspider scan with optimized parameters"""
     try:
-        additional_args = params.get('additional_args', '')
+        _validate_target(target)
+        additional_args = _validate_additional_args(params.get('additional_args', ''))
         cmd_parts = ['paramspider', '-d', target]
         if additional_args:
             cmd_parts.extend(additional_args.split())
@@ -10005,19 +10229,34 @@ def execute_paramspider_scan(target, params):
 def execute_dalfox_scan(target, params):
     """Execute dalfox scan with optimized parameters"""
     try:
-        additional_args = params.get('additional_args', '')
-        cmd_parts = ['dalfox', 'url', target]
+        _validate_target(target)
+        additional_args = _validate_additional_args(params.get('additional_args', ''))
+        # PATCH LOCAL 2026-08-19: dalfox v3.2.1 cambió la sintaxis — ahora
+        # exige 'url --url <URL> --silence <TARGET>' (antes 'dalfox url
+        # <target>' fallaba con 'required arguments --url'). Detectado en la
+        # prueba real del target web vía smart-scan.
+        cmd_parts = ['dalfox', 'url', '--url', target, '--silence']
         if additional_args:
             cmd_parts.extend(additional_args.split())
 
-        return execute_command(' '.join(cmd_parts))
+        result = execute_command(' '.join(cmd_parts))
+        # PATCH LOCAL 2026-08-19 (2º): dalfox usa rc=1 para señalar que
+        # ENCONTRÓ hallazgos (convención de exit code: 0 = sin vulns, 1 =
+        # vulns encontradas). El executor marca success=(rc==0) y descartaba
+        # los POC encontrados. Normalizar: rc!=0 con stdout no vacío =
+        # ejecución exitosa con hallazgos.
+        if not result.get('success') and result.get('stdout'):
+            result['success'] = True
+            result['note'] = 'dalfox rc!=0 pero stdout con hallazgos (convención de exit code del tool)'
+        return result
     except Exception as e:
         return {"success": False, "error": str(e)}
 
 def execute_amass_scan(target, params):
     """Execute amass scan with optimized parameters"""
     try:
-        additional_args = params.get('additional_args', '')
+        _validate_target(target)
+        additional_args = _validate_additional_args(params.get('additional_args', ''))
         cmd_parts = ['amass', 'enum', '-d', target]
         if additional_args:
             cmd_parts.extend(additional_args.split())
@@ -10029,7 +10268,8 @@ def execute_amass_scan(target, params):
 def execute_subfinder_scan(target, params):
     """Execute subfinder scan with optimized parameters"""
     try:
-        additional_args = params.get('additional_args', '')
+        _validate_target(target)
+        additional_args = _validate_additional_args(params.get('additional_args', ''))
         cmd_parts = ['subfinder', '-d', target]
         if additional_args:
             cmd_parts.extend(additional_args.split())
@@ -10332,6 +10572,7 @@ def nmap():
         target = params.get("target", "")
         scan_type = params.get("scan_type", "-sCV")
         ports = params.get("ports", "")
+        nse_scripts = params.get("nse_scripts", "")
         additional_args = params.get("additional_args", "-T4 -Pn")
         use_recovery = params.get("use_recovery", True)
 
@@ -10341,10 +10582,27 @@ def nmap():
                 "error": "Target parameter is required"
             }), 400
 
+        # Validación allowlist (OS Command Injection, OWASP ch03)
+        try:
+            _validate_target(target)
+            _validate_token(scan_type, 'scan_type')
+            _validate_token(ports, 'ports', _PORTS_RE)
+            _validate_token(nse_scripts, 'nse_scripts', _NSE_SCRIPTS_RE)
+            _validate_additional_args(additional_args)
+        except ValueError as e:
+            return jsonify({"error": str(e), "success": False}), 400
+
         command = f"nmap {scan_type}"
 
         if ports:
             command += f" -p {ports}"
+
+        # nse_scripts (2026-08-22): vulners cruza versiones con CVEs — el
+        # endpoint simple no lo exponía; ahora acepta --script= igual que
+        # nmap-advanced.
+        if nse_scripts:
+            command += f" --script={nse_scripts}"
+
 
         if additional_args:
             command += f" {additional_args}"
@@ -10397,6 +10655,13 @@ def gobuster():
             return jsonify({
                 "error": f"Invalid mode: {mode}. Must be one of: dir, dns, fuzz, vhost"
             }), 400
+
+        # Validación allowlist (OS Command Injection, OWASP ch03)
+        try:
+            _validate_target(url)
+            _validate_additional_args(additional_args)
+        except ValueError as e:
+            return jsonify({"error": str(e), "success": False}), 400
 
         command = f"gobuster {mode} -u {url} -w {wordlist}"
 
@@ -17286,4 +17551,8 @@ if __name__ == "__main__":
         if line.strip():
             logger.info(line)
 
-    app.run(host="0.0.0.0", port=API_PORT, debug=DEBUG_MODE)
+    # PATCH LOCAL (2026-08-02): upstream hardcodea host="0.0.0.0" e ignora
+    # HEXSTRIKE_HOST/API_HOST (el banner decía "Server starting on API_HOST"
+    # pero el bind real era 0.0.0.0 → RCE sin auth expuesta a la LAN).
+    # Fix: respetar API_HOST (default 127.0.0.1). Verificar: ss -tln | grep 8888
+    app.run(host=API_HOST, port=API_PORT, debug=DEBUG_MODE)

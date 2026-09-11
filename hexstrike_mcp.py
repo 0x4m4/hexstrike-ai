@@ -158,6 +158,12 @@ class HexStrikeClient:
         self.server_url = server_url.rstrip("/")
         self.timeout = timeout
         self.session = requests.Session()
+        # PATCH LOCAL 2026-08-06: el server exige X-API-Key (hexstrike_server.py
+        # before_request, fail-closed). Leer la misma env que la unit systemd.
+        self.api_key = os.environ.get('HEXSTRIKE_API_KEY', '')
+        if self.api_key:
+            self.session.headers['X-API-Key'] = self.api_key
+
 
         # Try to connect to server with retries
         connected = False
