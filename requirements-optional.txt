@@ -1,0 +1,22 @@
+# HexStrike AI — optional feature dependencies (v6.0.1)
+# Install only what you need:
+#   pip install -r requirements-optional.txt            # everything below
+#   pip install "selenium>=4.15.0,<5.0.0" "webdriver-manager>=4.0.0,<5.0.0"   # browser agent
+#   pip install "mitmproxy>=9.0.0,<11.0.0"               # proxy intercept agent
+#   pip install "pwntools>=4.10.0,<5.0.0" "bcrypt==4.0.1" # pwn endpoints
+#   pip install "angr>=9.2.0,<10.0.0"                    # binary analysis endpoints
+#
+# NOTE: pwntools/angr/mitmproxy frequently fail to build on Python 3.13+.
+# Use Python 3.11 or 3.12 for these extras (installer warns automatically).
+
+# Browser automation agent
+selenium>=4.15.0,<5.0.0
+webdriver-manager>=4.0.0,<5.0.0
+
+# HTTP proxy intercept agent
+mitmproxy>=9.0.0,<11.0.0
+
+# Binary exploitation / analysis endpoints
+pwntools>=4.10.0,<5.0.0
+bcrypt==4.0.1
+angr>=9.2.0,<10.0.0

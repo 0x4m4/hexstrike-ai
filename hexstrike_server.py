@@ -53,17 +53,41 @@ import asyncio
 import aiohttp
 from urllib.parse import urljoin, urlparse, parse_qs
 from bs4 import BeautifulSoup
-import selenium
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import TimeoutException, WebDriverException
-import mitmproxy
-from mitmproxy import http as mitmhttp
-from mitmproxy.tools.dump import DumpMaster
-from mitmproxy.options import Options as MitmOptions
+# Optional feature deps (fixed v6.0.1): selenium/mitmproxy moved to
+# requirements-optional.txt so core install never breaks. Endpoints that
+# need them return a clean JSON error when missing instead of crashing import.
+try:
+    import selenium
+    from selenium import webdriver
+    from selenium.webdriver.chrome.options import Options
+    from selenium.webdriver.common.by import By
+    from selenium.webdriver.support.ui import WebDriverWait
+    from selenium.webdriver.support import expected_conditions as EC
+    from selenium.common.exceptions import TimeoutException, WebDriverException
+    SELENIUM_AVAILABLE = True
+except ImportError:
+    selenium = None
+    webdriver = None
+    Options = None
+    By = None
+    WebDriverWait = None
+    EC = None
+    TimeoutException = Exception
+    WebDriverException = Exception
+    SELENIUM_AVAILABLE = False
+
+try:
+    import mitmproxy
+    from mitmproxy import http as mitmhttp
+    from mitmproxy.tools.dump import DumpMaster
+    from mitmproxy.options import Options as MitmOptions
+    MITMPROXY_AVAILABLE = True
+except ImportError:
+    mitmproxy = None
+    mitmhttp = None
+    DumpMaster = None
+    MitmOptions = None
+    MITMPROXY_AVAILABLE = False
 
 # ============================================================================
 # LOGGING CONFIGURATION (MUST BE FIRST)
@@ -9020,9 +9044,109 @@ file_manager = FileOperationsManager()
 
 # API Routes
 
+# ============================================================================
+# FAST TOOL DETECTION (fixed: no shell, no cache, alias-aware, PATH-aware)
+# ============================================================================
+# Binary aliases: logical tool name -> candidate executables (first hit wins).
+# Covers renames (crackmapexec->nxc), case variants (theHarvester), GUI tools
+# that have different CLI names, and python modules that have no binary.
+TOOL_BIN_ALIASES = {
+    "nxc": ["nxc", "crackmapexec", "netexec"],
+    "enum4linux-ng": ["enum4linux-ng"],
+    "enum4linux": ["enum4linux", "enum4linux.pl"],
+    "theharvester": ["theHarvester", "theharvester", "theharvester.py"],
+    "volatility3": ["vol", "volatility3", "vol.py"],
+    "volatility": ["volatility", "volatility_2.6"],
+    "metasploit": ["msfconsole"],
+    "exploit-db": ["searchsploit"],
+    "shodan-cli": ["shodan"],
+    "censys-cli": ["censys"],
+    "have-i-been-pwned": ["hibp", "have-i-been-pwned"],
+    "hash-identifier": ["hash-identifier", "hashidentifier"],
+    "evil-winrm": ["evil-winrm", "evil-winrm.rb"],
+    "checksec": ["checksec", "checksec.sh"],
+    "one-gadget": ["one_gadget", "one-gadget"],
+    "ropgadget": ["ROPgadget", "ropgadget"],
+    "pwntools": ["pwntools"],
+    "angr": ["angr"],
+    "libc-database": ["libc-database"],
+    "graphql-scanner": ["graphql-scanner", "graphqlmap"],
+    "jwt-analyzer": ["jwt-analyzer", "jwt_tool.py", "jwt-tool"],
+    "burpsuite": ["burpsuite", "burpsuitepro"],
+    "zaproxy": ["zaproxy", "zap", "zap.sh"],
+    "postman": ["postman", "newman"],
+    "autopsy": ["autopsy"],
+    "maltego": ["maltego"],
+    "responder": ["responder", "Responder.py"],
+}
+
+# Python-only packages (no CLI binary expected): check via importlib.
+PYTHON_MODULE_TOOLS = {
+    "pwntools": "pwn",
+    "angr": "angr",
+    "scout-suite": "scout",
+    "recon-ng": "reconng",
+}
+
+# Minimal apt install hints for missing tools (Debian/Kali/Ubuntu).
+TOOL_INSTALL_HINTS = {
+    "nmap": "sudo apt install nmap", "gobuster": "sudo apt install gobuster",
+    "dirb": "sudo apt install dirb", "nikto": "sudo apt install nikto",
+    "sqlmap": "sudo apt install sqlmap", "hydra": "sudo apt install hydra",
+    "john": "sudo apt install john", "hashcat": "sudo apt install hashcat",
+    "masscan": "sudo apt install masscan", "ffuf": "sudo apt install ffuf",
+    "feroxbuster": "sudo apt install feroxbuster", "nuclei": "go install github.com/projectdiscovery/nuclei/v3/cmd/nuclei@latest",
+    "subfinder": "go install github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest",
+    "httpx": "go install github.com/projectdiscovery/httpx/cmd/httpx@latest",
+    "katana": "go install github.com/projectdiscovery/katana/cmd/katana@latest",
+    "dalfox": "go install github.com/hahwul/dalfox/v2@latest",
+}
+
+_EXTRA_BIN_DIRS = [
+    os.path.expanduser("~/.local/bin"), os.path.expanduser("~/go/bin"),
+    os.path.expanduser("~/.cargo/bin"), "/usr/local/go/bin",
+    "/snap/bin", "/opt/nuclei", "/opt/katana",
+]
+
+def _ensure_helper_path():
+    extra = [d for d in _EXTRA_BIN_DIRS if os.path.isdir(d) and d not in os.environ.get("PATH", "").split(os.pathsep)]
+    if extra:
+        os.environ["PATH"] = os.pathsep.join(extra + [os.environ.get("PATH", "")])
+
+def resolve_tool(tool: str):
+    """Fast alias-aware tool resolution. Returns (available, resolved_name_or_path)."""
+    _ensure_helper_path()
+    # 1. Python modules first (no binary expected)
+    if tool in PYTHON_MODULE_TOOLS:
+        mod = PYTHON_MODULE_TOOLS[tool]
+        try:
+            import importlib.util as _ilu
+            if _ilu.find_spec(mod) is not None:
+                return True, f"python-module:{mod}"
+        except Exception:
+            pass
+        # fall through to binary aliases as well (e.g. pwntools CLIs)
+    # 2. Binary candidates
+    candidates = TOOL_BIN_ALIASES.get(tool, [tool])
+    for cand in candidates:
+        path = shutil.which(cand)
+        if path:
+            return True, path
+    # 3. Special-case: pwntools/angr import check even if not in map
+    if tool in ("pwntools", "angr", "ropper", "one-gadget", "pwninit"):
+        try:
+            import importlib.util as _ilu
+            guess = {"pwntools": "pwn", "angr": "angr", "ropper": "ropper", "one-gadget": "one_gadget"}.get(tool, tool)
+            if _ilu.find_spec(guess) is not None:
+                return True, f"python-module:{guess}"
+        except Exception:
+            pass
+    return False, None
+
+
 @app.route("/health", methods=["GET"])
 def health_check():
-    """Health check endpoint with comprehensive tool detection"""
+    """Health check endpoint with fast, accurate tool detection (fixed v6.0.1)"""
 
     essential_tools = [
         "nmap", "gobuster", "dirb", "nikto", "sqlmap", "hydra", "john", "hashcat"
@@ -9083,50 +9207,67 @@ def health_check():
     ]
 
     additional_tools = [
-        "smbmap", "volatility", "sleuthkit", "autopsy", "evil-winrm",
-        "paramspider", "airmon-ng", "airodump-ng", "aireplay-ng", "aircrack-ng",
-        "msfvenom", "msfconsole", "graphql-scanner", "jwt-analyzer"
+        "smbmap", "sleuthkit", "evil-winrm",
+        "airmon-ng", "airodump-ng", "aireplay-ng", "aircrack-ng",
+        "msfvenom", "msfconsole",
     ]
 
-    all_tools = (
+    # Deduplicate preserving order (old code counted paramspider/graphql/jwt twice)
+    all_tools = list(dict.fromkeys(
         essential_tools + network_tools + web_security_tools + vuln_scanning_tools +
         password_tools + binary_tools + forensics_tools + cloud_tools +
         osint_tools + exploitation_tools + api_tools + wireless_tools + additional_tools
-    )
+    ))
     tools_status = {}
+    tools_detail = {}
 
+    # Fast path: shutil.which + importlib, no subprocess, no cache poisoning.
     for tool in all_tools:
         try:
-            result = execute_command(f"which {tool}", use_cache=True)
-            tools_status[tool] = result["success"]
-        except:
+            available, resolved = resolve_tool(tool)
+            tools_status[tool] = bool(available)
+            tools_detail[tool] = {
+                "available": bool(available),
+                "resolved": resolved,
+                "candidates": TOOL_BIN_ALIASES.get(tool, [tool]),
+            }
+        except Exception:
             tools_status[tool] = False
+            tools_detail[tool] = {"available": False, "resolved": None, "candidates": [tool]}
 
-    all_essential_tools_available = all(tools_status[tool] for tool in essential_tools)
+    all_essential_tools_available = all(tools_status.get(t, False) for t in essential_tools)
+    missing_essential = [t for t in essential_tools if not tools_status.get(t, False)]
+
+    def _stat(lst):
+        return {"total": len(lst), "available": sum(1 for t in lst if tools_status.get(t, False))}
 
     category_stats = {
-        "essential": {"total": len(essential_tools), "available": sum(1 for tool in essential_tools if tools_status.get(tool, False))},
-        "network": {"total": len(network_tools), "available": sum(1 for tool in network_tools if tools_status.get(tool, False))},
-        "web_security": {"total": len(web_security_tools), "available": sum(1 for tool in web_security_tools if tools_status.get(tool, False))},
-        "vuln_scanning": {"total": len(vuln_scanning_tools), "available": sum(1 for tool in vuln_scanning_tools if tools_status.get(tool, False))},
-        "password": {"total": len(password_tools), "available": sum(1 for tool in password_tools if tools_status.get(tool, False))},
-        "binary": {"total": len(binary_tools), "available": sum(1 for tool in binary_tools if tools_status.get(tool, False))},
-        "forensics": {"total": len(forensics_tools), "available": sum(1 for tool in forensics_tools if tools_status.get(tool, False))},
-        "cloud": {"total": len(cloud_tools), "available": sum(1 for tool in cloud_tools if tools_status.get(tool, False))},
-        "osint": {"total": len(osint_tools), "available": sum(1 for tool in osint_tools if tools_status.get(tool, False))},
-        "exploitation": {"total": len(exploitation_tools), "available": sum(1 for tool in exploitation_tools if tools_status.get(tool, False))},
-        "api": {"total": len(api_tools), "available": sum(1 for tool in api_tools if tools_status.get(tool, False))},
-        "wireless": {"total": len(wireless_tools), "available": sum(1 for tool in wireless_tools if tools_status.get(tool, False))},
-        "additional": {"total": len(additional_tools), "available": sum(1 for tool in additional_tools if tools_status.get(tool, False))}
+        "essential": _stat(essential_tools),
+        "network": _stat(network_tools),
+        "web_security": _stat(web_security_tools),
+        "vuln_scanning": _stat(vuln_scanning_tools),
+        "password": _stat(password_tools),
+        "binary": _stat(binary_tools),
+        "forensics": _stat(forensics_tools),
+        "cloud": _stat(cloud_tools),
+        "osint": _stat(osint_tools),
+        "exploitation": _stat(exploitation_tools),
+        "api": _stat(api_tools),
+        "wireless": _stat(wireless_tools),
+        "additional": _stat(additional_tools),
     }
 
     return jsonify({
         "status": "healthy",
         "message": "HexStrike AI Tools API Server is operational",
-        "version": "6.0.0",
+        "version": "6.0.1",
+        "detection": "shutil.which+importlib (fast, alias-aware)",
         "tools_status": tools_status,
+        "tools_detail": tools_detail,
         "all_essential_tools_available": all_essential_tools_available,
-        "total_tools_available": sum(1 for tool, available in tools_status.items() if available),
+        "missing_essential_tools": missing_essential,
+        "install_hints": {t: TOOL_INSTALL_HINTS.get(t, f"which {t} not found; see README Install Security Tools") for t in missing_essential},
+        "total_tools_available": sum(1 for v in tools_status.values() if v),
         "total_tools_count": len(all_tools),
         "category_stats": category_stats,
         "cache_stats": cache.get_stats(),
@@ -13631,6 +13772,9 @@ class BrowserAgent:
 
     def setup_browser(self, headless: bool = True, proxy_port: int = None):
         """Setup Chrome browser with security testing options"""
+        if not SELENIUM_AVAILABLE:
+            logger.error("BrowserAgent requires extras: pip install -r requirements-optional.txt (selenium)")
+            return False
         try:
             chrome_options = Options()
 

@@ -112,21 +112,71 @@ graph TD
 
 ## Installation
 
-### Quick Setup to Run the hexstrike MCPs Server
+> **Fork v6.0.1 (fixed):** this fork ships `./install.sh` — the recommended setup.
+> It scans your system, installs **only the missing tools** for the use-cases you
+> pick, sets up the Python venv, and writes the OpenCode MCP config automatically.
+
+### System Requirements
+
+```bash
+OS: Kali Linux 2024.1+ / Ubuntu 22.04+ / Debian 12+
+Python: 3.10 - 3.12 (3.13+ breaks pwntools/angr/mitmproxy builds — installer warns you)
+RAM: 8GB+ (16GB recommended) | Storage: 50GB+ free | CPU: 4+ cores
+```
+
+### Recommended: Automated Setup
+
+```bash
+# 1. Clone this fork
+git clone https://github.com/ZanderoDev/hexstrike-ai-update.git
+cd hexstrike-ai-update
+
+# 2. Run the installer (interactive — asks which use-cases you need)
+./install.sh
+
+# Non-interactive example (docs/VMs/CI):
+./install.sh --categories "network web exploit password" --yes
+
+# Verify server + tool coverage after install:
+./install.sh --check-health
+```
+
+**Installer options:**
+
+| Flag | Effect |
+|------|--------|
+| `--categories "network web ..."` | `network web exploit password osint wireless forensics cloud` or `all` (default if `--yes`: `network web exploit password`) |
+| `--yes, -y` | Non-interactive |
+| `--no-tools` | Python env + MCP config only, skip security tools |
+| `--with-browser` | Also install `selenium` extras (browser agent) |
+| `--with-proxy` | Also install `mitmproxy` extras (intercept agent) |
+| `--with-pwn` | Also install `pwntools` + `angr` extras (needs Python 3.11/3.12) |
+| `--with-all` | All three extras above |
+| `--with-opencode` | Also install OpenCode via npm |
+| `--check-health` | Start server, show `/health` coverage, leave it running |
+| `--port PORT` | Server port for config/health check (default `8888`) |
+
+### Alternative: Manual Setup
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/0x4m4/hexstrike-ai.git
-cd hexstrike-ai
+git clone https://github.com/ZanderoDev/hexstrike-ai-update.git
+cd hexstrike-ai-update
 
-# 2. Create virtual environment
+# 2. Create virtual environment (Python 3.10-3.12 recommended)
 python3 -m venv hexstrike-env
 source hexstrike-env/bin/activate  # Linux/Mac
 # hexstrike-env\Scripts\activate   # Windows
 
-# 3. Install Python dependencies
-pip3 install -r requirements.txt
+# 3. Install CORE Python dependencies (no heavy builds)
+pip install --upgrade pip
+pip install -r requirements.txt
 
+# 4. Optional extras — only what you need:
+pip install -r requirements-optional.txt            # everything below at once, or:
+pip install "selenium>=4.15.0,<5.0.0" "webdriver-manager>=4.0.0,<5.0.0"  # browser agent
+pip install "mitmproxy>=9.0.0,<11.0.0"              # proxy intercept agent
+pip install "pwntools>=4.10.0,<5.0.0" "bcrypt==4.0.1" "angr>=9.2.0,<10.0.0"  # pwn/RE endpoints
 ```
 
 ### Installation and Setting Up Guide for various AI Clients:
@@ -151,6 +201,10 @@ Refer to the video above for step-by-step instructions and integration examples 
 
 
 ### Install Security Tools
+
+> **Recommended:** `./install.sh` handles all of this — it detects what's already
+> installed and adds only the missing tools (apt/go/cargo/pipx/gem as appropriate).
+> The lists below are the reference catalogue the installer and `/health` use.
 
 **Core Tools (Essential):**
 ```bash
@@ -203,8 +257,17 @@ python3 hexstrike_server.py --port 8888
 ### Verify Installation
 
 ```bash
-# Test server health
-curl http://localhost:8888/health
+# Easiest: installer does a live check for you
+./install.sh --check-health
+
+# Manual: test server health (fast, alias-aware detection since v6.0.1)
+curl -s http://localhost:8888/health | python3 -m json.tool | head -n 40
+
+# Coverage per category + missing essential tools with install hints:
+curl -s http://localhost:8888/health | python3 -c \
+  "import json,sys; d=json.load(sys.stdin); \
+   [print(f\"{c:15} {s['available']}/{s['total']}\") for c,s in sorted(d['category_stats'].items())]; \
+   print('missing essential:', d.get('missing_essential_tools') or 'none')"
 
 # Test AI agent capabilities
 curl -X POST http://localhost:8888/api/intelligence/analyze-target \
@@ -216,26 +279,64 @@ curl -X POST http://localhost:8888/api/intelligence/analyze-target \
 
 ## AI Client Integration Setup
 
+> Flags `--health-timeout 15` and `--lazy` (new in v6.0.1) fix the old
+> MCP *"Connection closed"* bug: the client used a 5s `/health` probe plus
+> blocking retries at startup, so slow machines got killed by the MCP host.
+> Always start `hexstrike_server.py` **before** the AI client, or keep `--lazy`.
+
+### OpenCode (auto-configured by installer)
+
+`./install.sh` already writes `~/.config/opencode/opencode.json` using the venv
+python — just restart OpenCode. Manual equivalent (`opencode.json.example` in repo):
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "hexstrike": {
+      "type": "local",
+      "command": [
+        "/absolute/path/to/hexstrike-ai-update/hexstrike-env/bin/python",
+        "/absolute/path/to/hexstrike-ai-update/hexstrike_mcp.py",
+        "--server",
+        "http://localhost:8888",
+        "--health-timeout",
+        "15",
+        "--lazy"
+      ],
+      "enabled": true
+    }
+  }
+}
+```
+
 ### Claude Desktop Integration or Cursor
 
-Edit `~/.config/Claude/claude_desktop_config.json`:
+Edit `~/.config/Claude/claude_desktop_config.json` (same shape works for Cursor —
+see `hexstrike-ai-mcp.json` in the repo):
 ```json
 {
   "mcpServers": {
     "hexstrike-ai": {
-      "command": "python3",
+      "command": "/absolute/path/to/hexstrike-ai-update/hexstrike-env/bin/python",
       "args": [
-        "/path/to/hexstrike-ai/hexstrike_mcp.py",
+        "/absolute/path/to/hexstrike-ai-update/hexstrike_mcp.py",
         "--server",
-        "http://localhost:8888"
+        "http://localhost:8888",
+        "--health-timeout",
+        "15",
+        "--lazy"
       ],
-      "description": "HexStrike AI v6.0 - Advanced Cybersecurity Automation Platform",
+      "description": "HexStrike AI v6.0.1 - Advanced Cybersecurity Automation Platform",
       "timeout": 300,
       "disabled": false
     }
   }
 }
 ```
+
+> Prefer the venv python (`hexstrike-env/bin/python`) over system `python3` so the
+> MCP client always finds the pinned `mcp<2` SDK. Remove `--lazy` only if the
+> server is guaranteed to be running before the AI client starts.
 
 ### VS Code Copilot Integration
 
@@ -245,11 +346,14 @@ Configure VS Code settings in `.vscode/settings.json`:
   "servers": {
     "hexstrike": {
       "type": "stdio",
-      "command": "python3",
+      "command": "/absolute/path/to/hexstrike-ai-update/hexstrike-env/bin/python",
       "args": [
-        "/path/to/hexstrike-ai/hexstrike_mcp.py",
+        "/absolute/path/to/hexstrike-ai-update/hexstrike_mcp.py",
         "--server",
-        "http://localhost:8888"
+        "http://localhost:8888",
+        "--health-timeout",
+        "15",
+        "--lazy"
       ]
     }
   },
@@ -606,28 +710,56 @@ AI Agent: "Thank you for clarifying ownership and intent. To proceed with a pene
 
 ### Common Issues
 
-1. **MCP Connection Failed**:
+1. **MCP Connection Failed / "Connection closed"** (fixed in v6.0.1):
    ```bash
+   # The old client probed /health with 5s timeout + blocking retries,
+   # so MCP hosts killed it on slow machines. Make sure you use:
+   #   --health-timeout 15 --lazy
+   # in your MCP config (installer writes this automatically).
+
    # Check if server is running
-   netstat -tlnp | grep 8888
-   
-   # Restart server
+   curl -s http://localhost:8888/health | head -c 200; echo
+   ss -tlnp | grep 8888
+
+   # Restart server (from the venv!)
+   source hexstrike-env/bin/activate
    python3 hexstrike_server.py
    ```
 
-2. **Security Tools Not Found**:
+2. **Security Tools Not Found / Wrong Coverage**:
    ```bash
-   # Check tool availability
-   which nmap gobuster nuclei
-   
-   # Install missing tools from their official sources
+   # Since v6.0.1 /health uses fast alias-aware detection
+   # (handles renames like crackmapexec->nxc, theHarvester case, msfconsole, ...).
+   # Re-scan and install only what's missing:
+   ./install.sh --categories "network web exploit password" --yes
+
+   # Inspect exactly what the server sees per tool:
+   curl -s http://localhost:8888/health | python3 -m json.tool | grep -A3 tools_detail | head -n 20
    ```
 
 3. **AI Agent Cannot Connect**:
    ```bash
-   # Verify MCP configuration paths
+   # Verify MCP configuration paths (use absolute venv python path!)
    # Check server logs for connection attempts
-   python3 hexstrike_mcp.py --debug
+   ./hexstrike-env/bin/python hexstrike_mcp.py --server http://localhost:8888 --lazy --debug
+   ```
+
+4. **`pip install` Fails (pwntools / angr / mitmproxy / selenium)**:
+   ```bash
+   # These are OPTIONAL since v6.0.1 and often fail to build on Python 3.13+.
+   # Core install (requirements.txt) excludes them — only add what you need:
+   python3 --version   # want 3.10-3.12 for extras
+   pip install -r requirements-optional.txt
+   # Server endpoints needing them return a clean JSON error when absent,
+   # instead of crashing at import (fixed).
+   ```
+
+5. **Wrong `mcp` SDK (`No module named 'mcp.server.fastmcp'`)**:
+   ```bash
+   # Code targets the MCP v1 API. Do NOT install mcp>=2 or the standalone
+   # `fastmcp` package for the default path:
+   ./hexstrike-env/bin/pip install "mcp>=1.9.0,<2.0.0"
+   # hexstrike_mcp.py also has a compat shim (v1 -> v2 MCPServer -> fastmcp pkg).
    ```
 
 ### Debug Mode

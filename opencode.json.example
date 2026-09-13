@@ -1,0 +1,18 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "hexstrike": {
+      "type": "local",
+      "command": [
+        "/absolute/path/to/hexstrike-ai-update/hexstrike-env/bin/python",
+        "/absolute/path/to/hexstrike-ai-update/hexstrike_mcp.py",
+        "--server",
+        "http://localhost:8888",
+        "--health-timeout",
+        "15",
+        "--lazy"
+      ],
+      "enabled": true
+    }
+  }
+}

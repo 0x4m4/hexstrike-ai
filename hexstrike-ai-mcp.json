@@ -3,13 +3,25 @@
     "hexstrike-ai": {
       "command": "python3",
       "args": [
-        "/path/hexstrike_mcp.py",
+        "/absolute/path/to/hexstrike-ai-update/hexstrike_mcp.py",
         "--server",
-        "http://IPADDRESS:8888"
+        "http://127.0.0.1:8888",
+        "--health-timeout",
+        "15",
+        "--lazy"
       ],
-      "description": "HexStrike AI v6.0 - Advanced Cybersecurity Automation Platform. Turn off alwaysAllow if you dont want autonomous execution!",
+      "description": "HexStrike AI v6.0.1 - Advanced Cybersecurity Automation Platform. Remove --lazy if the server is always running before the AI client starts.",
       "timeout": 300,
       "alwaysAllow": []
     }
-  }
+  },
+  "_comment": [
+    "SETUP:",
+    "1. Replace /absolute/path/to/hexstrike-ai-update with your real checkout path (./install.sh does this automatically).",
+    "2. Prefer the venv python: <repo>/hexstrike-env/bin/python instead of system python3.",
+    "3. Start the server first: source hexstrike-env/bin/activate && python3 hexstrike_server.py",
+    "4. --lazy avoids MCP 'Connection closed' kills when the server is still starting.",
+    "5. --health-timeout 15 fixes the old 5s timeout bug on slow machines.",
+    "6. For OpenCode, see opencode.json.example (single source of truth: ~/.config/opencode/opencode.json)."
+  ]
 }

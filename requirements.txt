@@ -1,84 +1,70 @@
-# HexStrike AI MCP Agents v6.0
+# HexStrike AI MCP Agents v6.0.1 (fixed)
 #
-# INSTALLATION COMMANDS:
-# python3 -m venv hexstrike_env
-# source hexstrike_env/bin/activate
-# python3 -m pip install -r requirements.txt
-# python3 hexstrike_server.py
+# INSTALLATION (recommended via installer):
+#   ./install.sh
+# MANUAL:
+#   python3 -m venv hexstrike-env
+#   source hexstrike-env/bin/activate
+#   python3 -m pip install --upgrade pip
+#   python3 -m pip install -r requirements.txt
+#   python3 hexstrike_server.py
+#
+# Requires: Python 3.10 - 3.12 (3.13+ breaks pwntools/angr/mitmproxy builds).
+# The installer checks this automatically.
 
 # ============================================================================
-# CORE FRAMEWORK DEPENDENCIES (ACTUALLY USED)
+# CORE FRAMEWORK DEPENDENCIES (required for server + MCP client)
 # ============================================================================
-flask>=2.3.0,<4.0.0             # Web framework for API server (flask import)
-requests>=2.31.0,<3.0.0         # HTTP library (requests import)
-psutil>=5.9.0,<6.0.0            # System utilities (psutil import)
-fastmcp>=0.2.0,<1.0.0           # MCP framework (from mcp.server.fastmcp import FastMCP)
+flask>=2.3.0,<4.0.0               # Web framework for API server (flask import)
+requests>=2.31.0,<3.0.0           # HTTP library (requests import)
+psutil>=5.9.0,<8.0.0              # System utilities (psutil import)
+aiohttp>=3.8.0,<4.0.0             # Async HTTP (aiohttp import)
+beautifulsoup4>=4.12.0,<5.0.0     # HTML parsing (from bs4 import BeautifulSoup)
+
+# MCP SDK v1 API — code uses `from mcp.server.fastmcp import FastMCP`.
+# DO NOT use mcp>=2 (FastMCP renamed to MCPServer there) and DO NOT use
+# the standalone `fastmcp` package (different import path: `from fastmcp import FastMCP`).
+# hexstrike_mcp.py now has a compat shim, but pin v1 for stability.
+mcp>=1.9.0,<2.0.0                 # MCP framework (mcp.server.fastmcp.FastMCP)
 
 # ============================================================================
-# WEB SCRAPING & AUTOMATION (ACTUALLY USED)
+# OPTIONAL DEPENDENCIES (install only if you need the feature)
+# Install via: ./install.sh --with-browser | --with-proxy | --with-pwn
+# Or manually: pip install -r requirements-optional.txt
 # ============================================================================
-beautifulsoup4>=4.12.0,<5.0.0   # HTML parsing (from bs4 import BeautifulSoup)
-selenium>=4.15.0,<5.0.0         # Browser automation (selenium imports)
-webdriver-manager>=4.0.0,<5.0.0 # ChromeDriver management (referenced in code)
+# selenium>=4.15.0,<5.0.0         # Browser automation agent only
+# webdriver-manager>=4.0.0,<5.0.0 # ChromeDriver management only
+# mitmproxy>=9.0.0,<11.0.0        # HTTP proxy intercept agent only
+# pwntools>=4.10.0,<5.0.0         # Binary exploitation endpoints only
+# angr>=9.2.0,<10.0.0             # Binary analysis endpoints only
+# bcrypt==4.0.1                   # Pin for pwntools/passlib compat (only with pwntools)
 
 # ============================================================================
-# ASYNC & NETWORKING (ACTUALLY USED)
-# ============================================================================
-aiohttp>=3.8.0,<4.0.0           # Async HTTP (aiohttp import)
-
-# ============================================================================
-# PROXY & TESTING (ACTUALLY USED)
-# ============================================================================
-mitmproxy>=9.0.0,<11.0.0        # HTTP proxy (mitmproxy imports)
-
-# ============================================================================
-# BINARY ANALYSIS (CONDITIONALLY USED)
-# ============================================================================
-pwntools>=4.10.0,<5.0.0         # Binary exploitation (from pwn import *)
-angr>=9.2.0,<10.0.0             # Binary analysis (import angr)
-bcrypt==4.0.1                   # Pin bcrypt version for passlib compatibility (fixes pwntools dependency issue)
-
-# ============================================================================
-# EXTERNAL SECURITY TOOLS (150+ Tools - Install separately)
+# EXTERNAL SECURITY TOOLS (150+ Tools - Install separately, NOT via pip)
 # ============================================================================
 #
-# HexStrike v6.0 integrates with 150+ external security tools that must be
-# installed separately from their official sources:
+# HexStrike v6 integrates with 150+ external security tools that must be
+# installed separately from their official sources (apt/go/cargo/pipx).
+# Use ./install.sh to scan and install only what's missing.
 #
-# 🔍 Network & Reconnaissance (25+ tools):
-# - nmap, masscan, rustscan, autorecon, amass, subfinder, fierce
-# - dnsenum, theharvester, responder, netexec, enum4linux-ng
+# Network & Recon (25+): nmap, masscan, rustscan, autorecon, amass, subfinder,
+#   fierce, dnsenum, theharvester, responder, netexec (nxc), enum4linux-ng
+# Web App (40+): gobuster, feroxbuster, ffuf, dirb, dirsearch, nuclei, nikto,
+#   sqlmap, wpscan, arjun, paramspider, x8, katana, httpx, dalfox, jaeles,
+#   hakrawler, gau, waybackurls, wafw00f
+# Auth/Password (12+): hydra, john, hashcat, medusa, patator, evil-winrm,
+#   hash-identifier, ophcrack
+# Binary/RE (25+): ghidra, radare2, gdb, binwalk, ropgadget, checksec,
+#   volatility3, foremost, steghide, exiftool
+# Cloud (20+): prowler, scout-suite, trivy, kube-hunter, kube-bench,
+#   docker-bench-security, checkov, terrascan
+# CTF/Forensics (20+): stegsolve, zsteg, outguess, photorec, testdisk,
+#   scalpel, bulk-extractor, sleuthkit, autopsy
+# OSINT (20+): sherlock, social-analyzer, recon-ng, spiderfoot, shodan-cli
 #
-# 🌐 Web Application Security (40+ tools):
-# - gobuster, feroxbuster, ffuf, dirb, dirsearch, nuclei, nikto
-# - sqlmap, wpscan, arjun, paramspider, x8, katana, httpx
-# - dalfox, jaeles, hakrawler, gau, waybackurls, wafw00f
-#
-# 🔐 Authentication & Password (12+ tools):
-# - hydra, john, hashcat, medusa, patator, netexec
-# - evil-winrm, hash-identifier, ophcrack
-#
-# 🔬 Binary Analysis & Reverse Engineering (25+ tools):
-# - ghidra, radare2, gdb, binwalk, ropgadget, checksec, strings
-# - volatility3, foremost, steghide, exiftool, angr, pwntools
-#
-# ☁️ Cloud & Container Security (20+ tools):
-# - prowler, scout-suite, trivy, kube-hunter, kube-bench
-# - docker-bench-security, checkov, terrascan, falco
-#
-# 🏆 CTF & Forensics (20+ tools):
-# - volatility3, autopsy, sleuthkit, stegsolve, zsteg, outguess
-# - photorec, testdisk, scalpel, bulk-extractor
-#
-# 🕵️ OSINT & Intelligence (20+ tools):
-# - sherlock, social-analyzer, recon-ng, maltego, spiderfoot
-# - shodan-cli, censys-cli, have-i-been-pwned
-#
-# Installation Notes:
+# Notes:
 # 1. Kali Linux 2024.1+ includes most tools by default
-# 2. Ubuntu/Debian users should install tools from official repositories
-# 3. Some tools require compilation from source or additional setup
-# 4. Cloud tools require API keys and authentication configuration
-# 5. Browser Agent requires Chrome/Chromium and ChromeDriver installation
-#
-# For complete installation instructions and setup guides, see README.md
+# 2. Ubuntu/Debian: use ./install.sh (handles apt/go/cargo/pipx correctly)
+# 3. Go tools need Go >=1.23 (installer handles this)
+# 4. Cloud tools need API keys
+# 5. Browser agent needs Chrome/Chromium + ChromeDriver

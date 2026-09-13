@@ -26,7 +26,16 @@ import requests
 import time
 from datetime import datetime
 
-from mcp.server.fastmcp import FastMCP
+# MCP SDK compat: v1 uses mcp.server.fastmcp.FastMCP, v2 renamed it to
+# mcp.server.mcpserver.MCPServer, standalone `fastmcp` pkg uses fastmcp.FastMCP.
+# Try in order so the client works regardless of which SDK is installed.
+try:
+    from mcp.server.fastmcp import FastMCP
+except ImportError:  # pragma: no cover - mcp>=2
+    try:
+        from mcp.server.mcpserver import MCPServer as FastMCP
+    except ImportError:  # pragma: no cover - standalone fastmcp package
+        from fastmcp import FastMCP
 
 class HexStrikeColors:
     """Enhanced color palette matching the server's ModernVisualEngine.COLORS"""
@@ -142,47 +151,64 @@ logger = logging.getLogger(__name__)
 # Default configuration
 DEFAULT_HEXSTRIKE_SERVER = "http://127.0.0.1:8888"  # Default HexStrike server URL
 DEFAULT_REQUEST_TIMEOUT = 300  # 5 minutes default timeout for API requests
-MAX_RETRIES = 3  # Maximum number of retries for connection attempts
+HEALTH_CHECK_TIMEOUT = 15  # /health can take a few seconds on first hit (fixed: was 5s -> MCP "Connection closed")
+MAX_RETRIES = 2  # Keep startup fast: MCP hosts kill slow stdio servers (fixed: was 3x2s sleeps)
+RETRY_DELAY = 1.0  # Fixed: was 2s per retry (6s+ blocked startup)
 
 class HexStrikeClient:
     """Enhanced client for communicating with the HexStrike AI API Server"""
 
-    def __init__(self, server_url: str, timeout: int = DEFAULT_REQUEST_TIMEOUT):
+    def __init__(self, server_url: str, timeout: int = DEFAULT_REQUEST_TIMEOUT,
+                 lazy: bool = False, health_timeout: int = HEALTH_CHECK_TIMEOUT):
         """
         Initialize the HexStrike AI Client
 
         Args:
             server_url: URL of the HexStrike AI API Server
             timeout: Request timeout in seconds
+            lazy: If True, skip blocking health check (connect on first tool call).
+                Recommended for MCP stdio servers to avoid startup-timeout kills.
+            health_timeout: Timeout for the /health probe (default 15s)
         """
         self.server_url = server_url.rstrip("/")
         self.timeout = timeout
+        self.health_timeout = health_timeout
         self.session = requests.Session()
+        self.connected = False
+        self.last_health = {}
 
-        # Try to connect to server with retries
+        if lazy:
+            logger.info("🔗 Lazy mode: skipping blocking health check (will connect on first tool call)")
+            return
+
+        # Fast non-blocking-ish probe: must not delay MCP stdio handshake.
         connected = False
         for i in range(MAX_RETRIES):
             try:
                 logger.info(f"🔗 Attempting to connect to HexStrike AI API at {server_url} (attempt {i+1}/{MAX_RETRIES})")
-                # First try a direct connection test before using the health endpoint
                 try:
-                    test_response = self.session.get(f"{self.server_url}/health", timeout=5)
+                    test_response = self.session.get(f"{self.server_url}/health", timeout=self.health_timeout)
                     test_response.raise_for_status()
                     health_check = test_response.json()
                     connected = True
+                    self.connected = True
+                    self.last_health = health_check
                     logger.info(f"🎯 Successfully connected to HexStrike AI API Server at {server_url}")
                     logger.info(f"🏥 Server health status: {health_check.get('status', 'unknown')}")
                     logger.info(f"📊 Server version: {health_check.get('version', 'unknown')}")
+                    missing = health_check.get("missing_essential_tools", [])
+                    if missing:
+                        logger.warning(f"⚠️  Missing essential tools: {', '.join(missing)} (run ./install.sh to install)")
                     break
                 except requests.exceptions.ConnectionError:
                     logger.warning(f"🔌 Connection refused to {server_url}. Make sure the HexStrike AI server is running.")
-                    time.sleep(2)  # Wait before retrying
+                    time.sleep(RETRY_DELAY)
                 except Exception as e:
                     logger.warning(f"⚠️  Connection test failed: {str(e)}")
-                    time.sleep(2)  # Wait before retrying
+                    time.sleep(RETRY_DELAY)
             except Exception as e:
                 logger.warning(f"❌ Connection attempt {i+1} failed: {str(e)}")
-                time.sleep(2)  # Wait before retrying
+                time.sleep(RETRY_DELAY)
 
         if not connected:
             error_msg = f"Failed to establish connection to HexStrike AI API Server at {server_url} after {MAX_RETRIES} attempts"
@@ -257,12 +283,25 @@ class HexStrikeClient:
 
     def check_health(self) -> Dict[str, Any]:
         """
-        Check the health of the HexStrike AI API Server
+        Check the health of the HexStrike AI API Server.
+        Uses short health_timeout (not the 300s tool timeout) so MCP
+        startup never hangs.
 
         Returns:
             Health status information
         """
-        return self.safe_get("health")
+        url = f"{self.server_url}/health"
+        try:
+            response = self.session.get(url, timeout=self.health_timeout)
+            response.raise_for_status()
+            data = response.json()
+            self.connected = True
+            self.last_health = data
+            return data
+        except requests.exceptions.RequestException as e:
+            return {"error": f"Request failed: {str(e)}", "success": False}
+        except Exception as e:
+            return {"error": f"Unexpected error: {str(e)}", "success": False}
 
 def setup_mcp_server(hexstrike_client: HexStrikeClient) -> FastMCP:
     """
@@ -5420,6 +5459,10 @@ def parse_args():
                       help=f"HexStrike AI API server URL (default: {DEFAULT_HEXSTRIKE_SERVER})")
     parser.add_argument("--timeout", type=int, default=DEFAULT_REQUEST_TIMEOUT,
                       help=f"Request timeout in seconds (default: {DEFAULT_REQUEST_TIMEOUT})")
+    parser.add_argument("--health-timeout", type=int, default=HEALTH_CHECK_TIMEOUT,
+                      help=f"/health probe timeout in seconds (default: {HEALTH_CHECK_TIMEOUT})")
+    parser.add_argument("--lazy", action="store_true",
+                      help="Skip blocking /health check at startup (fast MCP stdio handshake)")
     parser.add_argument("--debug", action="store_true", help="Enable debug logging")
     return parser.parse_args()
 
@@ -5433,27 +5476,38 @@ def main():
         logger.debug("🔍 Debug logging enabled")
 
     # MCP compatibility: No banner output to avoid JSON parsing issues
-    logger.info(f"🚀 Starting HexStrike AI MCP Client v6.0")
+    # (all logs go to stderr via StreamHandler(sys.stderr); never print to stdout)
+    logger.info("🚀 Starting HexStrike AI MCP Client v6.0.1")
     logger.info(f"🔗 Connecting to: {args.server}")
 
     try:
-        # Initialize the HexStrike AI client
-        hexstrike_client = HexStrikeClient(args.server, args.timeout)
+        # Initialize the HexStrike AI client (lazy avoids MCP startup-timeout kills)
+        hexstrike_client = HexStrikeClient(args.server, args.timeout,
+                                           lazy=args.lazy, health_timeout=args.health_timeout)
 
-        # Check server health and log the result
-        health = hexstrike_client.check_health()
-        if "error" in health:
-            logger.warning(f"⚠️  Unable to connect to HexStrike AI API server at {args.server}: {health['error']}")
-            logger.warning("🚀 MCP server will start, but tool execution may fail")
+        # Check server health and log the result (skip if lazy already connected)
+        if args.lazy:
+            logger.info("🚀 MCP server will start in lazy mode (health check on first tool call)")
         else:
-            logger.info(f"🎯 Successfully connected to HexStrike AI API server at {args.server}")
-            logger.info(f"🏥 Server health status: {health['status']}")
-            logger.info(f"📊 Version: {health.get('version', 'unknown')}")
-            if not health.get("all_essential_tools_available", False):
-                logger.warning("⚠️  Not all essential tools are available on the HexStrike server")
-                missing_tools = [tool for tool, available in health.get("tools_status", {}).items() if not available]
-                if missing_tools:
-                    logger.warning(f"❌ Missing tools: {', '.join(missing_tools[:5])}{'...' if len(missing_tools) > 5 else ''}")
+            health = hexstrike_client.last_health or hexstrike_client.check_health()
+            if "error" in health:
+                logger.warning(f"⚠️  Unable to connect to HexStrike AI API server at {args.server}: {health['error']}")
+                logger.warning("🚀 MCP server will start, but tool execution may fail")
+            else:
+                logger.info(f"🎯 Successfully connected to HexStrike AI API server at {args.server}")
+                logger.info(f"🏥 Server health status: {health.get('status', 'unknown')}")
+                logger.info(f"📊 Version: {health.get('version', 'unknown')}")
+                if not health.get("all_essential_tools_available", False):
+                    logger.warning("⚠️  Not all essential tools are available on the HexStrike server")
+                    # Prefer server-provided missing list (fast path); fallback to tools_status scan
+                    missing_tools = health.get("missing_essential_tools") or \
+                        [tool for tool, available in health.get("tools_status", {}).items() if not available]
+                    if missing_tools:
+                        logger.warning(f"❌ Missing tools: {', '.join(missing_tools[:8])}{'...' if len(missing_tools) > 8 else ''}")
+                        hints = health.get("install_hints", {})
+                        for t in missing_tools[:3]:
+                            if t in hints:
+                                logger.warning(f"   💡 {t}: {hints[t]}")
 
         # Set up and run the MCP server
         mcp = setup_mcp_server(hexstrike_client)
