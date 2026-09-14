@@ -1,0 +1,25 @@
+{
+  "name": "hexstrike-ai",
+  "version": "0.1.0",
+  "description": "Run 150+ cybersecurity tools from Codex via MCP",
+  "author": {
+    "name": "0x4m4",
+    "url": "https://github.com/0x4m4/hexstrike-ai"
+  },
+  "homepage": "https://github.com/0x4m4/hexstrike-ai",
+  "repository": "https://github.com/0x4m4/hexstrike-ai",
+  "keywords": [
+    "mcp",
+    "security",
+    "pentesting",
+    "codex"
+  ],
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "HexStrike AI",
+    "shortDescription": "150+ cybersecurity tools for Codex via MCP",
+    "category": "Security",
+    "websiteURL": "https://github.com/0x4m4/hexstrike-ai"
+  },
+  "skills": "./skills/"
+}
