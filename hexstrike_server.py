@@ -36,6 +36,7 @@ from datetime import datetime, timedelta
 from typing import Dict, Any, Optional
 from collections import OrderedDict
 import shutil
+import tempfile
 import venv
 import zipfile
 from pathlib import Path
@@ -9239,11 +9240,7 @@ def generate_payload():
         if payload_type == "buffer":
             content = pattern * (size // len(pattern))
         elif payload_type == "cyclic":
-            # Generate cyclic pattern
-            alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-            content = ""
-            for i in range(size):
-                content += alphabet[i % len(alphabet)]
+            content = generate_cyclic_pattern(size)
         elif payload_type == "random":
             import random
             import string
@@ -9263,6 +9260,13 @@ def generate_payload():
     except Exception as e:
         logger.error(f"💥 Error generating payload: {str(e)}")
         return jsonify({"error": f"Server error: {str(e)}"}), 500
+
+
+def generate_cyclic_pattern(size: int) -> str:
+    """Generate the legacy repeating A-Z payload without quadratic concatenation."""
+    alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    return (alphabet * ((size + len(alphabet) - 1) // len(alphabet)))[:size]
+
 
 # Cache Management Endpoint
 @app.route("/api/cache/stats", methods=["GET"])
@@ -9313,6 +9317,104 @@ def list_processes():
     except Exception as e:
         logger.error(f"💥 Error listing processes: {str(e)}")
         return jsonify({"error": f"Server error: {str(e)}"}), 500
+
+
+def collect_host_processes():
+    """Collect read-only host process metadata and heuristic indicators."""
+    temp_directory = os.path.normcase(os.path.abspath(tempfile.gettempdir()))
+    host_processes = []
+
+    for process in psutil.process_iter(attrs=["pid", "name"], ad_value=None):
+        try:
+            process_info = process.info
+            pid = process_info.get("pid")
+            name = process_info.get("name")
+            if pid is None:
+                continue
+        except (psutil.NoSuchProcess, psutil.ZombieProcess):
+            continue
+
+        findings = []
+        executable = None
+        executable_inaccessible = False
+        try:
+            executable = process.exe()
+        except psutil.AccessDenied:
+            executable_inaccessible = True
+            findings.append({
+                "indicator": "executable_inaccessible",
+                "severity": "low",
+                "description": "The executable path could not be read with current permissions."
+            })
+        except (psutil.NoSuchProcess, psutil.ZombieProcess):
+            continue
+
+        if executable:
+            executable_path = os.path.normcase(os.path.abspath(executable))
+            if not os.path.exists(executable_path):
+                findings.append({
+                    "indicator": "executable_path_missing",
+                    "severity": "low",
+                    "description": "The reported executable path does not currently exist."
+                })
+
+            executable_name = os.path.splitext(os.path.basename(executable_path))[0].casefold()
+            process_name = os.path.splitext(os.path.basename(name or ""))[0].casefold()
+            if process_name and executable_name and process_name != executable_name:
+                findings.append({
+                    "indicator": "process_name_mismatch",
+                    "severity": "low",
+                    "description": "The process name differs from the executable file name."
+                })
+
+            try:
+                in_temp_directory = os.path.commonpath(
+                    [temp_directory, executable_path]
+                ) == temp_directory
+            except ValueError:
+                in_temp_directory = False
+            if in_temp_directory and os.access(os.path.dirname(executable_path), os.W_OK):
+                findings.append({
+                    "indicator": "executable_in_writable_temp",
+                    "severity": "medium",
+                    "description": "The executable is located in a writable temporary directory."
+                })
+        elif not executable_inaccessible:
+            findings.append({
+                "indicator": "executable_path_unavailable",
+                "severity": "low",
+                "description": "No executable path was available for this process."
+            })
+
+        host_processes.append({
+            "pid": pid,
+            "name": name,
+            "executable": executable,
+            "findings": findings
+        })
+
+    return host_processes
+
+
+@app.route("/api/processes/host-monitor", methods=["GET"])
+def monitor_host_processes():
+    """List host processes with non-definitive suspicious/corrupt indicators."""
+    try:
+        processes = collect_host_processes()
+    except psutil.Error as error:
+        logger.error(f"Host process enumeration failed: {error}")
+        return jsonify({"error": "Unable to enumerate host processes"}), 503
+
+    return jsonify({
+        "success": True,
+        "notice": (
+            "Findings are heuristic indicators only, not malware verdicts. "
+            "This endpoint is read-only and does not terminate processes or perform network lookups."
+        ),
+        "processes": processes,
+        "total_count": len(processes)
+    })
+
 
 @app.route("/api/processes/status/<int:pid>", methods=["GET"])
 def get_process_status(pid):

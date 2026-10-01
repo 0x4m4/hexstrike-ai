@@ -550,9 +550,20 @@ Configure VS Code settings in `.vscode/settings.json`:
 | Action | Endpoint | Description |
 |--------|----------|-------------|
 | **List Processes** | `GET /api/processes/list` | List all active processes |
+| **Host Process Monitor** | `GET /api/processes/host-monitor` | Read-only snapshot of host processes with heuristic executable indicators |
 | **Process Status** | `GET /api/processes/status/<pid>` | Get detailed process information |
 | **Terminate** | `POST /api/processes/terminate/<pid>` | Stop specific process |
 | **Dashboard** | `GET /api/processes/dashboard` | Live monitoring dashboard |
+
+`/api/processes/list` reports HexStrike-managed jobs. `/api/processes/host-monitor`
+uses `psutil` to inspect processes on the local host and reports indicators such as
+an unavailable or missing executable path, a process/executable name mismatch, or
+an executable in a writable temporary directory. These heuristics are not malware
+verdicts and can include benign processes. The endpoint is read-only: it does not
+terminate or modify processes and does not perform network or reputation lookups.
+
+The cyclic payload option in `POST /api/payloads/generate` generates the same
+repeating `A`-to-`Z` content as before, with linear-time construction.
 
 ---
 
