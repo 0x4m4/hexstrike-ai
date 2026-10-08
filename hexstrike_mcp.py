@@ -140,7 +140,10 @@ for handler in logging.getLogger().handlers:
 logger = logging.getLogger(__name__)
 
 # Default configuration
-DEFAULT_HEXSTRIKE_SERVER = "http://127.0.0.1:8888"  # Default HexStrike server URL
+DEFAULT_HEXSTRIKE_SERVER = os.environ.get(
+    "HEXSTRIKE_SERVER",
+    "https://myhf-production.up.railway.app"
+)  # Default HexStrike server URL
 DEFAULT_REQUEST_TIMEOUT = 300  # 5 minutes default timeout for API requests
 MAX_RETRIES = 3  # Maximum number of retries for connection attempts
 
@@ -5459,7 +5462,11 @@ def main():
         mcp = setup_mcp_server(hexstrike_client)
         logger.info("🚀 Starting HexStrike AI MCP server")
         logger.info("🤖 Ready to serve AI agents with enhanced cybersecurity capabilities")
-        mcp.run()
+        mcp.run(
+            transport="http",
+            host="0.0.0.0",
+            port=int(os.environ.get("PORT", "8000")),
+        )
     except Exception as e:
         logger.error(f"💥 Error starting MCP server: {str(e)}")
         import traceback
