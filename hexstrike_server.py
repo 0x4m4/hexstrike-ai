@@ -15750,11 +15750,11 @@ def threat_intelligence_feeds():
 
                 # Search for existing exploits
                 exploits = cve_intelligence.search_existing_exploits(cve_id)
-                if exploits.get("success") and exploits.get("total_exploits", 0) > 0:
+                if exploits.get("success") and exploits.get("exploits_found", 0) > 0:
                     correlation_results["correlations"].append({
                         "indicator": cve_id,
                         "type": "exploit_availability",
-                        "exploits_found": exploits.get("total_exploits", 0),
+                        "exploits_found": exploits.get("exploits_found", 0),
                         "threat_level": "HIGH"
                     })
                     correlation_results["threat_score"] += 25
@@ -15768,6 +15768,7 @@ def threat_intelligence_feeds():
             correlation_results["correlations"].append({
                 "indicator": ip,
                 "type": "ip_reputation",
+                "simulated": True,  # Placeholder data, not a real lookup
                 "analysis": {
                     "reputation": "unknown",
                     "geolocation": "unknown",
@@ -15781,6 +15782,7 @@ def threat_intelligence_feeds():
             correlation_results["correlations"].append({
                 "indicator": hash_val,
                 "type": "file_hash",
+                "simulated": True,  # Placeholder data, not a real lookup
                 "analysis": {
                     "hash_type": f"hash{len(hash_val)}",
                     "malware_family": "unknown",
