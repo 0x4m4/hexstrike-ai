@@ -518,10 +518,10 @@ Configure VS Code settings in `.vscode/settings.json`:
 
 **Network Security Tools:**
 - `nmap_scan()` - Advanced Nmap scanning with optimization
-- `rustscan_scan()` - Ultra-fast port scanning
-- `masscan_scan()` - High-speed port scanning
+- `rustscan_fast_scan()` - Ultra-fast port scanning
+- `masscan_high_speed()` - High-speed port scanning
 - `autorecon_scan()` - Comprehensive reconnaissance
-- `amass_enum()` - Subdomain enumeration and OSINT
+- `amass_scan()` - Subdomain enumeration and OSINT
 
 **Web Application Tools:**
 - `gobuster_scan()` - Directory and file enumeration
@@ -529,21 +529,21 @@ Configure VS Code settings in `.vscode/settings.json`:
 - `ffuf_scan()` - Fast web fuzzing
 - `nuclei_scan()` - Vulnerability scanning with templates
 - `sqlmap_scan()` - SQL injection testing
-- `wpscan_scan()` - WordPress security assessment
+- `wpscan_analyze()` - WordPress security assessment
 
 **Binary Analysis Tools:**
-- `ghidra_analyze()` - Software reverse engineering
+- `ghidra_analysis()` - Software reverse engineering
 - `radare2_analyze()` - Advanced reverse engineering
-- `gdb_debug()` - GNU debugger with exploit development
+- `gdb_analyze()` - GNU debugger with exploit development
 - `pwntools_exploit()` - CTF framework and exploit development
-- `angr_analyze()` - Binary analysis with symbolic execution
+- `angr_symbolic_execution()` - Binary analysis with symbolic execution
 
 **Cloud Security Tools:**
-- `prowler_assess()` - AWS/Azure/GCP security assessment
-- `scout_suite_audit()` - Multi-cloud security auditing
+- `prowler_scan()` - AWS/Azure/GCP security assessment
+- `scout_suite_assessment()` - Multi-cloud security auditing
 - `trivy_scan()` - Container vulnerability scanning
 - `kube_hunter_scan()` - Kubernetes penetration testing
-- `kube_bench_check()` - CIS Kubernetes benchmark assessment
+- `kube_bench_cis()` - CIS Kubernetes benchmark assessment
 
 ### Process Management
 
