@@ -9020,6 +9020,25 @@ file_manager = FileOperationsManager()
 
 # API Routes
 
+@app.route("/", methods=["GET"])
+def index():
+    """Root endpoint - service info and endpoint discovery"""
+    endpoints = sorted(
+        str(rule)
+        for rule in app.url_map.iter_rules()
+        if rule.endpoint != "static" and not str(rule).startswith("/static")
+    )
+
+    return jsonify({
+        "name": "HexStrike AI Tools API Server",
+        "version": "6.0.0",
+        "status": "running",
+        "port": API_PORT,
+        "message": "HexStrike AI API is running. See /health for tool status.",
+        "endpoints_count": len(endpoints),
+        "endpoints": endpoints
+    })
+
 @app.route("/health", methods=["GET"])
 def health_check():
     """Health check endpoint with comprehensive tool detection"""
