@@ -40,6 +40,7 @@ import venv
 import zipfile
 from pathlib import Path
 from flask import Flask, request, jsonify
+from command_api_config import load_command_api_config
 import psutil
 import signal
 import requests
@@ -97,6 +98,7 @@ app.config['JSON_SORT_KEYS'] = False
 # API Configuration
 API_PORT = int(os.environ.get('HEXSTRIKE_PORT', 8888))
 API_HOST = os.environ.get('HEXSTRIKE_HOST', '127.0.0.1')
+COMMAND_API_CONFIG = load_command_api_config(os.environ)
 
 # ============================================================================
 # MODERN VISUAL ENGINE (v2.0 ENHANCEMENT)
@@ -9138,6 +9140,13 @@ def health_check():
 def generic_command():
     """Execute any command provided in the request with enhanced logging"""
     try:
+        if not COMMAND_API_CONFIG.enabled:
+            return jsonify({"error": "Command API is disabled"}), 404
+        if not COMMAND_API_CONFIG.accepts_token(
+            request.headers.get("X-HexStrike-Command-Token")
+        ):
+            return jsonify({"error": "Invalid command API token"}), 401
+
         params = request.json
         command = params.get("command", "")
         use_cache = params.get("use_cache", True)
@@ -17286,4 +17295,5 @@ if __name__ == "__main__":
         if line.strip():
             logger.info(line)
 
-    app.run(host="0.0.0.0", port=API_PORT, debug=DEBUG_MODE)
+    server_host = COMMAND_API_CONFIG.host if COMMAND_API_CONFIG.enabled else "0.0.0.0"
+    app.run(host=server_host, port=API_PORT, debug=DEBUG_MODE)
