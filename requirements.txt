@@ -11,15 +11,18 @@
 # ============================================================================
 flask>=2.3.0,<4.0.0             # Web framework for API server (flask import)
 requests>=2.31.0,<3.0.0         # HTTP library (requests import)
-psutil>=5.9.0,<6.0.0            # System utilities (psutil import)
-fastmcp>=0.2.0,<1.0.0           # MCP framework (from mcp.server.fastmcp import FastMCP)
+psutil>=5.9.0,<8.0.0            # System utilities (psutil import)
+mcp>=1.0.0,<2.0.0               # MCP framework (from mcp.server.fastmcp import FastMCP).
+                                 # NOTE: provides FastMCP under the module path mcp.server.fastmcp.
+                                 # Pin <2: mcp 2.x renames FastMCP to MCPServer and breaks this code.
 
 # ============================================================================
 # WEB SCRAPING & AUTOMATION (ACTUALLY USED)
 # ============================================================================
 beautifulsoup4>=4.12.0,<5.0.0   # HTML parsing (from bs4 import BeautifulSoup)
 selenium>=4.15.0,<5.0.0         # Browser automation (selenium imports)
-webdriver-manager>=4.0.0,<5.0.0 # ChromeDriver management (referenced in code)
+# webdriver-manager removed: not imported anywhere in the code.
+# ChromeDriver is managed by Selenium Manager (bundled with selenium>=4.6).
 
 # ============================================================================
 # ASYNC & NETWORKING (ACTUALLY USED)
@@ -29,14 +32,16 @@ aiohttp>=3.8.0,<4.0.0           # Async HTTP (aiohttp import)
 # ============================================================================
 # PROXY & TESTING (ACTUALLY USED)
 # ============================================================================
-mitmproxy>=9.0.0,<11.0.0        # HTTP proxy (mitmproxy imports)
+mitmproxy>=9.0.0,<13.0.0        # HTTP proxy (mitmproxy imports)
 
 # ============================================================================
 # BINARY ANALYSIS (CONDITIONALLY USED)
 # ============================================================================
 pwntools>=4.10.0,<5.0.0         # Binary exploitation (from pwn import *)
-angr>=9.2.0,<10.0.0             # Binary analysis (import angr)
-bcrypt==4.0.1                   # Pin bcrypt version for passlib compatibility (fixes pwntools dependency issue)
+angr>=9.2.0,<11.0.0             # Binary analysis (import angr, generated exploit scripts)
+bcrypt>=4.0.1,<6.0.0            # pwntools transitive dep. The old ==4.0.1 pin was for a
+                                 # passlib/pwntools clash that no longer applies (passlib is
+                                 # not imported at runtime); bcrypt 4.x and 5.x both work.
 
 # ============================================================================
 # EXTERNAL SECURITY TOOLS (150+ Tools - Install separately)

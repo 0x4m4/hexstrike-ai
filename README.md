@@ -212,6 +212,98 @@ curl -X POST http://localhost:8888/api/intelligence/analyze-target \
   -d '{"target": "example.com", "analysis_type": "comprehensive"}'
 ```
 
+> **TLS:** the server listens on **HTTPS** when a certificate/key pair is
+> found at `~/.hexstrike/certs/server.{crt,key}` (or the paths given via
+> `HEXSTRIKE_SSL_CERT` / `HEXSTRIKE_SSL_KEY`); with no certificate present it
+> serves plain HTTP. `HEXSTRIKE_SSL=0` forces plain HTTP. When TLS is active,
+> use `https://` and trust the (self-signed) certificate instead of disabling
+> verification:
+>
+> ```bash
+> curl --cacert ~/.hexstrike/certs/server.crt https://localhost:8888/health
+> ```
+
+### Web UI
+
+Open the server root in a browser — `http://localhost:8888/`, or
+`https://localhost:8888/` when TLS is enabled (accept the one-time warning
+for the self-signed certificate) — for the console dashboard: live
+process monitor, toolchain status, and a method-aware API explorer that can
+call any endpoint (path params and JSON bodies prompted for) and show its
+response. The JSON service index that used to live at `/` is now served at
+`/api` (and `/api/`), including each route's allowed HTTP methods.
+
+<img src="assets/webui-dashboard.png" alt="HexStrike Web UI dashboard" width="85%"/>
+
+### Orchestration: skills, agents, tool chains & workflows
+
+The server ships a composable orchestration layer (also exposed as MCP
+tools) so AI clients can plan and drive multi-step engagements instead of
+single tool calls:
+
+- **Tool chains** — named, ordered sequences of API tool calls with
+  parameter templating (`{target}`, `{param.X}`). Defaults: `recon-passive`,
+  `port-scan`, `web-content-discovery`, `web-content-discovery-insecure` (self-signed/lab TLS), `vuln-scan`, `web-audit`,
+  `cve-hunt`, `container-audit`, `credential-audit`, `full-recon`.
+- **Skills** — reusable capability bundles (tools + guidance):
+  `network-recon`, `web-application-security`, `vulnerability-assessment`,
+  `osint-intelligence`, `binary-exploitation`, `cloud-container-security`.
+- **Agents & subagents** — profiles owning skills and chains, with system
+  prompts: `recon-specialist`, `web-vuln-hunter`, `exploitation-specialist`,
+  `reporting-analyst`, plus delegation subagents (`subdomain-enumerator`,
+  `port-scanner`, `content-discovery`, `cve-scanner`).
+- **Workflows** — phased pipelines with success gating, run asynchronously
+  and tracked by run id: `full-pentest`, `web-app-audit`, `quick-triage`.
+
+```bash
+# discover
+curl -k https://localhost:8888/api/orchestration
+curl -k https://localhost:8888/api/orchestration/chains
+
+# run a chain synchronously (returns every step's result)
+curl -k -X POST https://localhost:8888/api/orchestration/chains/port-scan/run \
+  -H "Content-Type: application/json" -d '{"target": "127.0.0.1"}'
+
+# start a workflow (async) and poll it
+curl -k -X POST https://localhost:8888/api/orchestration/workflows/quick-triage/run \
+  -H "Content-Type: application/json" -d '{"target": "https://example.com"}'
+curl -k https://localhost:8888/api/orchestration/runs/<run_id>
+```
+
+MCP clients get the same layer as tools: `list_skills`, `get_skill`,
+`list_agents`, `get_agent`, `list_tool_chains`, `get_tool_chain`,
+`run_tool_chain`, `list_workflows`, `run_workflow`, `run_agent`,
+`get_orchestration_status`, `list_orchestration_runs`,
+`cancel_orchestration_run`.
+
+Extend or override any definition without code changes by dropping JSON
+files into `~/.hexstrike/orchestration/`
+(`{"kind": "chain|skill|agent|workflow", "name": "...", ...}`).
+
+### OpenCode-native agents
+
+This repo ships OpenCode agent profiles under `.opencode/agents/` that drive the
+orchestration MCP tools above (`get_skill`, `run_tool_chain`, `run_agent`,
+`run_workflow`, `get_orchestration_status`, `cancel_orchestration_run`):
+
+- `recon-specialist` — passive-first attack-surface mapping (domain/IP); delegates to `subdomain-enumerator` and `port-scanner`.
+- `web-vuln-hunter` — web testing against a URL (discovery, audit, vuln/CVE scans); delegates to `content-discovery` and `cve-scanner`.
+- `exploitation-specialist` — binary analysis and safe, least-destructive exploit validation.
+- `reporting-analyst` — aggregates orchestration runs into severity-ranked findings with evidence.
+- `subdomain-enumerator` *(subagent)* — passive subdomain/historical-URL discovery (`recon-passive`).
+- `port-scanner` *(subagent)* — port/service discovery on an IP or hostname (`port-scan`).
+- `content-discovery` *(subagent)* — hidden path discovery on a URL (`web-content-discovery`).
+- `cve-scanner` *(subagent)* — nuclei CVE/vuln template scans on a URL (`cve-hunt`, `vuln-scan`).
+
+They require the `hexstrike-ai` MCP server to be registered in OpenCode — use the
+sample `hexstrike-ai-mcp.json` config at the repo root (same shape as the AI
+client integration examples below).
+
+```text
+Select `web-vuln-hunter` as the session agent, then: run_workflow("web-app-audit", "https://example.com", wait=false)
+From any session: "Use the port-scanner subagent to scan 192.0.2.10."
+```
+
 ---
 
 ## AI Client Integration Setup
@@ -227,8 +319,11 @@ Edit `~/.config/Claude/claude_desktop_config.json`:
       "args": [
         "/path/to/hexstrike-ai/hexstrike_mcp.py",
         "--server",
-        "http://localhost:8888"
+        "https://localhost:8888"
       ],
+      "env": {
+        "REQUESTS_CA_BUNDLE": "/path/to/.hexstrike/certs/server.crt"
+      },
       "description": "HexStrike AI v6.0 - Advanced Cybersecurity Automation Platform",
       "timeout": 300,
       "disabled": false
@@ -236,6 +331,9 @@ Edit `~/.config/Claude/claude_desktop_config.json`:
   }
 }
 ```
+
+> Running without TLS (`HEXSTRIKE_SSL=0` or no certificate present)? Point
+> `--server` at `http://localhost:8888` and drop the `env` block.
 
 ### VS Code Copilot Integration
 
@@ -249,8 +347,11 @@ Configure VS Code settings in `.vscode/settings.json`:
       "args": [
         "/path/to/hexstrike-ai/hexstrike_mcp.py",
         "--server",
-        "http://localhost:8888"
-      ]
+        "https://localhost:8888"
+      ],
+      "env": {
+        "REQUESTS_CA_BUNDLE": "/path/to/.hexstrike/certs/server.crt"
+      }
     }
   },
   "inputs": []

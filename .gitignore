@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Runtime logs
+*.log
+hexstrike.log
+
+# Local secrets / TLS material (never commit)
+*.key
+*.pem
+*.crt
+.hexstrike/
+
+# Tooling caches
+.cache/
+*.tmp
+reports/

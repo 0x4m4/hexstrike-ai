@@ -5411,6 +5411,230 @@ def setup_mcp_server(hexstrike_client: HexStrikeClient) -> FastMCP:
 
         return result
 
+    # ============================================================================
+    # ORCHESTRATION: SKILLS, AGENTS, TOOL CHAINS & WORKFLOWS
+    # ============================================================================
+
+    @mcp.tool()
+    def list_skills() -> Dict[str, Any]:
+        """
+        List the orchestration skills: reusable capability bundles combining
+        tool endpoints, recommended chains and operational guidance.
+
+        Returns:
+            Available skills with descriptions and recommended chains
+        """
+        logger.info(f"{HexStrikeColors.CYAN}🧠 Listing orchestration skills{HexStrikeColors.RESET}")
+        return hexstrike_client.safe_get("api/orchestration/skills")
+
+    @mcp.tool()
+    def get_skill(skill_name: str) -> Dict[str, Any]:
+        """
+        Load one skill in full: description, objective, the tool endpoints it
+        uses, recommended tool chains and step-by-step instructions.
+
+        Args:
+            skill_name: Skill name (e.g. network-recon, web-application-security)
+
+        Returns:
+            Complete skill definition
+        """
+        logger.info(f"{HexStrikeColors.CYAN}🧠 Loading skill: {skill_name}{HexStrikeColors.RESET}")
+        return hexstrike_client.safe_get(f"api/orchestration/skills/{skill_name}")
+
+    @mcp.tool()
+    def list_agents() -> Dict[str, Any]:
+        """
+        List the agent and subagent profiles. Each agent owns skills and tool
+        chains; subagents are delegation targets for multi-agent workflows.
+
+        Returns:
+            Available agents/subagents with roles and capabilities
+        """
+        logger.info(f"{HexStrikeColors.CYAN}🤖 Listing orchestration agents{HexStrikeColors.RESET}")
+        return hexstrike_client.safe_get("api/orchestration/agents")
+
+    @mcp.tool()
+    def get_agent(agent_name: str) -> Dict[str, Any]:
+        """
+        Load one agent profile in full: role, system prompt, skills, chains
+        and subagents it may delegate to.
+
+        Args:
+            agent_name: Agent name (e.g. recon-specialist, web-vuln-hunter)
+
+        Returns:
+            Complete agent profile
+        """
+        logger.info(f"{HexStrikeColors.CYAN}🤖 Loading agent: {agent_name}{HexStrikeColors.RESET}")
+        return hexstrike_client.safe_get(f"api/orchestration/agents/{agent_name}")
+
+    @mcp.tool()
+    def list_tool_chains() -> Dict[str, Any]:
+        """
+        List the named tool chains: ordered sequences of API tool calls with
+        parameter templating. Chains are the server-side building blocks of
+        agents and workflows.
+
+        Returns:
+            Available chains with target type, tags and step counts
+        """
+        logger.info(f"{HexStrikeColors.CYAN}⛓️  Listing tool chains{HexStrikeColors.RESET}")
+        return hexstrike_client.safe_get("api/orchestration/chains")
+
+    @mcp.tool()
+    def get_tool_chain(chain_name: str) -> Dict[str, Any]:
+        """
+        Get one tool chain definition with its ordered steps and parameters.
+
+        Args:
+            chain_name: Chain name (e.g. recon-passive, port-scan, vuln-scan)
+
+        Returns:
+            Complete chain definition
+        """
+        logger.info(f"{HexStrikeColors.CYAN}⛓️  Loading chain: {chain_name}{HexStrikeColors.RESET}")
+        return hexstrike_client.safe_get(f"api/orchestration/chains/{chain_name}")
+
+    @mcp.tool()
+    def run_tool_chain(chain_name: str, target: str, params_json: str = "") -> Dict[str, Any]:
+        """
+        Execute a tool chain synchronously against a target and return every
+        step's result, output excerpt, timing and aggregated findings.
+
+        Args:
+            chain_name: Chain to run (see list_tool_chains)
+            target: Target value (domain, URL, IP or image depending on chain)
+            params_json: Optional JSON object of extra params for templated
+                         chains, e.g. '{"username": "admin", "password": "test"}'
+
+        Returns:
+            Full run record with per-step status, output and findings
+        """
+        import json as _json
+        payload: Dict[str, Any] = {"target": target}
+        if params_json.strip():
+            try:
+                payload["params"] = _json.loads(params_json)
+            except Exception:
+                return {"success": False,
+                        "error": "params_json is not valid JSON"}
+        logger.info(f"{HexStrikeColors.CYBER_ORANGE}⛓️  Running chain {chain_name} against {target}{HexStrikeColors.RESET}")
+        result = hexstrike_client.safe_post(f"api/orchestration/chains/{chain_name}/run", payload)
+        if result.get("findings"):
+            f = result["findings"]
+            logger.info(f"  📊 Findings: critical={f.get('critical', 0)} high={f.get('high', 0)} medium={f.get('medium', 0)} low={f.get('low', 0)}")
+        return result
+
+    @mcp.tool()
+    def list_workflows() -> Dict[str, Any]:
+        """
+        List the named workflows: phased pipelines over chains with success
+        gating, executed asynchronously and tracked by run id.
+
+        Returns:
+            Available workflows with their phases
+        """
+        logger.info(f"{HexStrikeColors.CYAN}🧩 Listing workflows{HexStrikeColors.RESET}")
+        return hexstrike_client.safe_get("api/orchestration/workflows")
+
+    @mcp.tool()
+    def run_workflow(workflow_name: str, target: str, wait: bool = True,
+                     wait_timeout: int = 600) -> Dict[str, Any]:
+        """
+        Start a workflow run (async). With wait=True it polls until the run
+        finishes or wait_timeout elapses, returning the full run record.
+
+        Args:
+            workflow_name: Workflow to run (see list_workflows)
+            target: Target value (domain, URL or IP depending on workflow)
+            wait: Poll until the run completes
+            wait_timeout: Max seconds to wait when wait=True
+
+        Returns:
+            Run id plus final (or in-flight) run status and findings
+        """
+        result = hexstrike_client.safe_post(
+            f"api/orchestration/workflows/{workflow_name}/run", {"target": target})
+        run_id = result.get("run_id")
+        if not run_id or not wait:
+            return result
+        return _poll_run(run_id, wait_timeout)
+
+    @mcp.tool()
+    def run_agent(agent_name: str, target: str, wait: bool = True,
+                  wait_timeout: int = 600) -> Dict[str, Any]:
+        """
+        Start an agent run (async): the agent executes its chains in order
+        against the target. With wait=True it polls until completion.
+
+        Args:
+            agent_name: Agent to run (see list_agents)
+            target: Target value (domain, URL or IP depending on agent)
+            wait: Poll until the run completes
+            wait_timeout: Max seconds to wait when wait=True
+
+        Returns:
+            Run id plus final (or in-flight) run status and findings
+        """
+        result = hexstrike_client.safe_post(
+            f"api/orchestration/agents/{agent_name}/run", {"target": target})
+        run_id = result.get("run_id")
+        if not run_id or not wait:
+            return result
+        return _poll_run(run_id, wait_timeout)
+
+    @mcp.tool()
+    def get_orchestration_status(run_id: str) -> Dict[str, Any]:
+        """
+        Get status and results of one orchestration run (workflow or agent).
+
+        Args:
+            run_id: Run id returned by run_workflow / run_agent
+
+        Returns:
+            Run status, per-phase results and aggregated findings
+        """
+        return hexstrike_client.safe_get(f"api/orchestration/runs/{run_id}")
+
+    @mcp.tool()
+    def list_orchestration_runs(limit: int = 20) -> Dict[str, Any]:
+        """
+        List recent orchestration runs (chains, workflows, agents) with
+        status and findings.
+
+        Args:
+            limit: Maximum number of runs to return
+        """
+        return hexstrike_client.safe_get("api/orchestration/runs", {"limit": limit})
+
+    @mcp.tool()
+    def cancel_orchestration_run(run_id: str) -> Dict[str, Any]:
+        """
+        Request cancellation of a running orchestration run (stops between
+        steps/phases).
+
+        Args:
+            run_id: Run id to cancel
+        """
+        logger.info(f"{HexStrikeColors.CRIMSON}🛑 Cancelling run {run_id}{HexStrikeColors.RESET}")
+        return hexstrike_client.safe_post(f"api/orchestration/runs/{run_id}/cancel", {})
+
+    def _poll_run(run_id: str, wait_timeout: int) -> Dict[str, Any]:
+        """Poll a run until it finishes or wait_timeout elapses."""
+        deadline = time.time() + max(5, int(wait_timeout))
+        last: Dict[str, Any] = {}
+        while time.time() < deadline:
+            last = hexstrike_client.safe_get(f"api/orchestration/runs/{run_id}")
+            if last.get("status") in ("success", "failed", "partial", "cancelled"):
+                icon = "✅" if last.get("status") == "success" else "⚠️"
+                logger.info(f"{HexStrikeColors.SUCCESS}{icon} Run {run_id} finished: {last.get('status')}{HexStrikeColors.RESET}")
+                return last
+            time.sleep(3)
+        last["wait_timeout_exceeded"] = True
+        logger.info(f"{HexStrikeColors.WARNING}⏳ Run {run_id} still running after {wait_timeout}s; poll with get_orchestration_status{HexStrikeColors.RESET}")
+        return last
+
     return mcp
 
 def parse_args():

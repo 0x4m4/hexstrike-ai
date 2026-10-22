@@ -39,7 +39,7 @@ import shutil
 import venv
 import zipfile
 from pathlib import Path
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template, send_from_directory
 import psutil
 import signal
 import requests
@@ -97,6 +97,33 @@ app.config['JSON_SORT_KEYS'] = False
 # API Configuration
 API_PORT = int(os.environ.get('HEXSTRIKE_PORT', 8888))
 API_HOST = os.environ.get('HEXSTRIKE_HOST', '127.0.0.1')
+
+# TLS Configuration
+# When both a certificate and key are available, the server serves HTTPS.
+# Point HEXSTRIKE_SSL_CERT / HEXSTRIKE_SSL_KEY at your own PEM pair, or drop
+# server.crt / server.key into ~/.hexstrike/certs/. Set HEXSTRIKE_SSL=0 to force plain HTTP.
+_SSL_HOME = os.path.expanduser('~/.hexstrike/certs')
+SSL_ENABLED = os.environ.get('HEXSTRIKE_SSL', '1') not in ('0', 'false', 'no', '')
+SSL_CERT = os.environ.get('HEXSTRIKE_SSL_CERT', os.path.join(_SSL_HOME, 'server.crt'))
+SSL_KEY = os.environ.get('HEXSTRIKE_SSL_KEY', os.path.join(_SSL_HOME, 'server.key'))
+
+def _ssl_context():
+    """Return an SSLContext for HTTPS, or None to serve plain HTTP."""
+    if not SSL_ENABLED:
+        return None
+    if os.path.isfile(SSL_CERT) and os.path.isfile(SSL_KEY):
+        try:
+            import ssl
+            ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+            ctx.minimum_version = ssl.TLSVersion.TLSv1_2
+            ctx.load_cert_chain(SSL_CERT, SSL_KEY)
+            return ctx
+        except Exception as e:
+            logger.warning(f"⚠️  TLS setup failed ({e}); falling back to plain HTTP")
+            return None
+    logger.warning("⚠️  TLS enabled but cert/key not found "
+                   f"({SSL_CERT}, {SSL_KEY}); serving plain HTTP")
+    return None
 
 # ============================================================================
 # MODERN VISUAL ENGINE (v2.0 ENHANCEMENT)
@@ -5643,16 +5670,36 @@ class ProcessManager:
             return None
 
     @staticmethod
+    def _snapshot(info):
+        """Serializable copy of a process entry — drops the live Popen handle.
+
+        The raw subprocess.Popen is not JSON serializable; including it made
+        /api/processes/list and /api/processes/status return 500 whenever a
+        process was registered (e.g. during a long scan). Callers only need
+        status/progress fields, never the handle.
+        """
+        if info is None:
+            return None
+        snap = {k: v for k, v in info.items() if k != "process"}
+        try:
+            proc = info.get("process")
+            snap["running"] = bool(proc and proc.poll() is None)
+        except Exception:
+            snap["running"] = False
+        return snap
+
+    @staticmethod
     def get_process_status(pid):
-        """Get status of a specific process"""
+        """Get status of a specific process (JSON-serializable snapshot)"""
         with process_lock:
-            return active_processes.get(pid, None)
+            return ProcessManager._snapshot(active_processes.get(pid, None))
 
     @staticmethod
     def list_active_processes():
-        """List all active processes"""
+        """List all active processes (JSON-serializable snapshots)"""
         with process_lock:
-            return dict(active_processes)
+            return {pid: ProcessManager._snapshot(info)
+                    for pid, info in active_processes.items()}
 
     @staticmethod
     def pause_process(pid):
@@ -6673,6 +6720,7 @@ class HexStrikeCache:
         self.max_size = max_size
         self.ttl = ttl
         self.stats = {"hits": 0, "misses": 0, "evictions": 0}
+        self.lock = threading.Lock()
 
     def _generate_key(self, command: str, params: Dict[str, Any]) -> str:
         """Generate cache key from command and parameters"""
@@ -6687,48 +6735,51 @@ class HexStrikeCache:
         """Get cached result if available and not expired"""
         key = self._generate_key(command, params)
 
-        if key in self.cache:
-            timestamp, data = self.cache[key]
-            if not self._is_expired(timestamp):
-                # Move to end (most recently used)
-                self.cache.move_to_end(key)
-                self.stats["hits"] += 1
-                logger.info(f"💾 Cache HIT for command: {command}")
-                return data
-            else:
-                # Remove expired entry
-                del self.cache[key]
+        with self.lock:
+            if key in self.cache:
+                timestamp, data = self.cache[key]
+                if not self._is_expired(timestamp):
+                    # Move to end (most recently used)
+                    self.cache.move_to_end(key)
+                    self.stats["hits"] += 1
+                    logger.info(f"💾 Cache HIT for command: {command}")
+                    return data
+                else:
+                    # Remove expired entry
+                    del self.cache[key]
 
-        self.stats["misses"] += 1
-        logger.info(f"🔍 Cache MISS for command: {command}")
-        return None
+            self.stats["misses"] += 1
+            logger.info(f"🔍 Cache MISS for command: {command}")
+            return None
 
     def set(self, command: str, params: Dict[str, Any], result: Dict[str, Any]):
         """Store result in cache"""
         key = self._generate_key(command, params)
 
-        # Remove oldest entries if cache is full
-        while len(self.cache) >= self.max_size:
-            oldest_key = next(iter(self.cache))
-            del self.cache[oldest_key]
-            self.stats["evictions"] += 1
+        with self.lock:
+            # Remove oldest entries if cache is full
+            while len(self.cache) >= self.max_size:
+                oldest_key = next(iter(self.cache))
+                del self.cache[oldest_key]
+                self.stats["evictions"] += 1
 
-        self.cache[key] = (time.time(), result)
-        logger.info(f"💾 Cached result for command: {command}")
+            self.cache[key] = (time.time(), result)
+            logger.info(f"💾 Cached result for command: {command}")
 
     def get_stats(self) -> Dict[str, Any]:
         """Get cache statistics"""
-        total_requests = self.stats["hits"] + self.stats["misses"]
-        hit_rate = (self.stats["hits"] / total_requests * 100) if total_requests > 0 else 0
+        with self.lock:
+            total_requests = self.stats["hits"] + self.stats["misses"]
+            hit_rate = (self.stats["hits"] / total_requests * 100) if total_requests > 0 else 0
 
-        return {
-            "size": len(self.cache),
-            "max_size": self.max_size,
-            "hit_rate": f"{hit_rate:.1f}%",
-            "hits": self.stats["hits"],
-            "misses": self.stats["misses"],
-            "evictions": self.stats["evictions"]
-        }
+            return {
+                "size": len(self.cache),
+                "max_size": self.max_size,
+                "hit_rate": f"{hit_rate:.1f}%",
+                "hits": self.stats["hits"],
+                "misses": self.stats["misses"],
+                "evictions": self.stats["evictions"]
+            }
 
 # Global cache instance
 cache = HexStrikeCache()
@@ -6744,15 +6795,17 @@ class TelemetryCollector:
             "total_execution_time": 0.0,
             "start_time": time.time()
         }
+        self.lock = threading.Lock()
 
     def record_execution(self, success: bool, execution_time: float):
         """Record command execution statistics"""
-        self.stats["commands_executed"] += 1
-        if success:
-            self.stats["successful_commands"] += 1
-        else:
-            self.stats["failed_commands"] += 1
-        self.stats["total_execution_time"] += execution_time
+        with self.lock:
+            self.stats["commands_executed"] += 1
+            if success:
+                self.stats["successful_commands"] += 1
+            else:
+                self.stats["failed_commands"] += 1
+            self.stats["total_execution_time"] += execution_time
 
     def get_system_metrics(self) -> Dict[str, Any]:
         """Get current system metrics"""
@@ -6765,13 +6818,15 @@ class TelemetryCollector:
 
     def get_stats(self) -> Dict[str, Any]:
         """Get telemetry statistics"""
-        uptime = time.time() - self.stats["start_time"]
-        success_rate = (self.stats["successful_commands"] / self.stats["commands_executed"] * 100) if self.stats["commands_executed"] > 0 else 0
-        avg_execution_time = (self.stats["total_execution_time"] / self.stats["commands_executed"]) if self.stats["commands_executed"] > 0 else 0
+        with self.lock:
+            uptime = time.time() - self.stats["start_time"]
+            commands_executed = self.stats["commands_executed"]
+            success_rate = (self.stats["successful_commands"] / commands_executed * 100) if commands_executed > 0 else 0
+            avg_execution_time = (self.stats["total_execution_time"] / commands_executed) if commands_executed > 0 else 0
 
         return {
             "uptime_seconds": uptime,
-            "commands_executed": self.stats["commands_executed"],
+            "commands_executed": commands_executed,
             "success_rate": f"{success_rate:.1f}%",
             "average_execution_time": f"{avg_execution_time:.2f}s",
             "system_metrics": self.get_system_metrics()
@@ -9019,6 +9074,46 @@ class FileOperationsManager:
 file_manager = FileOperationsManager()
 
 # API Routes
+
+@app.route("/", methods=["GET"])
+def index():
+    """Root endpoint - serve the web UI dashboard"""
+    return render_template("index.html")
+
+@app.route("/api", methods=["GET"])
+@app.route("/api/", methods=["GET"])
+def api_index():
+    """API service info and endpoint discovery (JSON)"""
+    routes = []
+    for rule in app.url_map.iter_rules():
+        if rule.endpoint == "static" or str(rule).startswith("/static"):
+            continue
+        methods = sorted(m for m in rule.methods - {"HEAD", "OPTIONS"})
+        routes.append({"path": str(rule), "methods": methods})
+    routes.sort(key=lambda r: r["path"])
+
+    return jsonify({
+        "name": "HexStrike AI Tools API Server",
+        "version": "6.0.0",
+        "status": "running",
+        "port": API_PORT,
+        "message": "HexStrike AI API is running. See /health for tool status.",
+        "endpoints_count": len(routes),
+        "endpoints": [r["path"] for r in routes],
+        "routes": routes
+    })
+
+@app.route("/favicon.ico", methods=["GET"])
+def favicon():
+    """Favicon - reuse the project logo"""
+    return send_from_directory(
+        os.path.join(app.root_path, "assets"), "hexstrike-logo.png", mimetype="image/png"
+    )
+
+@app.route("/assets/<path:filename>", methods=["GET"])
+def serve_assets(filename):
+    """Serve project assets (logos, banners) for the web UI"""
+    return send_from_directory(os.path.join(app.root_path, "assets"), filename)
 
 @app.route("/health", methods=["GET"])
 def health_check():
@@ -12811,7 +12906,7 @@ def dirsearch():
         params = request.json
         url = params.get("url", "")
         extensions = params.get("extensions", "php,html,js,txt,xml,json")
-        wordlist = params.get("wordlist", "/usr/share/wordlists/dirsearch/common.txt")
+        wordlist = params.get("wordlist", "/usr/share/wordlists/dirb/common.txt")
         threads = params.get("threads", 30)
         recursive = params.get("recursive", False)
         additional_args = params.get("additional_args", "")
@@ -17253,6 +17348,124 @@ def get_alternative_tools():
 # Create the banner after all classes are defined
 BANNER = ModernVisualEngine.create_banner()
 
+# ============================================================================
+# ORCHESTRATION API (tool chains, skills, agents, workflows)
+# ============================================================================
+from hexstrike_orchestration import OrchestrationEngine
+
+orchestrator = OrchestrationEngine()
+
+def _orch_base_url():
+    """Call back into this server using the URL the client used."""
+    return request.url_root.rstrip("/")
+
+@app.route("/api/orchestration", methods=["GET"])
+def orchestration_index():
+    """Overview of the orchestration layer (skills/agents/chains/workflows)."""
+    return jsonify(orchestrator.overview())
+
+@app.route("/api/orchestration/skills", methods=["GET"])
+def orchestration_skills():
+    """List available skills."""
+    return jsonify(orchestrator.list_skills())
+
+@app.route("/api/orchestration/skills/<skill_name>", methods=["GET"])
+def orchestration_skill(skill_name):
+    """Get one skill with its tools and guidance."""
+    result = orchestrator.get_skill(skill_name)
+    return jsonify(result), (200 if result.get("success") else 404)
+
+@app.route("/api/orchestration/agents", methods=["GET"])
+def orchestration_agents():
+    """List agent and subagent profiles."""
+    return jsonify(orchestrator.list_agents())
+
+@app.route("/api/orchestration/agents/<agent_name>", methods=["GET"])
+def orchestration_agent(agent_name):
+    """Get one agent profile (skills, chains, subagents, system prompt)."""
+    result = orchestrator.get_agent(agent_name)
+    return jsonify(result), (200 if result.get("success") else 404)
+
+@app.route("/api/orchestration/agents/<agent_name>/run", methods=["POST"])
+def orchestration_agent_run(agent_name):
+    """Start an agent run (async): executes the agent's chains in order."""
+    params = request.json or {}
+    target = params.get("target", "")
+    if not target:
+        return jsonify({"error": "Target parameter is required"}), 400
+    result = orchestrator.start_agent(agent_name, target, _orch_base_url())
+    return jsonify(result), (200 if result.get("success") else 404)
+
+@app.route("/api/orchestration/chains", methods=["GET"])
+def orchestration_chains():
+    """List tool chains."""
+    return jsonify(orchestrator.list_chains())
+
+@app.route("/api/orchestration/chains/<chain_name>", methods=["GET"])
+def orchestration_chain(chain_name):
+    """Get one tool chain definition (steps and parameters)."""
+    result = orchestrator.get_chain(chain_name)
+    return jsonify(result), (200 if result.get("success") else 404)
+
+@app.route("/api/orchestration/chains/<chain_name>/run", methods=["POST"])
+def orchestration_chain_run(chain_name):
+    """Run a tool chain synchronously; returns all step results."""
+    result = orchestrator.get_chain(chain_name)
+    if not result.get("success"):
+        return jsonify(result), 404
+    params = request.json or {}
+    target = params.get("target", "")
+    if not target:
+        return jsonify({"error": "Target parameter is required"}), 400
+    missing = [p for p in result.get("requires_params", [])
+               if not (params.get("params") or {}).get(p)]
+    if missing:
+        return jsonify({
+            "error": f"Chain '{chain_name}' requires extra params: "
+                     f"{', '.join(missing)}",
+            "requires_params": result.get("requires_params", [])
+        }), 400
+    return jsonify(orchestrator.run_chain(chain_name, target, _orch_base_url(),
+                                          params.get("params")))
+
+@app.route("/api/orchestration/workflows", methods=["GET"])
+def orchestration_workflows():
+    """List workflows."""
+    return jsonify(orchestrator.list_workflows())
+
+@app.route("/api/orchestration/workflows/<workflow_name>", methods=["GET"])
+def orchestration_workflow(workflow_name):
+    """Get one workflow definition (phases and gating)."""
+    result = orchestrator.get_workflow(workflow_name)
+    return jsonify(result), (200 if result.get("success") else 404)
+
+@app.route("/api/orchestration/workflows/<workflow_name>/run", methods=["POST"])
+def orchestration_workflow_run(workflow_name):
+    """Start a workflow run (async); poll /api/orchestration/runs/<id>."""
+    params = request.json or {}
+    target = params.get("target", "")
+    if not target:
+        return jsonify({"error": "Target parameter is required"}), 400
+    result = orchestrator.start_workflow(workflow_name, target, _orch_base_url())
+    return jsonify(result), (200 if result.get("success") else 404)
+
+@app.route("/api/orchestration/runs", methods=["GET"])
+def orchestration_runs():
+    """List recent orchestration runs."""
+    return jsonify(orchestrator.list_runs())
+
+@app.route("/api/orchestration/runs/<run_id>", methods=["GET"])
+def orchestration_run(run_id):
+    """Status and results of one orchestration run."""
+    result = orchestrator.get_run(run_id)
+    return jsonify(result), (200 if result.get("success") else 404)
+
+@app.route("/api/orchestration/runs/<run_id>/cancel", methods=["POST"])
+def orchestration_run_cancel(run_id):
+    """Request cancellation of a running orchestration run."""
+    result = orchestrator.cancel_run(run_id)
+    return jsonify(result), (200 if result.get("success") else 404)
+
 if __name__ == "__main__":
     # Display the beautiful new banner
     print(BANNER)
@@ -17269,12 +17482,16 @@ if __name__ == "__main__":
     if args.port != API_PORT:
         API_PORT = args.port
 
+    ssl_ctx = _ssl_context()
+    scheme = "https" if ssl_ctx else "http"
+
     # Enhanced startup messages with beautiful formatting
     startup_info = f"""
 {ModernVisualEngine.COLORS['MATRIX_GREEN']}{ModernVisualEngine.COLORS['BOLD']}╭─────────────────────────────────────────────────────────────────────────────╮{ModernVisualEngine.COLORS['RESET']}
 {ModernVisualEngine.COLORS['BOLD']}│{ModernVisualEngine.COLORS['RESET']} {ModernVisualEngine.COLORS['NEON_BLUE']}🚀 Starting HexStrike AI Tools API Server{ModernVisualEngine.COLORS['RESET']}
 {ModernVisualEngine.COLORS['BOLD']}├─────────────────────────────────────────────────────────────────────────────┤{ModernVisualEngine.COLORS['RESET']}
 {ModernVisualEngine.COLORS['BOLD']}│{ModernVisualEngine.COLORS['RESET']} {ModernVisualEngine.COLORS['CYBER_ORANGE']}🌐 Port:{ModernVisualEngine.COLORS['RESET']} {API_PORT}
+{ModernVisualEngine.COLORS['BOLD']}│{ModernVisualEngine.COLORS['RESET']} {ModernVisualEngine.COLORS['CYBER_ORANGE']}🔒 TLS:{ModernVisualEngine.COLORS['RESET']} {'Enabled (' + scheme + '://' if ssl_ctx else 'Disabled (plain http)'}
 {ModernVisualEngine.COLORS['BOLD']}│{ModernVisualEngine.COLORS['RESET']} {ModernVisualEngine.COLORS['WARNING']}🔧 Debug Mode:{ModernVisualEngine.COLORS['RESET']} {DEBUG_MODE}
 {ModernVisualEngine.COLORS['BOLD']}│{ModernVisualEngine.COLORS['RESET']} {ModernVisualEngine.COLORS['ELECTRIC_PURPLE']}💾 Cache Size:{ModernVisualEngine.COLORS['RESET']} {CACHE_SIZE} | TTL: {CACHE_TTL}s
 {ModernVisualEngine.COLORS['BOLD']}│{ModernVisualEngine.COLORS['RESET']} {ModernVisualEngine.COLORS['TERMINAL_GRAY']}⏱️  Command Timeout:{ModernVisualEngine.COLORS['RESET']} {COMMAND_TIMEOUT}s
@@ -17286,4 +17503,4 @@ if __name__ == "__main__":
         if line.strip():
             logger.info(line)
 
-    app.run(host="0.0.0.0", port=API_PORT, debug=DEBUG_MODE)
+    app.run(host="0.0.0.0", port=API_PORT, debug=DEBUG_MODE, ssl_context=ssl_ctx, threaded=True)
