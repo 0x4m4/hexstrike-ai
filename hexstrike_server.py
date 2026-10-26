@@ -17259,6 +17259,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="Run the HexStrike AI API Server")
     parser.add_argument("--debug", action="store_true", help="Enable debug mode")
+    parser.add_argument("--host", type=str, default=API_HOST, help=f"Host for the API server (default: {API_HOST})")
     parser.add_argument("--port", type=int, default=API_PORT, help=f"Port for the API server (default: {API_PORT})")
     args = parser.parse_args()
 
@@ -17268,6 +17269,10 @@ if __name__ == "__main__":
 
     if args.port != API_PORT:
         API_PORT = args.port
+
+    if args.host != API_HOST:
+        API_HOST = args.host
+
 
     # Enhanced startup messages with beautiful formatting
     startup_info = f"""
@@ -17286,4 +17291,4 @@ if __name__ == "__main__":
         if line.strip():
             logger.info(line)
 
-    app.run(host="0.0.0.0", port=API_PORT, debug=DEBUG_MODE)
+    app.run(host=API_HOST, port=API_PORT, debug=DEBUG_MODE)
