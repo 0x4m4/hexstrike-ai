@@ -98,6 +98,14 @@ app.config['JSON_SORT_KEYS'] = False
 API_PORT = int(os.environ.get('HEXSTRIKE_PORT', 8888))
 API_HOST = os.environ.get('HEXSTRIKE_HOST', '127.0.0.1')
 
+# Ensure common security-tool locations are on PATH so commands executed via
+# /api/command resolve regardless of how the server was launched (e.g. under a
+# systemd unit with a minimal PATH). Many tools (aircrack-ng suite, nmap,
+# tcpdump, ...) live in /usr/sbin or /usr/local/sbin.
+for _sbin in ("/usr/sbin", "/usr/local/sbin", "/sbin", "/usr/local/bin"):
+    if _sbin not in os.environ.get("PATH", "").split(":"):
+        os.environ["PATH"] = os.environ.get("PATH", "") + ":" + _sbin
+
 # ============================================================================
 # MODERN VISUAL ENGINE (v2.0 ENHANCEMENT)
 # ============================================================================
@@ -9472,8 +9480,9 @@ def create_vulnerability_card():
         if not data:
             return jsonify({"error": "No data provided"}), 400
 
-        # Create vulnerability card
-        card = ModernVisualEngine.render_vulnerability_card(data)
+        # Create vulnerability card (render_vulnerability_card is a staticmethod
+        # on CVEIntelligenceManager, not ModernVisualEngine)
+        card = CVEIntelligenceManager.render_vulnerability_card(data)
 
         return jsonify({
             "success": True,
@@ -9493,9 +9502,9 @@ def create_summary_report():
         if not data:
             return jsonify({"error": "No data provided"}), 400
 
-        # Create summary report
-        visual_engine = ModernVisualEngine()
-        report = visual_engine.create_summary_report(data)
+        # Create summary report (create_summary_report is a staticmethod on
+        # CVEIntelligenceManager, not ModernVisualEngine)
+        report = CVEIntelligenceManager.create_summary_report(data)
 
         return jsonify({
             "success": True,
@@ -9519,8 +9528,9 @@ def format_tool_output():
         output = data['output']
         success = data.get('success', True)
 
-        # Format tool output
-        formatted_output = ModernVisualEngine.format_tool_output(tool, output, success)
+        # Format tool output (format_tool_output is a staticmethod on
+        # CVEIntelligenceManager, not ModernVisualEngine)
+        formatted_output = CVEIntelligenceManager.format_tool_output(tool, output, success)
 
         return jsonify({
             "success": True,
