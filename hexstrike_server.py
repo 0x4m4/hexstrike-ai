@@ -6661,7 +6661,7 @@ def setup_logging():
 
 # Configuration (using existing API_PORT from top of file)
 DEBUG_MODE = os.environ.get("DEBUG_MODE", "0").lower() in ("1", "true", "yes", "y")
-COMMAND_TIMEOUT = 300  # 5 minutes default timeout
+COMMAND_TIMEOUT = int(os.environ.get("HEXSTRIKE_COMMAND_TIMEOUT", 300))  # 5 minutes default timeout (override with HEXSTRIKE_COMMAND_TIMEOUT or --timeout)
 CACHE_SIZE = 1000
 CACHE_TTL = 3600  # 1 hour
 
@@ -6783,9 +6783,10 @@ telemetry = TelemetryCollector()
 class EnhancedCommandExecutor:
     """Enhanced command executor with caching, progress tracking, and better output handling"""
 
-    def __init__(self, command: str, timeout: int = COMMAND_TIMEOUT):
+    def __init__(self, command: str, timeout: int = None):
         self.command = command
-        self.timeout = timeout
+        # Resolve the default at call time so --timeout set at startup is honored
+        self.timeout = timeout or COMMAND_TIMEOUT
         self.process = None
         self.stdout_data = ""
         self.stderr_data = ""
@@ -8633,13 +8634,14 @@ cve_intelligence = CVEIntelligenceManager()
 exploit_generator = AIExploitGenerator()
 vulnerability_correlator = VulnerabilityCorrelator()
 
-def execute_command(command: str, use_cache: bool = True) -> Dict[str, Any]:
+def execute_command(command: str, use_cache: bool = True, timeout: int = None) -> Dict[str, Any]:
     """
     Execute a shell command with enhanced features
 
     Args:
         command: The command to execute
         use_cache: Whether to use caching for this command
+        timeout: Seconds before the command is terminated (default: COMMAND_TIMEOUT)
 
     Returns:
         A dictionary containing the stdout, stderr, return code, and metadata
@@ -8652,11 +8654,11 @@ def execute_command(command: str, use_cache: bool = True) -> Dict[str, Any]:
             return cached_result
 
     # Execute command
-    executor = EnhancedCommandExecutor(command)
+    executor = EnhancedCommandExecutor(command, timeout=timeout)
     result = executor.execute()
 
-    # Cache successful results
-    if use_cache and result.get("success", False):
+    # Cache successful results (partial output from a timed-out run is not cached)
+    if use_cache and result.get("success", False) and not result.get("timed_out", False):
         cache.set(command, {}, result)
 
     return result
@@ -9141,6 +9143,7 @@ def generic_command():
         params = request.json
         command = params.get("command", "")
         use_cache = params.get("use_cache", True)
+        timeout = params.get("timeout")
 
         if not command:
             logger.warning("⚠️  Command endpoint called without command parameter")
@@ -9148,7 +9151,12 @@ def generic_command():
                 "error": "Command parameter is required"
             }), 400
 
-        result = execute_command(command, use_cache=use_cache)
+        if timeout is not None and (isinstance(timeout, bool) or not isinstance(timeout, int) or timeout <= 0):
+            return jsonify({
+                "error": "Timeout must be a positive integer (seconds)"
+            }), 400
+
+        result = execute_command(command, use_cache=use_cache, timeout=timeout)
         return jsonify(result)
     except Exception as e:
         logger.error(f"💥 Error in command endpoint: {str(e)}")
@@ -17260,6 +17268,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run the HexStrike AI API Server")
     parser.add_argument("--debug", action="store_true", help="Enable debug mode")
     parser.add_argument("--port", type=int, default=API_PORT, help=f"Port for the API server (default: {API_PORT})")
+    parser.add_argument("--timeout", type=int, default=COMMAND_TIMEOUT,
+                        help=f"Max seconds a tool command may run before it is terminated (default: {COMMAND_TIMEOUT}, env: HEXSTRIKE_COMMAND_TIMEOUT)")
     args = parser.parse_args()
 
     if args.debug:
@@ -17268,6 +17278,10 @@ if __name__ == "__main__":
 
     if args.port != API_PORT:
         API_PORT = args.port
+
+    if args.timeout <= 0:
+        parser.error("--timeout must be a positive number of seconds")
+    COMMAND_TIMEOUT = args.timeout
 
     # Enhanced startup messages with beautiful formatting
     startup_info = f"""

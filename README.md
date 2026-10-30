@@ -198,6 +198,10 @@ python3 hexstrike_server.py --debug
 
 # Optional: Custom port configuration
 python3 hexstrike_server.py --port 8888
+
+# Optional: Allow long-running scans (seconds, default 300)
+python3 hexstrike_server.py --timeout 3600
+# or: HEXSTRIKE_COMMAND_TIMEOUT=3600 python3 hexstrike_server.py
 ```
 
 ### Verify Installation
@@ -628,6 +632,16 @@ AI Agent: "Thank you for clarifying ownership and intent. To proceed with a pene
    # Verify MCP configuration paths
    # Check server logs for connection attempts
    python3 hexstrike_mcp.py --debug
+   ```
+
+4. **Scans Stop After 5 Minutes**:
+   ```bash
+   # The server terminates tool commands after 300s by default. Raise it on the server:
+   python3 hexstrike_server.py --timeout 3600
+
+   # The MCP client's --timeout only controls how long it waits for the HTTP response,
+   # so raise it too (keep it >= the server timeout):
+   python3 hexstrike_mcp.py --server http://localhost:8888 --timeout 3600
    ```
 
 ### Debug Mode
