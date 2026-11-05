@@ -7,6 +7,9 @@
         "--server",
         "http://IPADDRESS:8888"
       ],
+      "env": {
+        "HEXSTRIKE_API_TOKEN": "same value the server was started with"
+      },
       "description": "HexStrike AI v6.0 - Advanced Cybersecurity Automation Platform. Turn off alwaysAllow if you dont want autonomous execution!",
       "timeout": 300,
       "alwaysAllow": []

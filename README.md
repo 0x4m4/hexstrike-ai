@@ -198,7 +198,13 @@ python3 hexstrike_server.py --debug
 
 # Optional: Custom port configuration
 python3 hexstrike_server.py --port 8888
+
+# Optional: Listen on another interface (requires an API token)
+export HEXSTRIKE_API_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+python3 hexstrike_server.py --host 0.0.0.0
 ```
+
+The server listens on `127.0.0.1` by default (`--host` or `HEXSTRIKE_HOST` to change it). It refuses to start on a non-loopback address unless `HEXSTRIKE_API_TOKEN` is set. When the token is set, every request must send `Authorization: Bearer <token>`. When it is not set, the server only answers requests addressed to `localhost`, `127.0.0.1` or `::1`. The MCP client reads `HEXSTRIKE_API_TOKEN` from its environment and sends the header automatically.
 
 ### Verify Installation
 
@@ -647,7 +653,9 @@ python3 hexstrike_mcp.py --debug
 - Run in isolated environments or dedicated security testing VMs
 - AI agents can execute arbitrary security tools - ensure proper oversight
 - Monitor AI agent activities through the real-time dashboard
-- Consider implementing authentication for production deployments
+- The API executes arbitrary commands by design. Keep it on `127.0.0.1`, or set `HEXSTRIKE_API_TOKEN` and restrict the port with a firewall before using `--host`
+- Never combine `--debug` with a non-loopback host; the server refuses to start that way
+- See [SECURITY.md](SECURITY.md) to report vulnerabilities
 
 ### Legal & Ethical Use
 

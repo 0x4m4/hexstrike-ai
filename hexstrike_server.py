@@ -28,6 +28,8 @@ import traceback
 import threading
 import time
 import hashlib
+import hmac
+import ipaddress
 import pickle
 import base64
 import queue
@@ -97,6 +99,38 @@ app.config['JSON_SORT_KEYS'] = False
 # API Configuration
 API_PORT = int(os.environ.get('HEXSTRIKE_PORT', 8888))
 API_HOST = os.environ.get('HEXSTRIKE_HOST', '127.0.0.1')
+# Shared secret clients must send as "Authorization: Bearer <token>".
+# Required whenever the server listens on a non-loopback address.
+API_TOKEN = os.environ.get('HEXSTRIKE_API_TOKEN', '')
+
+def is_loopback_host(host: str) -> bool:
+    """Return True if host names the local machine (127.0.0.0/8, ::1, localhost)"""
+    if host == "localhost":
+        return True
+    try:
+        return ipaddress.ip_address(host).is_loopback
+    except ValueError:
+        return False
+
+@app.before_request
+def require_api_token():
+    """Reject requests without the API token, or, when no token is set, any
+    request not addressed to a loopback host name (blocks DNS rebinding)."""
+    if API_TOKEN:
+        supplied = request.headers.get("Authorization", "").encode()
+        expected = f"Bearer {API_TOKEN}".encode()
+        if not hmac.compare_digest(supplied, expected):
+            return jsonify({"error": "Unauthorized"}), 401
+    elif not is_loopback_host(urllib.parse.urlsplit(f"//{request.host}").hostname or ""):
+        return jsonify({"error": "Forbidden: set HEXSTRIKE_API_TOKEN to allow non-local access"}), 403
+
+def contained_path(base_dir: Path, name: str) -> Path:
+    """Resolve name under base_dir, refusing absolute paths and '..' escapes"""
+    base = base_dir.resolve()
+    path = (base / name).resolve()
+    if path != base and base not in path.parents:
+        raise ValueError(f"Path escapes {base}: {name}")
+    return path
 
 # ============================================================================
 # MODERN VISUAL ENGINE (v2.0 ENHANCEMENT)
@@ -5711,7 +5745,9 @@ class PythonEnvironmentManager:
 
     def create_venv(self, env_name: str) -> Path:
         """Create a new virtual environment"""
-        env_path = self.base_dir / env_name
+        env_path = contained_path(self.base_dir, env_name)
+        if env_path == self.base_dir.resolve():
+            raise ValueError("Environment name is required")
         if not env_path.exists():
             logger.info(f"🐍 Creating virtual environment: {env_name}")
             venv.create(env_path, with_pip=True)
@@ -8936,7 +8972,7 @@ class FileOperationsManager:
     def create_file(self, filename: str, content: str, binary: bool = False) -> Dict[str, Any]:
         """Create a file with the specified content"""
         try:
-            file_path = self.base_dir / filename
+            file_path = contained_path(self.base_dir, filename)
             file_path.parent.mkdir(parents=True, exist_ok=True)
 
             if len(content.encode()) > self.max_file_size:
@@ -8959,7 +8995,7 @@ class FileOperationsManager:
     def modify_file(self, filename: str, content: str, append: bool = False) -> Dict[str, Any]:
         """Modify an existing file"""
         try:
-            file_path = self.base_dir / filename
+            file_path = contained_path(self.base_dir, filename)
             if not file_path.exists():
                 return {"success": False, "error": "File does not exist"}
 
@@ -8977,7 +9013,9 @@ class FileOperationsManager:
     def delete_file(self, filename: str) -> Dict[str, Any]:
         """Delete a file or directory"""
         try:
-            file_path = self.base_dir / filename
+            file_path = contained_path(self.base_dir, filename)
+            if file_path == self.base_dir.resolve():
+                return {"success": False, "error": "Refusing to delete the base directory"}
             if not file_path.exists():
                 return {"success": False, "error": "File does not exist"}
 
@@ -8996,7 +9034,7 @@ class FileOperationsManager:
     def list_files(self, directory: str = ".") -> Dict[str, Any]:
         """List files in a directory"""
         try:
-            dir_path = self.base_dir / directory
+            dir_path = contained_path(self.base_dir, directory)
             if not dir_path.exists():
                 return {"success": False, "error": "Directory does not exist"}
 
@@ -13671,6 +13709,11 @@ class BrowserAgent:
 
     def navigate_and_inspect(self, url: str, wait_time: int = 5) -> dict:
         """Navigate to URL and perform comprehensive inspection"""
+        # file://, javascript:, data: and similar schemes would read local files
+        # or run script in the browser, so only web URLs are allowed.
+        scheme = urlparse(url).scheme.lower()
+        if scheme not in ('http', 'https'):
+            return {'success': False, 'error': f'Unsupported URL scheme: {scheme or "(none)"}'}
         try:
             if not self.driver:
                 if not self.setup_browser():
@@ -17260,6 +17303,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run the HexStrike AI API Server")
     parser.add_argument("--debug", action="store_true", help="Enable debug mode")
     parser.add_argument("--port", type=int, default=API_PORT, help=f"Port for the API server (default: {API_PORT})")
+    parser.add_argument("--host", type=str, default=API_HOST, help=f"Address to listen on (default: {API_HOST})")
     args = parser.parse_args()
 
     if args.debug:
@@ -17269,12 +17313,23 @@ if __name__ == "__main__":
     if args.port != API_PORT:
         API_PORT = args.port
 
+    API_HOST = args.host
+
+    if not is_loopback_host(API_HOST):
+        if not API_TOKEN:
+            logger.error(f"Refusing to listen on {API_HOST} without authentication: set HEXSTRIKE_API_TOKEN")
+            sys.exit(1)
+        if DEBUG_MODE:
+            logger.error(f"Refusing to expose the Flask debugger on {API_HOST}: use a loopback host with --debug")
+            sys.exit(1)
+
     # Enhanced startup messages with beautiful formatting
     startup_info = f"""
 {ModernVisualEngine.COLORS['MATRIX_GREEN']}{ModernVisualEngine.COLORS['BOLD']}╭─────────────────────────────────────────────────────────────────────────────╮{ModernVisualEngine.COLORS['RESET']}
 {ModernVisualEngine.COLORS['BOLD']}│{ModernVisualEngine.COLORS['RESET']} {ModernVisualEngine.COLORS['NEON_BLUE']}🚀 Starting HexStrike AI Tools API Server{ModernVisualEngine.COLORS['RESET']}
 {ModernVisualEngine.COLORS['BOLD']}├─────────────────────────────────────────────────────────────────────────────┤{ModernVisualEngine.COLORS['RESET']}
-{ModernVisualEngine.COLORS['BOLD']}│{ModernVisualEngine.COLORS['RESET']} {ModernVisualEngine.COLORS['CYBER_ORANGE']}🌐 Port:{ModernVisualEngine.COLORS['RESET']} {API_PORT}
+{ModernVisualEngine.COLORS['BOLD']}│{ModernVisualEngine.COLORS['RESET']} {ModernVisualEngine.COLORS['CYBER_ORANGE']}🌐 Listening:{ModernVisualEngine.COLORS['RESET']} {API_HOST}:{API_PORT}
+{ModernVisualEngine.COLORS['BOLD']}│{ModernVisualEngine.COLORS['RESET']} {ModernVisualEngine.COLORS['CYBER_ORANGE']}🔐 API Token:{ModernVisualEngine.COLORS['RESET']} {'required' if API_TOKEN else 'not set (loopback only)'}
 {ModernVisualEngine.COLORS['BOLD']}│{ModernVisualEngine.COLORS['RESET']} {ModernVisualEngine.COLORS['WARNING']}🔧 Debug Mode:{ModernVisualEngine.COLORS['RESET']} {DEBUG_MODE}
 {ModernVisualEngine.COLORS['BOLD']}│{ModernVisualEngine.COLORS['RESET']} {ModernVisualEngine.COLORS['ELECTRIC_PURPLE']}💾 Cache Size:{ModernVisualEngine.COLORS['RESET']} {CACHE_SIZE} | TTL: {CACHE_TTL}s
 {ModernVisualEngine.COLORS['BOLD']}│{ModernVisualEngine.COLORS['RESET']} {ModernVisualEngine.COLORS['TERMINAL_GRAY']}⏱️  Command Timeout:{ModernVisualEngine.COLORS['RESET']} {COMMAND_TIMEOUT}s
@@ -17286,4 +17341,4 @@ if __name__ == "__main__":
         if line.strip():
             logger.info(line)
 
-    app.run(host="0.0.0.0", port=API_PORT, debug=DEBUG_MODE)
+    app.run(host=API_HOST, port=API_PORT, debug=DEBUG_MODE)

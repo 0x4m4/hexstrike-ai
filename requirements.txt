@@ -9,7 +9,7 @@
 # ============================================================================
 # CORE FRAMEWORK DEPENDENCIES (ACTUALLY USED)
 # ============================================================================
-flask>=2.3.0,<4.0.0             # Web framework for API server (flask import)
+flask>=2.3.2,<4.0.0             # Web framework for API server (flask import); 2.3.2 fixes CVE-2023-30861
 requests>=2.31.0,<3.0.0         # HTTP library (requests import)
 psutil>=5.9.0,<6.0.0            # System utilities (psutil import)
 fastmcp>=0.2.0,<1.0.0           # MCP framework (from mcp.server.fastmcp import FastMCP)
