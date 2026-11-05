@@ -205,7 +205,7 @@ python3 hexstrike_mcp.py --server http://127.0.0.1:8888 </dev/null 2>&1 | grep -
 
 **Expected:** the first run prints `Successfully connected to HexStrike AI API Server at http://127.0.0.1:8888`. The second prints `Connection test failed: 401 Client Error: UNAUTHORIZED`.
 
-The client needs `mcp` below 2.0 (`pip install "mcp<2"`). That requirement predates this PR.
+The client needs `mcp` below 2.0. The `.venv` from `requirements.txt` already has it: `fastmcp<1` requires `mcp<2`. If you install packages by hand instead, use `pip install "mcp<2"`.
 
 Stop the server with `Ctrl+C`.
 
