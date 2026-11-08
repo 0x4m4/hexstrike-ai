@@ -1,0 +1,5375 @@
+[
+  {
+    "name": "amass_scan",
+    "category": "Additional Security Tools From Original Implementation",
+    "doc": "Execute Amass for subdomain enumeration with enhanced logging.",
+    "params": [
+      {
+        "name": "domain",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "mode",
+        "type": "str",
+        "default": "enum",
+        "required": false
+      },
+      {
+        "name": "additional_args",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/tools/amass",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "arp_scan_discovery",
+    "category": "Additional Security Tools From Original Implementation",
+    "doc": "Execute arp-scan for network discovery with enhanced logging.",
+    "params": [
+      {
+        "name": "target",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "interface",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "local_network",
+        "type": "bool",
+        "default": false,
+        "required": false
+      },
+      {
+        "name": "timeout",
+        "type": "int",
+        "default": 500,
+        "required": false
+      },
+      {
+        "name": "retry",
+        "type": "int",
+        "default": 3,
+        "required": false
+      },
+      {
+        "name": "additional_args",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/tools/arp-scan",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "autorecon_comprehensive",
+    "category": "Additional Security Tools From Original Implementation",
+    "doc": "Execute AutoRecon for comprehensive automated reconnaissance.",
+    "params": [
+      {
+        "name": "target",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "output_dir",
+        "type": "str",
+        "default": "/tmp/autorecon",
+        "required": false
+      },
+      {
+        "name": "port_scans",
+        "type": "str",
+        "default": "top-100-ports",
+        "required": false
+      },
+      {
+        "name": "service_scans",
+        "type": "str",
+        "default": "default",
+        "required": false
+      },
+      {
+        "name": "heartbeat",
+        "type": "int",
+        "default": 60,
+        "required": false
+      },
+      {
+        "name": "timeout",
+        "type": "int",
+        "default": 300,
+        "required": false
+      },
+      {
+        "name": "additional_args",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/tools/autorecon",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "dirb_scan",
+    "category": "Additional Security Tools From Original Implementation",
+    "doc": "Execute Dirb for directory brute forcing with enhanced logging.",
+    "params": [
+      {
+        "name": "url",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "wordlist",
+        "type": "str",
+        "default": "/usr/share/wordlists/dirb/common.txt",
+        "required": false
+      },
+      {
+        "name": "additional_args",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/tools/dirb",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "enum4linux_ng_advanced",
+    "category": "Additional Security Tools From Original Implementation",
+    "doc": "Execute Enum4linux-ng for advanced SMB enumeration with enhanced logging.",
+    "params": [
+      {
+        "name": "target",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "username",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "password",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "domain",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "shares",
+        "type": "bool",
+        "default": true,
+        "required": false
+      },
+      {
+        "name": "users",
+        "type": "bool",
+        "default": true,
+        "required": false
+      },
+      {
+        "name": "groups",
+        "type": "bool",
+        "default": true,
+        "required": false
+      },
+      {
+        "name": "policy",
+        "type": "bool",
+        "default": true,
+        "required": false
+      },
+      {
+        "name": "additional_args",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/tools/enum4linux-ng",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "enum4linux_scan",
+    "category": "Additional Security Tools From Original Implementation",
+    "doc": "Execute Enum4linux for SMB enumeration with enhanced logging.",
+    "params": [
+      {
+        "name": "target",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "additional_args",
+        "type": "str",
+        "default": "-a",
+        "required": false
+      }
+    ],
+    "route": "api/tools/enum4linux",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "ffuf_scan",
+    "category": "Additional Security Tools From Original Implementation",
+    "doc": "Execute FFuf for web fuzzing with enhanced logging.",
+    "params": [
+      {
+        "name": "url",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "wordlist",
+        "type": "str",
+        "default": "/usr/share/wordlists/dirb/common.txt",
+        "required": false
+      },
+      {
+        "name": "mode",
+        "type": "str",
+        "default": "directory",
+        "required": false
+      },
+      {
+        "name": "match_codes",
+        "type": "str",
+        "default": "200,204,301,302,307,401,403",
+        "required": false
+      },
+      {
+        "name": "additional_args",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/tools/ffuf",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "hashcat_crack",
+    "category": "Additional Security Tools From Original Implementation",
+    "doc": "Execute Hashcat for advanced password cracking with enhanced logging.",
+    "params": [
+      {
+        "name": "hash_file",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "hash_type",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "attack_mode",
+        "type": "str",
+        "default": "0",
+        "required": false
+      },
+      {
+        "name": "wordlist",
+        "type": "str",
+        "default": "/usr/share/wordlists/rockyou.txt",
+        "required": false
+      },
+      {
+        "name": "mask",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "additional_args",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/tools/hashcat",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "hydra_attack",
+    "category": "Additional Security Tools From Original Implementation",
+    "doc": "Execute Hydra for password brute forcing with enhanced logging.",
+    "params": [
+      {
+        "name": "target",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "service",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "username",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "username_file",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "password",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "password_file",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "additional_args",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/tools/hydra",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "john_crack",
+    "category": "Additional Security Tools From Original Implementation",
+    "doc": "Execute John the Ripper for password cracking with enhanced logging.",
+    "params": [
+      {
+        "name": "hash_file",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "wordlist",
+        "type": "str",
+        "default": "/usr/share/wordlists/rockyou.txt",
+        "required": false
+      },
+      {
+        "name": "format_type",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "additional_args",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/tools/john",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "masscan_high_speed",
+    "category": "Additional Security Tools From Original Implementation",
+    "doc": "Execute Masscan for high-speed Internet-scale port scanning with intelligent rate limiting.",
+    "params": [
+      {
+        "name": "target",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "ports",
+        "type": "str",
+        "default": "1-65535",
+        "required": false
+      },
+      {
+        "name": "rate",
+        "type": "int",
+        "default": 1000,
+        "required": false
+      },
+      {
+        "name": "interface",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "router_mac",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "source_ip",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "banners",
+        "type": "bool",
+        "default": false,
+        "required": false
+      },
+      {
+        "name": "additional_args",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/tools/masscan",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "metasploit_run",
+    "category": "Additional Security Tools From Original Implementation",
+    "doc": "Execute a Metasploit module with enhanced logging.",
+    "params": [
+      {
+        "name": "module",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "options",
+        "type": "Dict[str, Any]",
+        "default": {},
+        "required": false
+      }
+    ],
+    "route": "api/tools/metasploit",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "msfvenom_generate",
+    "category": "Additional Security Tools From Original Implementation",
+    "doc": "Execute MSFVenom for payload generation with enhanced logging.",
+    "params": [
+      {
+        "name": "payload",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "format_type",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "output_file",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "encoder",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "iterations",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "additional_args",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/tools/msfvenom",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "nbtscan_netbios",
+    "category": "Additional Security Tools From Original Implementation",
+    "doc": "Execute nbtscan for NetBIOS name scanning with enhanced logging.",
+    "params": [
+      {
+        "name": "target",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "verbose",
+        "type": "bool",
+        "default": false,
+        "required": false
+      },
+      {
+        "name": "timeout",
+        "type": "int",
+        "default": 2,
+        "required": false
+      },
+      {
+        "name": "additional_args",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/tools/nbtscan",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "netexec_scan",
+    "category": "Additional Security Tools From Original Implementation",
+    "doc": "Execute NetExec (formerly CrackMapExec) for network enumeration with enhanced logging.",
+    "params": [
+      {
+        "name": "target",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "protocol",
+        "type": "str",
+        "default": "smb",
+        "required": false
+      },
+      {
+        "name": "username",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "password",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "hash_value",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "module",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "additional_args",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/tools/netexec",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "nikto_scan",
+    "category": "Additional Security Tools From Original Implementation",
+    "doc": "Execute Nikto web vulnerability scanner with enhanced logging.",
+    "params": [
+      {
+        "name": "target",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "additional_args",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/tools/nikto",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "nmap_advanced_scan",
+    "category": "Additional Security Tools From Original Implementation",
+    "doc": "Execute advanced Nmap scans with custom NSE scripts and optimized timing.",
+    "params": [
+      {
+        "name": "target",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "scan_type",
+        "type": "str",
+        "default": "-sS",
+        "required": false
+      },
+      {
+        "name": "ports",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "timing",
+        "type": "str",
+        "default": "T4",
+        "required": false
+      },
+      {
+        "name": "nse_scripts",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "os_detection",
+        "type": "bool",
+        "default": false,
+        "required": false
+      },
+      {
+        "name": "version_detection",
+        "type": "bool",
+        "default": false,
+        "required": false
+      },
+      {
+        "name": "aggressive",
+        "type": "bool",
+        "default": false,
+        "required": false
+      },
+      {
+        "name": "stealth",
+        "type": "bool",
+        "default": false,
+        "required": false
+      },
+      {
+        "name": "additional_args",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/tools/nmap-advanced",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "responder_credential_harvest",
+    "category": "Additional Security Tools From Original Implementation",
+    "doc": "Execute Responder for credential harvesting with enhanced logging.",
+    "params": [
+      {
+        "name": "interface",
+        "type": "str",
+        "default": "eth0",
+        "required": false
+      },
+      {
+        "name": "analyze",
+        "type": "bool",
+        "default": false,
+        "required": false
+      },
+      {
+        "name": "wpad",
+        "type": "bool",
+        "default": true,
+        "required": false
+      },
+      {
+        "name": "force_wpad_auth",
+        "type": "bool",
+        "default": false,
+        "required": false
+      },
+      {
+        "name": "fingerprint",
+        "type": "bool",
+        "default": false,
+        "required": false
+      },
+      {
+        "name": "duration",
+        "type": "int",
+        "default": 300,
+        "required": false
+      },
+      {
+        "name": "additional_args",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/tools/responder",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "rpcclient_enumeration",
+    "category": "Additional Security Tools From Original Implementation",
+    "doc": "Execute rpcclient for RPC enumeration with enhanced logging.",
+    "params": [
+      {
+        "name": "target",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "username",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "password",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "domain",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "commands",
+        "type": "str",
+        "default": "enumdomusers;enumdomgroups;querydominfo",
+        "required": false
+      },
+      {
+        "name": "additional_args",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/tools/rpcclient",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "rustscan_fast_scan",
+    "category": "Additional Security Tools From Original Implementation",
+    "doc": "Execute Rustscan for ultra-fast port scanning with enhanced logging.",
+    "params": [
+      {
+        "name": "target",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "ports",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "ulimit",
+        "type": "int",
+        "default": 5000,
+        "required": false
+      },
+      {
+        "name": "batch_size",
+        "type": "int",
+        "default": 4500,
+        "required": false
+      },
+      {
+        "name": "timeout",
+        "type": "int",
+        "default": 1500,
+        "required": false
+      },
+      {
+        "name": "scripts",
+        "type": "bool",
+        "default": false,
+        "required": false
+      },
+      {
+        "name": "additional_args",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/tools/rustscan",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "smbmap_scan",
+    "category": "Additional Security Tools From Original Implementation",
+    "doc": "Execute SMBMap for SMB share enumeration with enhanced logging.",
+    "params": [
+      {
+        "name": "target",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "username",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "password",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "domain",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "additional_args",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/tools/smbmap",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "sqlmap_scan",
+    "category": "Additional Security Tools From Original Implementation",
+    "doc": "Execute SQLMap for SQL injection testing with enhanced logging.",
+    "params": [
+      {
+        "name": "url",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "data",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "additional_args",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/tools/sqlmap",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "subfinder_scan",
+    "category": "Additional Security Tools From Original Implementation",
+    "doc": "Execute Subfinder for passive subdomain enumeration with enhanced logging.",
+    "params": [
+      {
+        "name": "domain",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "silent",
+        "type": "bool",
+        "default": true,
+        "required": false
+      },
+      {
+        "name": "all_sources",
+        "type": "bool",
+        "default": false,
+        "required": false
+      },
+      {
+        "name": "additional_args",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/tools/subfinder",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "volatility_analyze",
+    "category": "Additional Security Tools From Original Implementation",
+    "doc": "Execute Volatility for memory forensics analysis with enhanced logging.",
+    "params": [
+      {
+        "name": "memory_file",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "plugin",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "profile",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "additional_args",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/tools/volatility",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "wpscan_analyze",
+    "category": "Additional Security Tools From Original Implementation",
+    "doc": "Execute WPScan for WordPress vulnerability scanning with enhanced logging.",
+    "params": [
+      {
+        "name": "url",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "additional_args",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/tools/wpscan",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "arjun_scan",
+    "category": "Advanced Web Security Tools Continued",
+    "doc": "Execute Arjun for parameter discovery with enhanced logging.",
+    "params": [
+      {
+        "name": "url",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "method",
+        "type": "str",
+        "default": "GET",
+        "required": false
+      },
+      {
+        "name": "data",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "headers",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "timeout",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "output_file",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "additional_args",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/tools/arjun",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "autorecon_scan",
+    "category": "Advanced Web Security Tools Continued",
+    "doc": "Execute AutoRecon for comprehensive target enumeration with full parameter support.",
+    "params": [
+      {
+        "name": "target",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "target_file",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "ports",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "output_dir",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "max_scans",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "max_port_scans",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "heartbeat",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "timeout",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "target_timeout",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "config_file",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "global_file",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "plugins_dir",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "add_plugins_dir",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "tags",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "exclude_tags",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "port_scans",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "service_scans",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "reports",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "single_target",
+        "type": "bool",
+        "default": false,
+        "required": false
+      },
+      {
+        "name": "only_scans_dir",
+        "type": "bool",
+        "default": false,
+        "required": false
+      },
+      {
+        "name": "no_port_dirs",
+        "type": "bool",
+        "default": false,
+        "required": false
+      },
+      {
+        "name": "nmap",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "nmap_append",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "proxychains",
+        "type": "bool",
+        "default": false,
+        "required": false
+      },
+      {
+        "name": "disable_sanity_checks",
+        "type": "bool",
+        "default": false,
+        "required": false
+      },
+      {
+        "name": "disable_keyboard_control",
+        "type": "bool",
+        "default": false,
+        "required": false
+      },
+      {
+        "name": "force_services",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "accessible",
+        "type": "bool",
+        "default": false,
+        "required": false
+      },
+      {
+        "name": "verbose",
+        "type": "int",
+        "default": 0,
+        "required": false
+      },
+      {
+        "name": "curl_path",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "dirbuster_tool",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "dirbuster_wordlist",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "dirbuster_threads",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "dirbuster_ext",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "onesixtyone_community_strings",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "global_username_wordlist",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "global_password_wordlist",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "global_domain",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "additional_args",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/tools/autorecon",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "burpsuite_scan",
+    "category": "Advanced Web Security Tools Continued",
+    "doc": "Execute Burp Suite with enhanced logging.",
+    "params": [
+      {
+        "name": "project_file",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "config_file",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "target",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "headless",
+        "type": "bool",
+        "default": false,
+        "required": false
+      },
+      {
+        "name": "scan_type",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "scan_config",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "output_file",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "additional_args",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/tools/burpsuite",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "dnsenum_scan",
+    "category": "Advanced Web Security Tools Continued",
+    "doc": "Execute dnsenum for DNS enumeration with enhanced logging.",
+    "params": [
+      {
+        "name": "domain",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "dns_server",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "wordlist",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "additional_args",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/tools/dnsenum",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "fierce_scan",
+    "category": "Advanced Web Security Tools Continued",
+    "doc": "Execute fierce for DNS reconnaissance with enhanced logging.",
+    "params": [
+      {
+        "name": "domain",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "dns_server",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "additional_args",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/tools/fierce",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "wafw00f_scan",
+    "category": "Advanced Web Security Tools Continued",
+    "doc": "Execute wafw00f to identify and fingerprint WAF products with enhanced logging.",
+    "params": [
+      {
+        "name": "target",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "additional_args",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/tools/wafw00f",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "zap_scan",
+    "category": "Advanced Web Security Tools Continued",
+    "doc": "Execute OWASP ZAP with enhanced logging.",
+    "params": [
+      {
+        "name": "target",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "scan_type",
+        "type": "str",
+        "default": "baseline",
+        "required": false
+      },
+      {
+        "name": "api_key",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "daemon",
+        "type": "bool",
+        "default": false,
+        "required": false
+      },
+      {
+        "name": "port",
+        "type": "str",
+        "default": "8090",
+        "required": false
+      },
+      {
+        "name": "host",
+        "type": "str",
+        "default": "0.0.0.0",
+        "required": false
+      },
+      {
+        "name": "format_type",
+        "type": "str",
+        "default": "xml",
+        "required": false
+      },
+      {
+        "name": "output_file",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "additional_args",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/tools/zap",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "ai_generate_attack_suite",
+    "category": "Binary Analysis & Reverse Engineering Tools",
+    "doc": "Generate comprehensive attack suite with multiple payload types.",
+    "params": [
+      {
+        "name": "target_url",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "attack_types",
+        "type": "str",
+        "default": "xss,sqli,lfi",
+        "required": false
+      }
+    ],
+    "route": null,
+    "method": "POST",
+    "path_params": [],
+    "composite": true
+  },
+  {
+    "name": "ai_generate_payload",
+    "category": "Binary Analysis & Reverse Engineering Tools",
+    "doc": "Generate AI-powered contextual payloads for security testing.",
+    "params": [
+      {
+        "name": "attack_type",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "complexity",
+        "type": "str",
+        "default": "basic",
+        "required": false
+      },
+      {
+        "name": "technology",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "url",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/ai/generate_payload",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "ai_test_payload",
+    "category": "Binary Analysis & Reverse Engineering Tools",
+    "doc": "Test generated payload against target with AI analysis.",
+    "params": [
+      {
+        "name": "payload",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "target_url",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "method",
+        "type": "str",
+        "default": "GET",
+        "required": false
+      }
+    ],
+    "route": "api/ai/test_payload",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "anew_data_processing",
+    "category": "Binary Analysis & Reverse Engineering Tools",
+    "doc": "Execute anew for appending new lines to files (useful for data processing).",
+    "params": [
+      {
+        "name": "input_data",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "output_file",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "additional_args",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/tools/anew",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "angr_symbolic_execution",
+    "category": "Binary Analysis & Reverse Engineering Tools",
+    "doc": "Execute angr for symbolic execution and binary analysis.",
+    "params": [
+      {
+        "name": "binary",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "script_content",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "find_address",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "avoid_addresses",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "analysis_type",
+        "type": "str",
+        "default": "symbolic",
+        "required": false
+      },
+      {
+        "name": "additional_args",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/tools/angr",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "api_fuzzer",
+    "category": "Binary Analysis & Reverse Engineering Tools",
+    "doc": "Advanced API endpoint fuzzing with intelligent parameter discovery.",
+    "params": [
+      {
+        "name": "base_url",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "endpoints",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "methods",
+        "type": "str",
+        "default": "GET,POST,PUT,DELETE",
+        "required": false
+      },
+      {
+        "name": "wordlist",
+        "type": "str",
+        "default": "/usr/share/wordlists/api/api-endpoints.txt",
+        "required": false
+      }
+    ],
+    "route": "api/tools/api_fuzzer",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "api_schema_analyzer",
+    "category": "Binary Analysis & Reverse Engineering Tools",
+    "doc": "Analyze API schemas and identify potential security issues.",
+    "params": [
+      {
+        "name": "schema_url",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "schema_type",
+        "type": "str",
+        "default": "openapi",
+        "required": false
+      }
+    ],
+    "route": "api/tools/api_schema_analyzer",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "arjun_parameter_discovery",
+    "category": "Binary Analysis & Reverse Engineering Tools",
+    "doc": "Execute Arjun for HTTP parameter discovery with enhanced logging.",
+    "params": [
+      {
+        "name": "url",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "method",
+        "type": "str",
+        "default": "GET",
+        "required": false
+      },
+      {
+        "name": "wordlist",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "delay",
+        "type": "int",
+        "default": 0,
+        "required": false
+      },
+      {
+        "name": "threads",
+        "type": "int",
+        "default": 25,
+        "required": false
+      },
+      {
+        "name": "stable",
+        "type": "bool",
+        "default": false,
+        "required": false
+      },
+      {
+        "name": "additional_args",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/tools/arjun",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "binwalk_analyze",
+    "category": "Binary Analysis & Reverse Engineering Tools",
+    "doc": "Execute Binwalk for firmware and file analysis with enhanced logging.",
+    "params": [
+      {
+        "name": "file_path",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "extract",
+        "type": "bool",
+        "default": false,
+        "required": false
+      },
+      {
+        "name": "additional_args",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/tools/binwalk",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "checksec_analyze",
+    "category": "Binary Analysis & Reverse Engineering Tools",
+    "doc": "Check security features of a binary with enhanced logging.",
+    "params": [
+      {
+        "name": "binary",
+        "type": "str",
+        "default": null,
+        "required": true
+      }
+    ],
+    "route": "api/tools/checksec",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "comprehensive_api_audit",
+    "category": "Binary Analysis & Reverse Engineering Tools",
+    "doc": "Comprehensive API security audit combining multiple testing techniques.",
+    "params": [
+      {
+        "name": "base_url",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "schema_url",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "jwt_token",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "graphql_endpoint",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": null,
+    "method": "POST",
+    "path_params": [],
+    "composite": true
+  },
+  {
+    "name": "dalfox_xss_scan",
+    "category": "Binary Analysis & Reverse Engineering Tools",
+    "doc": "Execute Dalfox for advanced XSS vulnerability scanning with enhanced logging.",
+    "params": [
+      {
+        "name": "url",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "pipe_mode",
+        "type": "bool",
+        "default": false,
+        "required": false
+      },
+      {
+        "name": "blind",
+        "type": "bool",
+        "default": false,
+        "required": false
+      },
+      {
+        "name": "mining_dom",
+        "type": "bool",
+        "default": true,
+        "required": false
+      },
+      {
+        "name": "mining_dict",
+        "type": "bool",
+        "default": true,
+        "required": false
+      },
+      {
+        "name": "custom_payload",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "additional_args",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/tools/dalfox",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "dirsearch_scan",
+    "category": "Binary Analysis & Reverse Engineering Tools",
+    "doc": "Execute Dirsearch for advanced directory and file discovery with enhanced logging.",
+    "params": [
+      {
+        "name": "url",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "extensions",
+        "type": "str",
+        "default": "php,html,js,txt,xml,json",
+        "required": false
+      },
+      {
+        "name": "wordlist",
+        "type": "str",
+        "default": "/usr/share/wordlists/dirsearch/common.txt",
+        "required": false
+      },
+      {
+        "name": "threads",
+        "type": "int",
+        "default": 30,
+        "required": false
+      },
+      {
+        "name": "recursive",
+        "type": "bool",
+        "default": false,
+        "required": false
+      },
+      {
+        "name": "additional_args",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/tools/dirsearch",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "dotdotpwn_scan",
+    "category": "Binary Analysis & Reverse Engineering Tools",
+    "doc": "Execute DotDotPwn for directory traversal testing with enhanced logging.",
+    "params": [
+      {
+        "name": "target",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "module",
+        "type": "str",
+        "default": "http",
+        "required": false
+      },
+      {
+        "name": "additional_args",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/tools/dotdotpwn",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "exiftool_extract",
+    "category": "Binary Analysis & Reverse Engineering Tools",
+    "doc": "Execute ExifTool for metadata extraction with enhanced logging.",
+    "params": [
+      {
+        "name": "file_path",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "output_format",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "tags",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "additional_args",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/tools/exiftool",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "feroxbuster_scan",
+    "category": "Binary Analysis & Reverse Engineering Tools",
+    "doc": "Execute Feroxbuster for recursive content discovery with enhanced logging.",
+    "params": [
+      {
+        "name": "url",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "wordlist",
+        "type": "str",
+        "default": "/usr/share/wordlists/dirb/common.txt",
+        "required": false
+      },
+      {
+        "name": "threads",
+        "type": "int",
+        "default": 10,
+        "required": false
+      },
+      {
+        "name": "additional_args",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/tools/feroxbuster",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "foremost_carving",
+    "category": "Binary Analysis & Reverse Engineering Tools",
+    "doc": "Execute Foremost for file carving with enhanced logging.",
+    "params": [
+      {
+        "name": "input_file",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "output_dir",
+        "type": "str",
+        "default": "/tmp/foremost_output",
+        "required": false
+      },
+      {
+        "name": "file_types",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "additional_args",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/tools/foremost",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "gau_discovery",
+    "category": "Binary Analysis & Reverse Engineering Tools",
+    "doc": "Execute Gau (Get All URLs) for URL discovery from multiple sources with enhanced logging.",
+    "params": [
+      {
+        "name": "domain",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "providers",
+        "type": "str",
+        "default": "wayback,commoncrawl,otx,urlscan",
+        "required": false
+      },
+      {
+        "name": "include_subs",
+        "type": "bool",
+        "default": true,
+        "required": false
+      },
+      {
+        "name": "blacklist",
+        "type": "str",
+        "default": "png,jpg,gif,jpeg,swf,woff,svg,pdf,css,ico",
+        "required": false
+      },
+      {
+        "name": "additional_args",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/tools/gau",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "gdb_analyze",
+    "category": "Binary Analysis & Reverse Engineering Tools",
+    "doc": "Execute GDB for binary analysis and debugging with enhanced logging.",
+    "params": [
+      {
+        "name": "binary",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "commands",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "script_file",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "additional_args",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/tools/gdb",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "gdb_peda_debug",
+    "category": "Binary Analysis & Reverse Engineering Tools",
+    "doc": "Execute GDB with PEDA for enhanced debugging and exploitation.",
+    "params": [
+      {
+        "name": "binary",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "commands",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "attach_pid",
+        "type": "int",
+        "default": 0,
+        "required": false
+      },
+      {
+        "name": "core_file",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "additional_args",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/tools/gdb-peda",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "ghidra_analysis",
+    "category": "Binary Analysis & Reverse Engineering Tools",
+    "doc": "Execute Ghidra for advanced binary analysis and reverse engineering.",
+    "params": [
+      {
+        "name": "binary",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "project_name",
+        "type": "str",
+        "default": "hexstrike_analysis",
+        "required": false
+      },
+      {
+        "name": "script_file",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "analysis_timeout",
+        "type": "int",
+        "default": 300,
+        "required": false
+      },
+      {
+        "name": "output_format",
+        "type": "str",
+        "default": "xml",
+        "required": false
+      },
+      {
+        "name": "additional_args",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/tools/ghidra",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "graphql_scanner",
+    "category": "Binary Analysis & Reverse Engineering Tools",
+    "doc": "Advanced GraphQL security scanning and introspection.",
+    "params": [
+      {
+        "name": "endpoint",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "introspection",
+        "type": "bool",
+        "default": true,
+        "required": false
+      },
+      {
+        "name": "query_depth",
+        "type": "int",
+        "default": 10,
+        "required": false
+      },
+      {
+        "name": "test_mutations",
+        "type": "bool",
+        "default": true,
+        "required": false
+      }
+    ],
+    "route": "api/tools/graphql_scanner",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "hakrawler_crawl",
+    "category": "Binary Analysis & Reverse Engineering Tools",
+    "doc": "Execute Hakrawler for web endpoint discovery with enhanced logging.",
+    "params": [
+      {
+        "name": "url",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "depth",
+        "type": "int",
+        "default": 2,
+        "required": false
+      },
+      {
+        "name": "forms",
+        "type": "bool",
+        "default": true,
+        "required": false
+      },
+      {
+        "name": "robots",
+        "type": "bool",
+        "default": true,
+        "required": false
+      },
+      {
+        "name": "sitemap",
+        "type": "bool",
+        "default": true,
+        "required": false
+      },
+      {
+        "name": "wayback",
+        "type": "bool",
+        "default": false,
+        "required": false
+      },
+      {
+        "name": "additional_args",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/tools/hakrawler",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "hashpump_attack",
+    "category": "Binary Analysis & Reverse Engineering Tools",
+    "doc": "Execute HashPump for hash length extension attacks with enhanced logging.",
+    "params": [
+      {
+        "name": "signature",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "data",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "key_length",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "append_data",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "additional_args",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/tools/hashpump",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "httpx_probe",
+    "category": "Binary Analysis & Reverse Engineering Tools",
+    "doc": "Execute httpx for fast HTTP probing and technology detection.",
+    "params": [
+      {
+        "name": "target",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "probe",
+        "type": "bool",
+        "default": true,
+        "required": false
+      },
+      {
+        "name": "tech_detect",
+        "type": "bool",
+        "default": false,
+        "required": false
+      },
+      {
+        "name": "status_code",
+        "type": "bool",
+        "default": false,
+        "required": false
+      },
+      {
+        "name": "content_length",
+        "type": "bool",
+        "default": false,
+        "required": false
+      },
+      {
+        "name": "title",
+        "type": "bool",
+        "default": false,
+        "required": false
+      },
+      {
+        "name": "web_server",
+        "type": "bool",
+        "default": false,
+        "required": false
+      },
+      {
+        "name": "threads",
+        "type": "int",
+        "default": 50,
+        "required": false
+      },
+      {
+        "name": "additional_args",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/tools/httpx",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "httpx_probe",
+    "category": "Binary Analysis & Reverse Engineering Tools",
+    "doc": "Execute HTTPx for HTTP probing with enhanced logging.",
+    "params": [
+      {
+        "name": "targets",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "target_file",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "ports",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "methods",
+        "type": "str",
+        "default": "GET",
+        "required": false
+      },
+      {
+        "name": "status_code",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "content_length",
+        "type": "bool",
+        "default": false,
+        "required": false
+      },
+      {
+        "name": "output_file",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "additional_args",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/tools/httpx",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "jaeles_vulnerability_scan",
+    "category": "Binary Analysis & Reverse Engineering Tools",
+    "doc": "Execute Jaeles for advanced vulnerability scanning with custom signatures.",
+    "params": [
+      {
+        "name": "url",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "signatures",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "config",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "threads",
+        "type": "int",
+        "default": 20,
+        "required": false
+      },
+      {
+        "name": "timeout",
+        "type": "int",
+        "default": 20,
+        "required": false
+      },
+      {
+        "name": "additional_args",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/tools/jaeles",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "jwt_analyzer",
+    "category": "Binary Analysis & Reverse Engineering Tools",
+    "doc": "Advanced JWT token analysis and vulnerability testing.",
+    "params": [
+      {
+        "name": "jwt_token",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "target_url",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/tools/jwt_analyzer",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "katana_crawl",
+    "category": "Binary Analysis & Reverse Engineering Tools",
+    "doc": "Execute Katana for next-generation crawling and spidering with enhanced logging.",
+    "params": [
+      {
+        "name": "url",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "depth",
+        "type": "int",
+        "default": 3,
+        "required": false
+      },
+      {
+        "name": "js_crawl",
+        "type": "bool",
+        "default": true,
+        "required": false
+      },
+      {
+        "name": "form_extraction",
+        "type": "bool",
+        "default": true,
+        "required": false
+      },
+      {
+        "name": "output_format",
+        "type": "str",
+        "default": "json",
+        "required": false
+      },
+      {
+        "name": "additional_args",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/tools/katana",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "libc_database_lookup",
+    "category": "Binary Analysis & Reverse Engineering Tools",
+    "doc": "Execute libc-database for libc identification and offset lookup.",
+    "params": [
+      {
+        "name": "action",
+        "type": "str",
+        "default": "find",
+        "required": false
+      },
+      {
+        "name": "symbols",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "libc_id",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "additional_args",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/tools/libc-database",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "objdump_analyze",
+    "category": "Binary Analysis & Reverse Engineering Tools",
+    "doc": "Analyze a binary using objdump with enhanced logging.",
+    "params": [
+      {
+        "name": "binary",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "disassemble",
+        "type": "bool",
+        "default": true,
+        "required": false
+      },
+      {
+        "name": "additional_args",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/tools/objdump",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "one_gadget_search",
+    "category": "Binary Analysis & Reverse Engineering Tools",
+    "doc": "Execute one_gadget to find one-shot RCE gadgets in libc.",
+    "params": [
+      {
+        "name": "libc_path",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "level",
+        "type": "int",
+        "default": 1,
+        "required": false
+      },
+      {
+        "name": "additional_args",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/tools/one-gadget",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "paramspider_discovery",
+    "category": "Binary Analysis & Reverse Engineering Tools",
+    "doc": "Execute ParamSpider for parameter discovery with enhanced logging.",
+    "params": [
+      {
+        "name": "domain",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "exclude",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "output_file",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "level",
+        "type": "int",
+        "default": 2,
+        "required": false
+      },
+      {
+        "name": "additional_args",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/tools/paramspider",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "paramspider_mining",
+    "category": "Binary Analysis & Reverse Engineering Tools",
+    "doc": "Execute ParamSpider for parameter mining from web archives with enhanced logging.",
+    "params": [
+      {
+        "name": "domain",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "level",
+        "type": "int",
+        "default": 2,
+        "required": false
+      },
+      {
+        "name": "exclude",
+        "type": "str",
+        "default": "png,jpg,gif,jpeg,swf,woff,svg,pdf,css,ico",
+        "required": false
+      },
+      {
+        "name": "output",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "additional_args",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/tools/paramspider",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "pwninit_setup",
+    "category": "Binary Analysis & Reverse Engineering Tools",
+    "doc": "Execute pwninit for CTF binary exploitation setup.",
+    "params": [
+      {
+        "name": "binary",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "libc",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "ld",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "template_type",
+        "type": "str",
+        "default": "python",
+        "required": false
+      },
+      {
+        "name": "additional_args",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/tools/pwninit",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "pwntools_exploit",
+    "category": "Binary Analysis & Reverse Engineering Tools",
+    "doc": "Execute Pwntools for exploit development and automation.",
+    "params": [
+      {
+        "name": "script_content",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "target_binary",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "target_host",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "target_port",
+        "type": "int",
+        "default": 0,
+        "required": false
+      },
+      {
+        "name": "exploit_type",
+        "type": "str",
+        "default": "local",
+        "required": false
+      },
+      {
+        "name": "additional_args",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/tools/pwntools",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "qsreplace_parameter_replacement",
+    "category": "Binary Analysis & Reverse Engineering Tools",
+    "doc": "Execute qsreplace for query string parameter replacement.",
+    "params": [
+      {
+        "name": "urls",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "replacement",
+        "type": "str",
+        "default": "FUZZ",
+        "required": false
+      },
+      {
+        "name": "additional_args",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/tools/qsreplace",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "radare2_analyze",
+    "category": "Binary Analysis & Reverse Engineering Tools",
+    "doc": "Execute Radare2 for binary analysis and reverse engineering with enhanced logging.",
+    "params": [
+      {
+        "name": "binary",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "commands",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "additional_args",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/tools/radare2",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "ropgadget_search",
+    "category": "Binary Analysis & Reverse Engineering Tools",
+    "doc": "Search for ROP gadgets in a binary using ROPgadget with enhanced logging.",
+    "params": [
+      {
+        "name": "binary",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "gadget_type",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "additional_args",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/tools/ropgadget",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "ropper_gadget_search",
+    "category": "Binary Analysis & Reverse Engineering Tools",
+    "doc": "Execute ropper for advanced ROP/JOP gadget searching.",
+    "params": [
+      {
+        "name": "binary",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "gadget_type",
+        "type": "str",
+        "default": "rop",
+        "required": false
+      },
+      {
+        "name": "quality",
+        "type": "int",
+        "default": 1,
+        "required": false
+      },
+      {
+        "name": "arch",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "search_string",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "additional_args",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/tools/ropper",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "steghide_analysis",
+    "category": "Binary Analysis & Reverse Engineering Tools",
+    "doc": "Execute Steghide for steganography analysis with enhanced logging.",
+    "params": [
+      {
+        "name": "action",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "cover_file",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "embed_file",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "passphrase",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "output_file",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "additional_args",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/tools/steghide",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "strings_extract",
+    "category": "Binary Analysis & Reverse Engineering Tools",
+    "doc": "Extract strings from a binary file with enhanced logging.",
+    "params": [
+      {
+        "name": "file_path",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "min_len",
+        "type": "int",
+        "default": 4,
+        "required": false
+      },
+      {
+        "name": "additional_args",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/tools/strings",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "uro_url_filtering",
+    "category": "Binary Analysis & Reverse Engineering Tools",
+    "doc": "Execute uro for filtering out similar URLs.",
+    "params": [
+      {
+        "name": "urls",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "whitelist",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "blacklist",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "additional_args",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/tools/uro",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "volatility3_analyze",
+    "category": "Binary Analysis & Reverse Engineering Tools",
+    "doc": "Execute Volatility3 for advanced memory forensics with enhanced logging.",
+    "params": [
+      {
+        "name": "memory_file",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "plugin",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "output_file",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "additional_args",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/tools/volatility3",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "waybackurls_discovery",
+    "category": "Binary Analysis & Reverse Engineering Tools",
+    "doc": "Execute Waybackurls for historical URL discovery with enhanced logging.",
+    "params": [
+      {
+        "name": "domain",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "get_versions",
+        "type": "bool",
+        "default": false,
+        "required": false
+      },
+      {
+        "name": "no_subs",
+        "type": "bool",
+        "default": false,
+        "required": false
+      },
+      {
+        "name": "additional_args",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/tools/waybackurls",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "wfuzz_scan",
+    "category": "Binary Analysis & Reverse Engineering Tools",
+    "doc": "Execute Wfuzz for web application fuzzing with enhanced logging.",
+    "params": [
+      {
+        "name": "url",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "wordlist",
+        "type": "str",
+        "default": "/usr/share/wordlists/dirb/common.txt",
+        "required": false
+      },
+      {
+        "name": "additional_args",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/tools/wfuzz",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "x8_parameter_discovery",
+    "category": "Binary Analysis & Reverse Engineering Tools",
+    "doc": "Execute x8 for hidden parameter discovery with enhanced logging.",
+    "params": [
+      {
+        "name": "url",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "wordlist",
+        "type": "str",
+        "default": "/usr/share/wordlists/x8/params.txt",
+        "required": false
+      },
+      {
+        "name": "method",
+        "type": "str",
+        "default": "GET",
+        "required": false
+      },
+      {
+        "name": "body",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "headers",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "additional_args",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/tools/x8",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "xsser_scan",
+    "category": "Binary Analysis & Reverse Engineering Tools",
+    "doc": "Execute XSSer for XSS vulnerability testing with enhanced logging.",
+    "params": [
+      {
+        "name": "url",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "params",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "additional_args",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/tools/xsser",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "xxd_hexdump",
+    "category": "Binary Analysis & Reverse Engineering Tools",
+    "doc": "Create a hex dump of a file using xxd with enhanced logging.",
+    "params": [
+      {
+        "name": "file_path",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "offset",
+        "type": "str",
+        "default": "0",
+        "required": false
+      },
+      {
+        "name": "length",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "additional_args",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/tools/xxd",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "bugbounty_authentication_bypass_testing",
+    "category": "Bug Bounty Hunting Specialized Workflows",
+    "doc": "Create authentication bypass testing workflow for bug bounty hunting.",
+    "params": [
+      {
+        "name": "target_url",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "auth_type",
+        "type": "str",
+        "default": "form",
+        "required": false
+      }
+    ],
+    "route": null,
+    "method": "POST",
+    "path_params": [],
+    "composite": true
+  },
+  {
+    "name": "bugbounty_business_logic_testing",
+    "category": "Bug Bounty Hunting Specialized Workflows",
+    "doc": "Create business logic testing workflow for advanced bug bounty hunting.",
+    "params": [
+      {
+        "name": "domain",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "program_type",
+        "type": "str",
+        "default": "web",
+        "required": false
+      }
+    ],
+    "route": "api/bugbounty/business-logic-workflow",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "bugbounty_comprehensive_assessment",
+    "category": "Bug Bounty Hunting Specialized Workflows",
+    "doc": "Create comprehensive bug bounty assessment combining all specialized workflows.",
+    "params": [
+      {
+        "name": "domain",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "scope",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "priority_vulns",
+        "type": "str",
+        "default": "rce,sqli,xss,idor,ssrf",
+        "required": false
+      },
+      {
+        "name": "include_osint",
+        "type": "bool",
+        "default": true,
+        "required": false
+      },
+      {
+        "name": "include_business_logic",
+        "type": "bool",
+        "default": true,
+        "required": false
+      }
+    ],
+    "route": "api/bugbounty/comprehensive-assessment",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "bugbounty_file_upload_testing",
+    "category": "Bug Bounty Hunting Specialized Workflows",
+    "doc": "Create file upload vulnerability testing workflow with bypass techniques.",
+    "params": [
+      {
+        "name": "target_url",
+        "type": "str",
+        "default": null,
+        "required": true
+      }
+    ],
+    "route": "api/bugbounty/file-upload-testing",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "bugbounty_osint_gathering",
+    "category": "Bug Bounty Hunting Specialized Workflows",
+    "doc": "Create OSINT (Open Source Intelligence) gathering workflow for bug bounty reconnaissance.",
+    "params": [
+      {
+        "name": "domain",
+        "type": "str",
+        "default": null,
+        "required": true
+      }
+    ],
+    "route": "api/bugbounty/osint-workflow",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "bugbounty_reconnaissance_workflow",
+    "category": "Bug Bounty Hunting Specialized Workflows",
+    "doc": "Create comprehensive reconnaissance workflow for bug bounty hunting.",
+    "params": [
+      {
+        "name": "domain",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "scope",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "out_of_scope",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "program_type",
+        "type": "str",
+        "default": "web",
+        "required": false
+      }
+    ],
+    "route": "api/bugbounty/reconnaissance-workflow",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "bugbounty_vulnerability_hunting",
+    "category": "Bug Bounty Hunting Specialized Workflows",
+    "doc": "Create vulnerability hunting workflow prioritized by impact and bounty potential.",
+    "params": [
+      {
+        "name": "domain",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "priority_vulns",
+        "type": "str",
+        "default": "rce,sqli,xss,idor,ssrf",
+        "required": false
+      },
+      {
+        "name": "bounty_range",
+        "type": "str",
+        "default": "unknown",
+        "required": false
+      }
+    ],
+    "route": "api/bugbounty/vulnerability-hunting-workflow",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "checkov_iac_scan",
+    "category": "Cloud Security Tools",
+    "doc": "Execute Checkov for infrastructure as code security scanning.",
+    "params": [
+      {
+        "name": "directory",
+        "type": "str",
+        "default": ".",
+        "required": false
+      },
+      {
+        "name": "framework",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "check",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "skip_check",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "output_format",
+        "type": "str",
+        "default": "json",
+        "required": false
+      },
+      {
+        "name": "additional_args",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/tools/checkov",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "clair_vulnerability_scan",
+    "category": "Cloud Security Tools",
+    "doc": "Execute Clair for container vulnerability analysis.",
+    "params": [
+      {
+        "name": "image",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "config",
+        "type": "str",
+        "default": "/etc/clair/config.yaml",
+        "required": false
+      },
+      {
+        "name": "output_format",
+        "type": "str",
+        "default": "json",
+        "required": false
+      },
+      {
+        "name": "additional_args",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/tools/clair",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "cloudmapper_analysis",
+    "category": "Cloud Security Tools",
+    "doc": "Execute CloudMapper for AWS network visualization and security analysis.",
+    "params": [
+      {
+        "name": "action",
+        "type": "str",
+        "default": "collect",
+        "required": false
+      },
+      {
+        "name": "account",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "config",
+        "type": "str",
+        "default": "config.json",
+        "required": false
+      },
+      {
+        "name": "additional_args",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/tools/cloudmapper",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "docker_bench_security_scan",
+    "category": "Cloud Security Tools",
+    "doc": "Execute Docker Bench for Security for Docker security assessment.",
+    "params": [
+      {
+        "name": "checks",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "exclude",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "output_file",
+        "type": "str",
+        "default": "/tmp/docker-bench-results.json",
+        "required": false
+      },
+      {
+        "name": "additional_args",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/tools/docker-bench-security",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "falco_runtime_monitoring",
+    "category": "Cloud Security Tools",
+    "doc": "Execute Falco for runtime security monitoring.",
+    "params": [
+      {
+        "name": "config_file",
+        "type": "str",
+        "default": "/etc/falco/falco.yaml",
+        "required": false
+      },
+      {
+        "name": "rules_file",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "output_format",
+        "type": "str",
+        "default": "json",
+        "required": false
+      },
+      {
+        "name": "duration",
+        "type": "int",
+        "default": 60,
+        "required": false
+      },
+      {
+        "name": "additional_args",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/tools/falco",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "kube_bench_cis",
+    "category": "Cloud Security Tools",
+    "doc": "Execute kube-bench for CIS Kubernetes benchmark checks.",
+    "params": [
+      {
+        "name": "targets",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "version",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "config_dir",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "output_format",
+        "type": "str",
+        "default": "json",
+        "required": false
+      },
+      {
+        "name": "additional_args",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/tools/kube-bench",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "kube_hunter_scan",
+    "category": "Cloud Security Tools",
+    "doc": "Execute kube-hunter for Kubernetes penetration testing.",
+    "params": [
+      {
+        "name": "target",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "remote",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "cidr",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "interface",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "active",
+        "type": "bool",
+        "default": false,
+        "required": false
+      },
+      {
+        "name": "report",
+        "type": "str",
+        "default": "json",
+        "required": false
+      },
+      {
+        "name": "additional_args",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/tools/kube-hunter",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "pacu_exploitation",
+    "category": "Cloud Security Tools",
+    "doc": "Execute Pacu for AWS exploitation framework.",
+    "params": [
+      {
+        "name": "session_name",
+        "type": "str",
+        "default": "hexstrike_session",
+        "required": false
+      },
+      {
+        "name": "modules",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "data_services",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "regions",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "additional_args",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/tools/pacu",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "prowler_scan",
+    "category": "Cloud Security Tools",
+    "doc": "Execute Prowler for comprehensive cloud security assessment.",
+    "params": [
+      {
+        "name": "provider",
+        "type": "str",
+        "default": "aws",
+        "required": false
+      },
+      {
+        "name": "profile",
+        "type": "str",
+        "default": "default",
+        "required": false
+      },
+      {
+        "name": "region",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "checks",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "output_dir",
+        "type": "str",
+        "default": "/tmp/prowler_output",
+        "required": false
+      },
+      {
+        "name": "output_format",
+        "type": "str",
+        "default": "json",
+        "required": false
+      },
+      {
+        "name": "additional_args",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/tools/prowler",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "scout_suite_assessment",
+    "category": "Cloud Security Tools",
+    "doc": "Execute Scout Suite for multi-cloud security assessment.",
+    "params": [
+      {
+        "name": "provider",
+        "type": "str",
+        "default": "aws",
+        "required": false
+      },
+      {
+        "name": "profile",
+        "type": "str",
+        "default": "default",
+        "required": false
+      },
+      {
+        "name": "report_dir",
+        "type": "str",
+        "default": "/tmp/scout-suite",
+        "required": false
+      },
+      {
+        "name": "services",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "exceptions",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "additional_args",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/tools/scout-suite",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "terrascan_iac_scan",
+    "category": "Cloud Security Tools",
+    "doc": "Execute Terrascan for infrastructure as code security scanning.",
+    "params": [
+      {
+        "name": "scan_type",
+        "type": "str",
+        "default": "all",
+        "required": false
+      },
+      {
+        "name": "iac_dir",
+        "type": "str",
+        "default": ".",
+        "required": false
+      },
+      {
+        "name": "policy_type",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "output_format",
+        "type": "str",
+        "default": "json",
+        "required": false
+      },
+      {
+        "name": "severity",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "additional_args",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/tools/terrascan",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "trivy_scan",
+    "category": "Cloud Security Tools",
+    "doc": "Execute Trivy for container and filesystem vulnerability scanning.",
+    "params": [
+      {
+        "name": "scan_type",
+        "type": "str",
+        "default": "image",
+        "required": false
+      },
+      {
+        "name": "target",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "output_format",
+        "type": "str",
+        "default": "json",
+        "required": false
+      },
+      {
+        "name": "severity",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "output_file",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "additional_args",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/tools/trivy",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "gobuster_scan",
+    "category": "Core Network Scanning Tools",
+    "doc": "Execute Gobuster to find directories, DNS subdomains, or virtual hosts with enhanced logging.",
+    "params": [
+      {
+        "name": "url",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "mode",
+        "type": "str",
+        "default": "dir",
+        "required": false
+      },
+      {
+        "name": "wordlist",
+        "type": "str",
+        "default": "/usr/share/wordlists/dirb/common.txt",
+        "required": false
+      },
+      {
+        "name": "additional_args",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/tools/gobuster",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "nmap_scan",
+    "category": "Core Network Scanning Tools",
+    "doc": "Execute an enhanced Nmap scan against a target with real-time logging.",
+    "params": [
+      {
+        "name": "target",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "scan_type",
+        "type": "str",
+        "default": "-sV",
+        "required": false
+      },
+      {
+        "name": "ports",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "additional_args",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/tools/nmap",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "nuclei_scan",
+    "category": "Core Network Scanning Tools",
+    "doc": "Execute Nuclei vulnerability scanner with enhanced logging and real-time progress.",
+    "params": [
+      {
+        "name": "target",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "severity",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "tags",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "template",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "additional_args",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/tools/nuclei",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "browser_agent_inspect",
+    "category": "Enhanced Http Testing Framework & Browser Agent (Burp Suite Alternative)",
+    "doc": "AI-powered browser agent for comprehensive web application inspection and security analysis.",
+    "params": [
+      {
+        "name": "url",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "headless",
+        "type": "bool",
+        "default": true,
+        "required": false
+      },
+      {
+        "name": "wait_time",
+        "type": "int",
+        "default": 5,
+        "required": false
+      },
+      {
+        "name": "action",
+        "type": "str",
+        "default": "navigate",
+        "required": false
+      },
+      {
+        "name": "proxy_port",
+        "type": "int",
+        "default": null,
+        "required": false
+      },
+      {
+        "name": "active_tests",
+        "type": "bool",
+        "default": false,
+        "required": false
+      }
+    ],
+    "route": "api/tools/browser-agent",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "burpsuite_alternative_scan",
+    "category": "Enhanced Http Testing Framework & Browser Agent (Burp Suite Alternative)",
+    "doc": "Comprehensive Burp Suite alternative combining HTTP framework and browser agent for complete web security testing.",
+    "params": [
+      {
+        "name": "target",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "scan_type",
+        "type": "str",
+        "default": "comprehensive",
+        "required": false
+      },
+      {
+        "name": "headless",
+        "type": "bool",
+        "default": true,
+        "required": false
+      },
+      {
+        "name": "max_depth",
+        "type": "int",
+        "default": 3,
+        "required": false
+      },
+      {
+        "name": "max_pages",
+        "type": "int",
+        "default": 50,
+        "required": false
+      }
+    ],
+    "route": "api/tools/burpsuite-alternative",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "error_handling_statistics",
+    "category": "Enhanced Http Testing Framework & Browser Agent (Burp Suite Alternative)",
+    "doc": "Get intelligent error handling system statistics and recent error patterns.",
+    "params": [],
+    "route": "api/error-handling/statistics",
+    "method": "GET",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "http_framework_test",
+    "category": "Enhanced Http Testing Framework & Browser Agent (Burp Suite Alternative)",
+    "doc": "Enhanced HTTP testing framework (Burp Suite alternative) for comprehensive web security testing.",
+    "params": [
+      {
+        "name": "url",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "method",
+        "type": "str",
+        "default": "GET",
+        "required": false
+      },
+      {
+        "name": "data",
+        "type": "dict",
+        "default": {},
+        "required": false
+      },
+      {
+        "name": "headers",
+        "type": "dict",
+        "default": {},
+        "required": false
+      },
+      {
+        "name": "cookies",
+        "type": "dict",
+        "default": {},
+        "required": false
+      },
+      {
+        "name": "action",
+        "type": "str",
+        "default": "request",
+        "required": false
+      }
+    ],
+    "route": "api/tools/http-framework",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "http_intruder",
+    "category": "Enhanced Http Testing Framework & Browser Agent (Burp Suite Alternative)",
+    "doc": "Simple Intruder (sniper) fuzzing. Iterates payloads over each param individually.",
+    "params": [
+      {
+        "name": "url",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "method",
+        "type": "str",
+        "default": "GET",
+        "required": false
+      },
+      {
+        "name": "location",
+        "type": "str",
+        "default": "query",
+        "required": false
+      },
+      {
+        "name": "params",
+        "type": "list",
+        "default": null,
+        "required": false
+      },
+      {
+        "name": "payloads",
+        "type": "list",
+        "default": null,
+        "required": false
+      },
+      {
+        "name": "base_data",
+        "type": "dict",
+        "default": null,
+        "required": false
+      },
+      {
+        "name": "max_requests",
+        "type": "int",
+        "default": 100,
+        "required": false
+      }
+    ],
+    "route": "api/tools/http-framework",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "http_repeater",
+    "category": "Enhanced Http Testing Framework & Browser Agent (Burp Suite Alternative)",
+    "doc": "Send a crafted request (Burp Repeater equivalent). request_spec keys: url, method, headers, cookies, data.",
+    "params": [
+      {
+        "name": "request_spec",
+        "type": "dict",
+        "default": null,
+        "required": true
+      }
+    ],
+    "route": "api/tools/http-framework",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "http_set_rules",
+    "category": "Enhanced Http Testing Framework & Browser Agent (Burp Suite Alternative)",
+    "doc": "Set match/replace rules used to rewrite parts of URL/query/headers/body before sending.",
+    "params": [
+      {
+        "name": "rules",
+        "type": "list",
+        "default": null,
+        "required": true
+      }
+    ],
+    "route": "api/tools/http-framework",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "http_set_scope",
+    "category": "Enhanced Http Testing Framework & Browser Agent (Burp Suite Alternative)",
+    "doc": "Define in-scope host (and optionally subdomains) so out-of-scope requests are skipped.",
+    "params": [
+      {
+        "name": "host",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "include_subdomains",
+        "type": "bool",
+        "default": true,
+        "required": false
+      }
+    ],
+    "route": "api/tools/http-framework",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "test_error_recovery",
+    "category": "Enhanced Http Testing Framework & Browser Agent (Burp Suite Alternative)",
+    "doc": "Test the intelligent error recovery system with simulated failures.",
+    "params": [
+      {
+        "name": "tool_name",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "error_type",
+        "type": "str",
+        "default": "timeout",
+        "required": false
+      },
+      {
+        "name": "target",
+        "type": "str",
+        "default": "example.com",
+        "required": false
+      }
+    ],
+    "route": "api/error-handling/test-recovery",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "create_scan_summary",
+    "category": "Enhanced Visual Output Tools",
+    "doc": "Create a comprehensive scan summary report with beautiful visual formatting.",
+    "params": [
+      {
+        "name": "target",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "tools_used",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "vulnerabilities_found",
+        "type": "int",
+        "default": 0,
+        "required": false
+      },
+      {
+        "name": "execution_time",
+        "type": "float",
+        "default": 0.0,
+        "required": false
+      },
+      {
+        "name": "findings",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/visual/summary-report",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "create_vulnerability_report",
+    "category": "Enhanced Visual Output Tools",
+    "doc": "Create a beautiful vulnerability report with severity-based styling and visual indicators.",
+    "params": [
+      {
+        "name": "vulnerabilities",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "target",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "scan_type",
+        "type": "str",
+        "default": "comprehensive",
+        "required": false
+      }
+    ],
+    "route": "api/visual/vulnerability-card",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "display_system_metrics",
+    "category": "Enhanced Visual Output Tools",
+    "doc": "Display current system metrics and performance indicators with visual formatting.",
+    "params": [],
+    "route": "api/telemetry",
+    "method": "GET",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "format_tool_output_visual",
+    "category": "Enhanced Visual Output Tools",
+    "doc": "Format tool output with beautiful visual styling, syntax highlighting, and structure.",
+    "params": [
+      {
+        "name": "tool_name",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "output",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "success",
+        "type": "bool",
+        "default": true,
+        "required": false
+      }
+    ],
+    "route": "api/visual/tool-output",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "get_live_dashboard",
+    "category": "Enhanced Visual Output Tools",
+    "doc": "Get a beautiful live dashboard showing all active processes with enhanced visual formatting.",
+    "params": [],
+    "route": "api/processes/dashboard",
+    "method": "GET",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "create_file",
+    "category": "File Operations & Payload Generation",
+    "doc": "Create a file with specified content on the HexStrike server.",
+    "params": [
+      {
+        "name": "filename",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "content",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "binary",
+        "type": "bool",
+        "default": false,
+        "required": false
+      }
+    ],
+    "route": "api/files/create",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "delete_file",
+    "category": "File Operations & Payload Generation",
+    "doc": "Delete a file or directory on the HexStrike server.",
+    "params": [
+      {
+        "name": "filename",
+        "type": "str",
+        "default": null,
+        "required": true
+      }
+    ],
+    "route": "api/files/delete",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "generate_payload",
+    "category": "File Operations & Payload Generation",
+    "doc": "Generate large payloads for testing and exploitation.",
+    "params": [
+      {
+        "name": "payload_type",
+        "type": "str",
+        "default": "buffer",
+        "required": false
+      },
+      {
+        "name": "size",
+        "type": "int",
+        "default": 1024,
+        "required": false
+      },
+      {
+        "name": "pattern",
+        "type": "str",
+        "default": "A",
+        "required": false
+      },
+      {
+        "name": "filename",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/payloads/generate",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "list_files",
+    "category": "File Operations & Payload Generation",
+    "doc": "List files in a directory on the HexStrike server.",
+    "params": [
+      {
+        "name": "directory",
+        "type": "str",
+        "default": ".",
+        "required": false
+      }
+    ],
+    "route": "api/files/list",
+    "method": "GET",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "modify_file",
+    "category": "File Operations & Payload Generation",
+    "doc": "Modify an existing file on the HexStrike server.",
+    "params": [
+      {
+        "name": "filename",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "content",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "append",
+        "type": "bool",
+        "default": false,
+        "required": false
+      }
+    ],
+    "route": "api/files/modify",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "ai_reconnaissance_workflow",
+    "category": "Intelligent Decision Engine Tools",
+    "doc": "Execute AI-driven reconnaissance workflow with intelligent tool chaining.",
+    "params": [
+      {
+        "name": "target",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "depth",
+        "type": "str",
+        "default": "standard",
+        "required": false
+      }
+    ],
+    "route": "api/intelligence/analyze-target",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "ai_vulnerability_assessment",
+    "category": "Intelligent Decision Engine Tools",
+    "doc": "Perform AI-driven vulnerability assessment with intelligent prioritization.",
+    "params": [
+      {
+        "name": "target",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "focus_areas",
+        "type": "str",
+        "default": "all",
+        "required": false
+      }
+    ],
+    "route": "api/intelligence/analyze-target",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "analyze_target_intelligence",
+    "category": "Intelligent Decision Engine Tools",
+    "doc": "Analyze target using AI-powered intelligence to create comprehensive profile.",
+    "params": [
+      {
+        "name": "target",
+        "type": "str",
+        "default": null,
+        "required": true
+      }
+    ],
+    "route": "api/intelligence/analyze-target",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "create_attack_chain_ai",
+    "category": "Intelligent Decision Engine Tools",
+    "doc": "Create an intelligent attack chain using AI-driven tool sequencing and optimization.",
+    "params": [
+      {
+        "name": "target",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "objective",
+        "type": "str",
+        "default": "comprehensive",
+        "required": false
+      }
+    ],
+    "route": "api/intelligence/create-attack-chain",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "detect_technologies_ai",
+    "category": "Intelligent Decision Engine Tools",
+    "doc": "Use AI to detect technologies and provide technology-specific testing recommendations.",
+    "params": [
+      {
+        "name": "target",
+        "type": "str",
+        "default": null,
+        "required": true
+      }
+    ],
+    "route": "api/intelligence/technology-detection",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "intelligent_smart_scan",
+    "category": "Intelligent Decision Engine Tools",
+    "doc": "Execute an intelligent scan using AI-driven tool selection and parameter optimization.",
+    "params": [
+      {
+        "name": "target",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "objective",
+        "type": "str",
+        "default": "comprehensive",
+        "required": false
+      },
+      {
+        "name": "max_tools",
+        "type": "int",
+        "default": 5,
+        "required": false
+      }
+    ],
+    "route": "api/intelligence/smart-scan",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "optimize_tool_parameters_ai",
+    "category": "Intelligent Decision Engine Tools",
+    "doc": "Use AI to optimize tool parameters based on target profile and context.",
+    "params": [
+      {
+        "name": "target",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "tool",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "context",
+        "type": "str",
+        "default": "{}",
+        "required": false
+      }
+    ],
+    "route": "api/intelligence/optimize-parameters",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "select_optimal_tools_ai",
+    "category": "Intelligent Decision Engine Tools",
+    "doc": "Use AI to select optimal security tools based on target analysis and testing objective.",
+    "params": [
+      {
+        "name": "target",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "objective",
+        "type": "str",
+        "default": "comprehensive",
+        "required": false
+      }
+    ],
+    "route": "api/intelligence/select-tools",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "execute_python_script",
+    "category": "Python Environment Management",
+    "doc": "Execute a Python script in a virtual environment on the HexStrike server.",
+    "params": [
+      {
+        "name": "script",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "env_name",
+        "type": "str",
+        "default": "default",
+        "required": false
+      },
+      {
+        "name": "filename",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/python/execute",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "install_python_package",
+    "category": "Python Environment Management",
+    "doc": "Install a Python package in a virtual environment on the HexStrike server.",
+    "params": [
+      {
+        "name": "package",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "env_name",
+        "type": "str",
+        "default": "default",
+        "required": false
+      }
+    ],
+    "route": "api/python/install",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "advanced_payload_generation",
+    "category": "System Monitoring & Telemetry",
+    "doc": "Generate advanced payloads with AI-powered evasion techniques and contextual adaptation.",
+    "params": [
+      {
+        "name": "attack_type",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "target_context",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "evasion_level",
+        "type": "str",
+        "default": "standard",
+        "required": false
+      },
+      {
+        "name": "custom_constraints",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/ai/advanced-payload-generation",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "clear_cache",
+    "category": "System Monitoring & Telemetry",
+    "doc": "Clear the cache on the HexStrike AI server.",
+    "params": [],
+    "route": "api/cache/clear",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "correlate_threat_intelligence",
+    "category": "System Monitoring & Telemetry",
+    "doc": "Correlate threat intelligence across multiple sources with advanced analysis.",
+    "params": [
+      {
+        "name": "indicators",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "timeframe",
+        "type": "str",
+        "default": "30d",
+        "required": false
+      },
+      {
+        "name": "sources",
+        "type": "str",
+        "default": "all",
+        "required": false
+      }
+    ],
+    "route": "api/vuln-intel/threat-feeds",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "discover_attack_chains",
+    "category": "System Monitoring & Telemetry",
+    "doc": "Discover multi-stage attack chains for target software with vulnerability correlation.",
+    "params": [
+      {
+        "name": "target_software",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "attack_depth",
+        "type": "int",
+        "default": 3,
+        "required": false
+      },
+      {
+        "name": "include_zero_days",
+        "type": "bool",
+        "default": false,
+        "required": false
+      }
+    ],
+    "route": "api/vuln-intel/attack-chains",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "execute_command",
+    "category": "System Monitoring & Telemetry",
+    "doc": "Execute an arbitrary command on the HexStrike AI server with enhanced logging.",
+    "params": [
+      {
+        "name": "command",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "use_cache",
+        "type": "bool",
+        "default": true,
+        "required": false
+      }
+    ],
+    "route": "api/command",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "generate_exploit_from_cve",
+    "category": "System Monitoring & Telemetry",
+    "doc": "Generate working exploits from CVE information using AI-powered analysis.",
+    "params": [
+      {
+        "name": "cve_id",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "target_os",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "target_arch",
+        "type": "str",
+        "default": "x64",
+        "required": false
+      },
+      {
+        "name": "exploit_type",
+        "type": "str",
+        "default": "poc",
+        "required": false
+      },
+      {
+        "name": "evasion_level",
+        "type": "str",
+        "default": "none",
+        "required": false
+      }
+    ],
+    "route": "api/vuln-intel/exploit-generate",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "get_cache_stats",
+    "category": "System Monitoring & Telemetry",
+    "doc": "Get cache statistics from the HexStrike AI server.",
+    "params": [],
+    "route": "api/cache/stats",
+    "method": "GET",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "get_process_dashboard",
+    "category": "System Monitoring & Telemetry",
+    "doc": "Get enhanced process dashboard with visual status indicators.",
+    "params": [],
+    "route": "api/processes/dashboard",
+    "method": "GET",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "get_process_status",
+    "category": "System Monitoring & Telemetry",
+    "doc": "Get the status of a specific process.",
+    "params": [
+      {
+        "name": "pid",
+        "type": "int",
+        "default": null,
+        "required": true
+      }
+    ],
+    "route": "api/processes/status/{pid}",
+    "method": "GET",
+    "path_params": [
+      "pid"
+    ],
+    "composite": false
+  },
+  {
+    "name": "get_telemetry",
+    "category": "System Monitoring & Telemetry",
+    "doc": "Get system telemetry from the HexStrike AI server.",
+    "params": [],
+    "route": "api/telemetry",
+    "method": "GET",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "list_active_processes",
+    "category": "System Monitoring & Telemetry",
+    "doc": "List all active processes on the HexStrike AI server.",
+    "params": [],
+    "route": "api/processes/list",
+    "method": "GET",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "monitor_cve_feeds",
+    "category": "System Monitoring & Telemetry",
+    "doc": "Monitor CVE databases for new vulnerabilities with AI analysis.",
+    "params": [
+      {
+        "name": "hours",
+        "type": "int",
+        "default": 24,
+        "required": false
+      },
+      {
+        "name": "severity_filter",
+        "type": "str",
+        "default": "HIGH,CRITICAL",
+        "required": false
+      },
+      {
+        "name": "keywords",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/vuln-intel/cve-monitor",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "pause_process",
+    "category": "System Monitoring & Telemetry",
+    "doc": "Pause a specific running process.",
+    "params": [
+      {
+        "name": "pid",
+        "type": "int",
+        "default": null,
+        "required": true
+      }
+    ],
+    "route": "api/processes/pause/{pid}",
+    "method": "POST",
+    "path_params": [
+      "pid"
+    ],
+    "composite": false
+  },
+  {
+    "name": "research_zero_day_opportunities",
+    "category": "System Monitoring & Telemetry",
+    "doc": "Automated zero-day vulnerability research using AI analysis and pattern recognition.",
+    "params": [
+      {
+        "name": "target_software",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "analysis_depth",
+        "type": "str",
+        "default": "standard",
+        "required": false
+      },
+      {
+        "name": "source_code_url",
+        "type": "str",
+        "default": "",
+        "required": false
+      }
+    ],
+    "route": "api/vuln-intel/zero-day-research",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "resume_process",
+    "category": "System Monitoring & Telemetry",
+    "doc": "Resume a paused process.",
+    "params": [
+      {
+        "name": "pid",
+        "type": "int",
+        "default": null,
+        "required": true
+      }
+    ],
+    "route": "api/processes/resume/{pid}",
+    "method": "POST",
+    "path_params": [
+      "pid"
+    ],
+    "composite": false
+  },
+  {
+    "name": "server_health",
+    "category": "System Monitoring & Telemetry",
+    "doc": "Check the health status of the HexStrike AI server.",
+    "params": [],
+    "route": "health",
+    "method": "GET",
+    "path_params": [],
+    "composite": false
+  },
+  {
+    "name": "terminate_process",
+    "category": "System Monitoring & Telemetry",
+    "doc": "Terminate a specific running process.",
+    "params": [
+      {
+        "name": "pid",
+        "type": "int",
+        "default": null,
+        "required": true
+      }
+    ],
+    "route": "api/processes/terminate/{pid}",
+    "method": "POST",
+    "path_params": [
+      "pid"
+    ],
+    "composite": false
+  },
+  {
+    "name": "threat_hunting_assistant",
+    "category": "System Monitoring & Telemetry",
+    "doc": "AI-powered threat hunting assistant with vulnerability correlation and attack simulation.",
+    "params": [
+      {
+        "name": "target_environment",
+        "type": "str",
+        "default": null,
+        "required": true
+      },
+      {
+        "name": "threat_indicators",
+        "type": "str",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "hunt_focus",
+        "type": "str",
+        "default": "general",
+        "required": false
+      }
+    ],
+    "route": null,
+    "method": "POST",
+    "path_params": [],
+    "composite": true
+  },
+  {
+    "name": "vulnerability_intelligence_dashboard",
+    "category": "System Monitoring & Telemetry",
+    "doc": "Get a comprehensive vulnerability intelligence dashboard with latest threats and trends.",
+    "params": [],
+    "route": "api/vuln-intel/cve-monitor",
+    "method": "POST",
+    "path_params": [],
+    "composite": false
+  }
+]

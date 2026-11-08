@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HexStrike Command Center</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-icon">⚡</span>
+      <span class="brand-text">HexStrike <span class="accent">Command Center</span></span>
+    </div>
+    <div class="health" id="health">
+      <span class="dot" id="health-dot"></span>
+      <span id="health-text">checking server…</span>
+    </div>
+  </header>
+
+  <div class="layout">
+    <nav class="sidebar">
+      <input id="search" type="text" placeholder="Search 151 tools…" autocomplete="off">
+      <div id="category-list" class="category-list"></div>
+    </nav>
+
+    <main class="main">
+      <section id="empty-state" class="panel">
+        <h2>Pick a tool to get started</h2>
+        <p>151 HexStrike tools across 12 categories. Search or browse on the left, fill in the form, hit Run.</p>
+        <div id="stats" class="stats"></div>
+      </section>
+
+      <section id="tool-panel" class="panel hidden">
+        <div class="tool-header">
+          <h2 id="tool-name"></h2>
+          <span id="tool-route" class="route-badge"></span>
+        </div>
+        <p id="tool-doc" class="tool-doc"></p>
+        <form id="tool-form"></form>
+        <div class="actions">
+          <button id="run-btn" type="button">▶ Run</button>
+          <span id="run-status"></span>
+        </div>
+        <div id="output-wrap" class="output-wrap hidden">
+          <div class="output-head">
+            <span>Output</span>
+            <button id="copy-btn" type="button">Copy</button>
+          </div>
+          <pre id="output"></pre>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="tool-header"><h2>Active Processes</h2></div>
+        <div id="process-list" class="process-list">
+          <p class="muted">No active processes.</p>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
