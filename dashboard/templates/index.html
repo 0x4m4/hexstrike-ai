@@ -37,7 +37,24 @@
           <span id="tool-route" class="route-badge"></span>
         </div>
         <p id="tool-doc" class="tool-doc"></p>
+        <div id="eli5-box" class="eli5-box">
+          <span class="eli5-label">Like I'm 7:</span>
+          <span id="eli5-text"></span>
+        </div>
+
+        <div id="status-bar" class="status-bar"></div>
+
         <form id="tool-form"></form>
+
+        <div class="code-preview">
+          <div class="output-head">
+            <span>Request preview</span>
+            <button id="copy-curl-btn" type="button">Copy curl</button>
+          </div>
+          <pre id="curl-preview" class="code-block"></pre>
+          <div id="field-explain" class="field-explain"></div>
+        </div>
+
         <div class="actions">
           <button id="run-btn" type="button">▶ Run</button>
           <span id="run-status"></span>

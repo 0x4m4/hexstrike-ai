@@ -41,25 +41,161 @@ function renderSidebar(query) {
   }
 }
 
+const CUSTOM_VALUE = "__custom__";
+
 function renderForm(tool) {
   const form = document.getElementById("tool-form");
   form.innerHTML = "";
   for (const p of tool.params) {
     const field = document.createElement("div");
     field.className = "field";
+    field.dataset.param = p.name;
+    field.dataset.type = p.type;
+
     const label = document.createElement("label");
     label.innerHTML = `${p.name}${p.required ? ' <span class="req">*</span>' : ""} <span class="muted">(${p.type})</span>`;
+    field.appendChild(label);
+
+    const defaultStr = p.default !== null && p.default !== undefined ? String(p.default) : "";
+
     const input = document.createElement("input");
     input.type = "text";
-    input.name = p.name;
-    input.placeholder = p.default !== null && p.default !== undefined ? String(p.default) : (p.required ? "required" : "");
-    if (p.default !== null && p.default !== undefined && p.default !== "") {
-      input.value = p.default;
+    input.className = "field-text";
+    input.placeholder = defaultStr || (p.required ? "required" : "");
+    if (defaultStr) input.value = defaultStr;
+
+    if (p.options && p.options.length) {
+      const select = document.createElement("select");
+      select.className = "field-select";
+      const exhaustive = p.type === "bool";
+
+      if (!p.required && !exhaustive) {
+        select.appendChild(new Option("(leave unset)", ""));
+      }
+      for (const opt of p.options) {
+        select.appendChild(new Option(opt, opt));
+      }
+      if (!exhaustive) {
+        select.appendChild(new Option("Custom value…", CUSTOM_VALUE));
+      }
+
+      if (defaultStr && p.options.includes(defaultStr)) {
+        select.value = defaultStr;
+      } else if (defaultStr && !exhaustive) {
+        select.value = CUSTOM_VALUE;
+        input.value = defaultStr;
+      }
+
+      input.classList.add("hidden");
+      input.classList.toggle("hidden", select.value !== CUSTOM_VALUE);
+      select.addEventListener("change", () => {
+        input.classList.toggle("hidden", select.value !== CUSTOM_VALUE);
+        if (select.value === CUSTOM_VALUE) input.focus();
+        refreshPreview();
+      });
+
+      field.appendChild(select);
     }
-    field.appendChild(label);
+
     field.appendChild(input);
     form.appendChild(field);
   }
+  form.addEventListener("input", refreshPreview);
+  form.addEventListener("change", refreshPreview);
+}
+
+function fieldValue(fieldEl) {
+  const select = fieldEl.querySelector(".field-select");
+  const input = fieldEl.querySelector(".field-text");
+  if (select && select.value !== CUSTOM_VALUE) return select.value;
+  return input ? input.value : "";
+}
+
+function getFormValues() {
+  const values = {};
+  for (const fieldEl of document.querySelectorAll("#tool-form .field")) {
+    const v = fieldValue(fieldEl);
+    if (v !== "") values[fieldEl.dataset.param] = v;
+  }
+  return values;
+}
+
+function shQuote(str) {
+  return `'${String(str).replace(/'/g, `'\\''`)}'`;
+}
+
+function coerceParamTypes(tool, values) {
+  const typeByName = {};
+  for (const p of tool.params) typeByName[p.name] = p.type;
+  const out = {};
+  for (const [name, value] of Object.entries(values)) {
+    out[name] = typeByName[name] === "bool" ? value === "true" : value;
+  }
+  return out;
+}
+
+function buildCurlPreview(tool, values) {
+  if (tool.composite) {
+    return "# composite workflow - no single HTTP route to preview";
+  }
+  const base = (MANIFEST.hexstrike_server || "").replace(/\/$/, "");
+  const params = coerceParamTypes(tool, values);
+  let route = tool.route;
+  for (const pp of tool.path_params || []) {
+    route = route.replace(`{${pp}}`, encodeURIComponent(params[pp] || `{${pp}}`));
+    delete params[pp];
+  }
+
+  if (tool.method === "GET") {
+    const qs = new URLSearchParams(params).toString();
+    const url = `${base}/${route}${qs ? "?" + qs : ""}`;
+    return `curl -s -X GET ${shQuote(url)}`;
+  }
+  const url = `${base}/${route}`;
+  const body = JSON.stringify(params, null, 2);
+  return `curl -s -X POST ${shQuote(url)} \\\n  -H 'Content-Type: application/json' \\\n  -d ${shQuote(body)}`;
+}
+
+function renderStatusBar(tool, values) {
+  const bar = document.getElementById("status-bar");
+  const targetKeys = ["target", "target_url", "url", "domain", "host", "ip"];
+  const targetKey = targetKeys.find(k => values[k]);
+  const requiredParams = tool.params.filter(p => p.required);
+  const filledRequired = requiredParams.filter(p => values[p.name]).length;
+
+  const chips = [
+    `<span class="chip"><b>Tool</b> ${tool.name}</span>`,
+    `<span class="chip"><b>${tool.composite ? "Type" : "Call"}</b> ${tool.composite ? "composite workflow" : `${tool.method} /${tool.route}`}</span>`,
+  ];
+  if (targetKey) {
+    chips.push(`<span class="chip target"><b>Target</b> ${values[targetKey]}</span>`);
+  }
+  chips.push(
+    `<span class="chip ${filledRequired === requiredParams.length ? "ok" : "warn"}">` +
+    `<b>Required filled</b> ${filledRequired}/${requiredParams.length}</span>`
+  );
+  bar.innerHTML = chips.join("");
+}
+
+function renderFieldExplain(tool, values) {
+  const box = document.getElementById("field-explain");
+  box.innerHTML = tool.params.map(p => {
+    const val = values[p.name];
+    const shown = val !== undefined ? val : (p.default !== null && p.default !== undefined ? p.default : "(not set)");
+    return `<div class="explain-row">
+      <span class="explain-name">${p.name}</span>
+      <span class="explain-val">${shown === "" ? "(empty)" : shown}</span>
+      <span class="explain-doc">${p.doc || ""}</span>
+    </div>`;
+  }).join("");
+}
+
+function refreshPreview() {
+  if (!activeTool) return;
+  const values = getFormValues();
+  renderStatusBar(activeTool, values);
+  document.getElementById("curl-preview").textContent = buildCurlPreview(activeTool, values);
+  renderFieldExplain(activeTool, values);
 }
 
 function selectTool(name) {
@@ -73,10 +209,12 @@ function selectTool(name) {
     ? "composite (no direct route)"
     : `${activeTool.method} /${activeTool.route}`;
   document.getElementById("tool-doc").textContent = activeTool.doc;
+  document.getElementById("eli5-text").textContent = activeTool.eli5 || "";
   document.getElementById("output-wrap").classList.add("hidden");
   document.getElementById("run-status").textContent = "";
 
   renderForm(activeTool);
+  refreshPreview();
 
   const runBtn = document.getElementById("run-btn");
   runBtn.disabled = !!activeTool.composite;
@@ -89,11 +227,7 @@ function selectTool(name) {
 
 async function runTool() {
   if (!activeTool) return;
-  const form = document.getElementById("tool-form");
-  const params = {};
-  for (const input of form.querySelectorAll("input")) {
-    if (input.value !== "") params[input.name] = input.value;
-  }
+  const params = getFormValues();
 
   const runBtn = document.getElementById("run-btn");
   const statusEl = document.getElementById("run-status");
@@ -231,6 +365,9 @@ document.getElementById("search").addEventListener("input", (e) => renderSidebar
 document.getElementById("run-btn").addEventListener("click", runTool);
 document.getElementById("copy-btn").addEventListener("click", () => {
   navigator.clipboard.writeText(document.getElementById("output").textContent);
+});
+document.getElementById("copy-curl-btn").addEventListener("click", () => {
+  navigator.clipboard.writeText(document.getElementById("curl-preview").textContent);
 });
 
 (async function init() {
