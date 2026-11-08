@@ -118,6 +118,27 @@ def api_run():
         return jsonify({"success": False, "error": str(e)}), 200
 
 
+@app.route("/api/process/<int:pid>/output")
+def api_process_output(pid):
+    try:
+        r = requests.get(f"{HEXSTRIKE_SERVER}/api/processes/status/{pid}", timeout=5)
+        data = r.json()
+        if not data.get("success"):
+            return jsonify(data), r.status_code
+        proc = data["process"]
+        return jsonify({
+            "success": True,
+            "pid": pid,
+            "status": proc.get("status"),
+            "progress": proc.get("progress", 0),
+            "runtime_formatted": proc.get("runtime_formatted"),
+            "eta_formatted": proc.get("eta_formatted"),
+            "last_output": proc.get("last_output", ""),
+        })
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 200
+
+
 @app.route("/api/process/<action>/<int:pid>", methods=["POST"])
 def api_process_action(action, pid):
     route_map = {

@@ -1,5 +1,7 @@
 let MANIFEST = { tools: [], categories: {}, total: 0 };
 let activeTool = null;
+let expandedPid = null;
+let liveOutputTimer = null;
 
 async function fetchJSON(url, opts) {
   const r = await fetch(url, opts);
@@ -144,34 +146,85 @@ async function pollProcesses() {
   const list = document.getElementById("process-list");
   try {
     const res = await fetchJSON("/api/processes");
-    const procs = (res && res.active_processes) || res.processes || [];
+    const procs = (res && res.processes) || res.active_processes || [];
     if (!procs || procs.length === 0) {
       list.innerHTML = '<p class="muted">No active processes.</p>';
+      expandedPid = null;
       return;
     }
     list.innerHTML = "";
     for (const p of procs) {
-      const row = document.createElement("div");
-      row.className = "process-row";
       const pid = p.pid || p.id;
+      const isOpen = expandedPid === pid;
+
+      const row = document.createElement("div");
+      row.className = "process-row" + (isOpen ? " open" : "");
       row.innerHTML = `
-        <span><span class="pid">#${pid}</span> ${p.command || p.name || ""}</span>
-        <span>
-          <button data-action="pause">Pause</button>
-          <button data-action="resume">Resume</button>
-          <button data-action="terminate">Kill</button>
-        </span>`;
-      row.querySelectorAll("button").forEach(btn => {
+        <div class="process-summary">
+          <span>
+            <span class="pid">#${pid}</span>
+            <span class="status-badge status-${p.status || "running"}">${p.status || "running"}</span>
+            ${p.command || p.name || ""}
+          </span>
+          <span class="process-meta">${p.progress_percent || ""} · ${p.runtime || ""}</span>
+          <span>
+            <button data-action="view">${isOpen ? "Hide live view" : "View live"}</button>
+            <button data-action="pause">Pause</button>
+            <button data-action="resume">Resume</button>
+            <button data-action="terminate">Kill</button>
+          </span>
+        </div>
+        <div class="process-live hidden">
+          <pre class="process-output">Loading live output…</pre>
+        </div>`;
+
+      row.querySelector('[data-action="view"]').onclick = () => {
+        expandedPid = isOpen ? null : pid;
+        pollProcesses();
+      };
+      row.querySelectorAll('button[data-action="pause"], button[data-action="resume"], button[data-action="terminate"]').forEach(btn => {
         btn.onclick = async () => {
           await fetchJSON(`/api/process/${btn.dataset.action}/${pid}`, { method: "POST" });
           pollProcesses();
         };
       });
+
+      if (isOpen) {
+        row.querySelector(".process-live").classList.remove("hidden");
+        pollLiveOutput(pid, row.querySelector(".process-output"));
+      }
+
       list.appendChild(row);
     }
   } catch (e) {
     list.innerHTML = '<p class="muted">Unable to load processes.</p>';
   }
+}
+
+async function pollLiveOutput(pid, outEl) {
+  if (liveOutputTimer) clearInterval(liveOutputTimer);
+  const tick = async () => {
+    if (expandedPid !== pid) {
+      clearInterval(liveOutputTimer);
+      return;
+    }
+    try {
+      const res = await fetchJSON(`/api/process/${pid}/output`);
+      if (res.success) {
+        outEl.textContent =
+          `status: ${res.status}  progress: ${Math.round((res.progress || 0) * 100)}%  ` +
+          `runtime: ${res.runtime_formatted}  eta: ${res.eta_formatted}\n\n` +
+          (res.last_output || "(no output yet)");
+      } else {
+        outEl.textContent = res.error || "Process finished or not found.";
+        clearInterval(liveOutputTimer);
+      }
+    } catch (e) {
+      outEl.textContent = "Unable to fetch live output.";
+    }
+  };
+  await tick();
+  liveOutputTimer = setInterval(tick, 1500);
 }
 
 document.getElementById("search").addEventListener("input", (e) => renderSidebar(e.target.value));

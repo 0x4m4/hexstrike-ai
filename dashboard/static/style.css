@@ -109,13 +109,30 @@ html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text);
 }
 
 .process-list .process-row {
-  display: flex; align-items: center; justify-content: space-between; padding: 8px 10px;
-  border-bottom: 1px solid var(--border); font-size: 12.5px;
+  padding: 8px 10px; border-bottom: 1px solid var(--border); font-size: 12.5px;
 }
 .process-row:last-child { border-bottom: none; }
+.process-row.open { background: var(--panel-2); }
+.process-summary {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+}
+.process-meta { color: var(--muted); font-family: var(--mono); font-size: 11.5px; }
 .process-row .pid { font-family: var(--mono); color: var(--muted); }
 .process-row button {
   background: var(--panel-2); border: 1px solid var(--border); color: var(--text);
   border-radius: 5px; padding: 3px 9px; font-size: 11px; cursor: pointer; margin-left: 6px;
+}
+.status-badge {
+  display: inline-block; font-size: 10px; text-transform: uppercase; letter-spacing: .03em;
+  padding: 1px 6px; border-radius: 4px; margin: 0 6px; border: 1px solid var(--border);
+}
+.status-badge.status-running { color: #7ee787; border-color: #2ea04366; }
+.status-badge.status-paused { color: #e3b341; border-color: #e3b34166; }
+.status-badge.status-terminated { color: #f85149; border-color: #f8514966; }
+.process-live { margin-top: 8px; }
+.process-live .process-output {
+  margin: 0; padding: 10px; background: #060708; font-family: var(--mono); font-size: 11.5px;
+  max-height: 220px; overflow: auto; white-space: pre-wrap; word-break: break-word;
+  border: 1px solid var(--border); border-radius: 6px;
 }
 .muted { color: var(--muted); }
