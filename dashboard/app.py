@@ -45,6 +45,27 @@ def find_tool(name):
     return None
 
 
+_TRUE_STRINGS = {"true", "1", "yes", "on"}
+
+
+def coerce_param_types(tool, params):
+    """Convert bool-typed params from the form's "true"/"false" strings into
+    real JSON booleans.
+
+    The HexStrike server reads these with params.get(name, False) and then
+    does a plain `if value:` check - a non-empty string like "false" is
+    truthy in Python, so sending it as a string silently turns every
+    disabled toggle on. Coercing here, once, keeps every tool call this
+    dashboard makes correct without touching 100+ server route handlers.
+    """
+    types_by_name = {p["name"]: p["type"] for p in tool["params"]}
+    out = dict(params)
+    for name, value in params.items():
+        if types_by_name.get(name) == "bool" and isinstance(value, str):
+            out[name] = value.strip().lower() in _TRUE_STRINGS
+    return out
+
+
 @app.route("/")
 def index():
     return render_template("index.html")
@@ -56,7 +77,12 @@ def api_manifest():
     categories = {}
     for t in tools:
         categories.setdefault(t["category"], []).append(t)
-    return jsonify({"tools": tools, "categories": categories, "total": len(tools)})
+    return jsonify({
+        "tools": tools,
+        "categories": categories,
+        "total": len(tools),
+        "hexstrike_server": HEXSTRIKE_SERVER,
+    })
 
 
 @app.route("/api/health")
@@ -92,6 +118,8 @@ def api_run():
             "error": f"'{tool_name}' is a composite workflow with no single server route; "
                      f"not supported for direct execution from this dashboard."
         }), 400
+
+    params = coerce_param_types(tool, params)
 
     route = tool["route"]
     for pp in tool.get("path_params", []):

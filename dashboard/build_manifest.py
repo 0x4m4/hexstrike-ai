@@ -16,6 +16,9 @@ import re
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import tool_enrichment
+
 SRC_PATH = Path(__file__).resolve().parent.parent / "hexstrike_mcp.py"
 
 # Tools whose route can't be found by a simple literal-string regex because
@@ -117,9 +120,13 @@ def main():
             "method": method,
             "path_params": path_params,
             "composite": composite,
+            "_docstring": doc,  # consumed by tool_enrichment.enrich(), stripped below
         })
 
     tools.sort(key=lambda t: (t["category"], t["name"]))
+
+    docstring_by_name = {t["name"]: t.pop("_docstring") for t in tools}
+    tool_enrichment.enrich(tools, docstring_by_name)
     out_path = Path(__file__).resolve().parent / "tools_manifest.json"
     out_path.write_text(json.dumps(tools, indent=2))
     print(f"Wrote {len(tools)} tools to {out_path}")

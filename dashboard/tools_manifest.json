@@ -8,25 +8,34 @@
         "name": "domain",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "The target domain"
       },
       {
         "name": "mode",
         "type": "str",
         "default": "enum",
-        "required": false
+        "required": false,
+        "doc": "Amass mode (enum, intel, viz)",
+        "options": [
+          "enum",
+          "intel",
+          "viz"
+        ]
       },
       {
         "name": "additional_args",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Additional Amass arguments"
       }
     ],
     "route": "api/tools/amass",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "Finds all the little sibling websites hiding under a big domain name, like finding every room in a house you only knew the front door of."
   },
   {
     "name": "arp_scan_discovery",
@@ -37,43 +46,54 @@
         "name": "target",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "The target IP range (if not using local_network)"
       },
       {
         "name": "interface",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Network interface to use"
       },
       {
         "name": "local_network",
         "type": "bool",
         "default": false,
-        "required": false
+        "required": false,
+        "doc": "Scan local network",
+        "options": [
+          "true",
+          "false"
+        ]
       },
       {
         "name": "timeout",
         "type": "int",
         "default": 500,
-        "required": false
+        "required": false,
+        "doc": "Timeout in milliseconds"
       },
       {
         "name": "retry",
         "type": "int",
         "default": 3,
-        "required": false
+        "required": false,
+        "doc": "Number of retries"
       },
       {
         "name": "additional_args",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Additional arp-scan arguments"
       }
     ],
     "route": "api/tools/arp-scan",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a classic, well-known security tool brought into HexStrike's toolbox. In short: execute arp-scan for network discovery with enhanced logging."
   },
   {
     "name": "autorecon_comprehensive",
@@ -84,49 +104,57 @@
         "name": "target",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "The target IP address or hostname"
       },
       {
         "name": "output_dir",
         "type": "str",
         "default": "/tmp/autorecon",
-        "required": false
+        "required": false,
+        "doc": "Output directory for results"
       },
       {
         "name": "port_scans",
         "type": "str",
         "default": "top-100-ports",
-        "required": false
+        "required": false,
+        "doc": "Port scan configuration"
       },
       {
         "name": "service_scans",
         "type": "str",
         "default": "default",
-        "required": false
+        "required": false,
+        "doc": "Service scan configuration"
       },
       {
         "name": "heartbeat",
         "type": "int",
         "default": 60,
-        "required": false
+        "required": false,
+        "doc": "Heartbeat interval in seconds"
       },
       {
         "name": "timeout",
         "type": "int",
         "default": 300,
-        "required": false
+        "required": false,
+        "doc": "Timeout for individual scans"
       },
       {
         "name": "additional_args",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Additional AutoRecon arguments"
       }
     ],
     "route": "api/tools/autorecon",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a classic, well-known security tool brought into HexStrike's toolbox. In short: execute AutoRecon for comprehensive automated scouting."
   },
   {
     "name": "dirb_scan",
@@ -137,25 +165,29 @@
         "name": "url",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "The target URL"
       },
       {
         "name": "wordlist",
         "type": "str",
         "default": "/usr/share/wordlists/dirb/common.txt",
-        "required": false
+        "required": false,
+        "doc": "Path to wordlist file"
       },
       {
         "name": "additional_args",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Additional Dirb arguments"
       }
     ],
     "route": "api/tools/dirb",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a classic, well-known security tool brought into HexStrike's toolbox. In short: execute Dirb for directory brute forcing with enhanced logging."
   },
   {
     "name": "enum4linux_ng_advanced",
@@ -166,61 +198,87 @@
         "name": "target",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "The target IP address"
       },
       {
         "name": "username",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Username for authentication"
       },
       {
         "name": "password",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Password for authentication"
       },
       {
         "name": "domain",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Domain for authentication"
       },
       {
         "name": "shares",
         "type": "bool",
         "default": true,
-        "required": false
+        "required": false,
+        "doc": "Enumerate shares",
+        "options": [
+          "true",
+          "false"
+        ]
       },
       {
         "name": "users",
         "type": "bool",
         "default": true,
-        "required": false
+        "required": false,
+        "doc": "Enumerate users",
+        "options": [
+          "true",
+          "false"
+        ]
       },
       {
         "name": "groups",
         "type": "bool",
         "default": true,
-        "required": false
+        "required": false,
+        "doc": "Enumerate groups",
+        "options": [
+          "true",
+          "false"
+        ]
       },
       {
         "name": "policy",
         "type": "bool",
         "default": true,
-        "required": false
+        "required": false,
+        "doc": "Enumerate policies",
+        "options": [
+          "true",
+          "false"
+        ]
       },
       {
         "name": "additional_args",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Additional Enum4linux-ng arguments"
       }
     ],
     "route": "api/tools/enum4linux-ng",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a classic, well-known security tool brought into HexStrike's toolbox. In short: execute Enum4linux-ng for advanced SMB list out with enhanced logging."
   },
   {
     "name": "enum4linux_scan",
@@ -231,19 +289,22 @@
         "name": "target",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "The target IP address"
       },
       {
         "name": "additional_args",
         "type": "str",
         "default": "-a",
-        "required": false
+        "required": false,
+        "doc": "Additional Enum4linux arguments"
       }
     ],
     "route": "api/tools/enum4linux",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "Asks a Windows-style file-sharing server lots of polite questions - what users exist, what folders are shared - and writes down the answers."
   },
   {
     "name": "ffuf_scan",
@@ -254,37 +315,48 @@
         "name": "url",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "The target URL"
       },
       {
         "name": "wordlist",
         "type": "str",
         "default": "/usr/share/wordlists/dirb/common.txt",
-        "required": false
+        "required": false,
+        "doc": "Wordlist file to use"
       },
       {
         "name": "mode",
         "type": "str",
         "default": "directory",
-        "required": false
+        "required": false,
+        "doc": "Fuzzing mode (directory, vhost, parameter)",
+        "options": [
+          "directory",
+          "vhost",
+          "parameter"
+        ]
       },
       {
         "name": "match_codes",
         "type": "str",
         "default": "200,204,301,302,307,401,403",
-        "required": false
+        "required": false,
+        "doc": "HTTP status codes to match"
       },
       {
         "name": "additional_args",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Additional FFuf arguments"
       }
     ],
     "route": "api/tools/ffuf",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "Throws a huge list of made-up webpage names at a website really fast to find pages that exist but aren't linked from anywhere obvious."
   },
   {
     "name": "hashcat_crack",
@@ -295,43 +367,50 @@
         "name": "hash_file",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "File containing password hashes"
       },
       {
         "name": "hash_type",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "Hash type number for Hashcat"
       },
       {
         "name": "attack_mode",
         "type": "str",
         "default": "0",
-        "required": false
+        "required": false,
+        "doc": "Attack mode (0=dict, 1=combo, 3=mask, etc.)"
       },
       {
         "name": "wordlist",
         "type": "str",
         "default": "/usr/share/wordlists/rockyou.txt",
-        "required": false
+        "required": false,
+        "doc": "Wordlist file for dictionary attacks"
       },
       {
         "name": "mask",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Mask for mask attacks"
       },
       {
         "name": "additional_args",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Additional Hashcat arguments"
       }
     ],
     "route": "api/tools/hashcat",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "Same job as John the Ripper - unscrambling passwords - but it uses the graphics card to guess millions of passwords per second."
   },
   {
     "name": "hydra_attack",
@@ -342,49 +421,62 @@
         "name": "target",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "The target IP or hostname"
       },
       {
         "name": "service",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "The service to attack (ssh, ftp, http, etc.)",
+        "options": [
+          "ssh",
+          "ftp",
+          "http"
+        ]
       },
       {
         "name": "username",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Single username to test"
       },
       {
         "name": "username_file",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "File containing usernames"
       },
       {
         "name": "password",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Single password to test"
       },
       {
         "name": "password_file",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "File containing passwords"
       },
       {
         "name": "additional_args",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Additional Hydra arguments"
       }
     ],
     "route": "api/tools/hydra",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "Tries lots and lots of password guesses on a login really fast, like trying every key on a giant keyring until one opens the door."
   },
   {
     "name": "john_crack",
@@ -395,31 +487,36 @@
         "name": "hash_file",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "File containing password hashes"
       },
       {
         "name": "wordlist",
         "type": "str",
         "default": "/usr/share/wordlists/rockyou.txt",
-        "required": false
+        "required": false,
+        "doc": "Wordlist file to use"
       },
       {
         "name": "format_type",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Hash format type"
       },
       {
         "name": "additional_args",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Additional John arguments"
       }
     ],
     "route": "api/tools/john",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "Takes a scrambled password (a hash) and tries to unscramble it by guessing - starting with common passwords, like 'password123'."
   },
   {
     "name": "masscan_high_speed",
@@ -430,55 +527,68 @@
         "name": "target",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "The target IP address or CIDR range"
       },
       {
         "name": "ports",
         "type": "str",
         "default": "1-65535",
-        "required": false
+        "required": false,
+        "doc": "Port range to scan"
       },
       {
         "name": "rate",
         "type": "int",
         "default": 1000,
-        "required": false
+        "required": false,
+        "doc": "Packets per second rate"
       },
       {
         "name": "interface",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Network interface to use"
       },
       {
         "name": "router_mac",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Router MAC address"
       },
       {
         "name": "source_ip",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Source IP address"
       },
       {
         "name": "banners",
         "type": "bool",
         "default": false,
-        "required": false
+        "required": false,
+        "doc": "Enable banner grabbing",
+        "options": [
+          "true",
+          "false"
+        ]
       },
       {
         "name": "additional_args",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Additional Masscan arguments"
       }
     ],
     "route": "api/tools/masscan",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "Like Nmap's door-knocking, but built for speed - it can check every door on the whole internet block in a hurry."
   },
   {
     "name": "metasploit_run",
@@ -489,19 +599,22 @@
         "name": "module",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "The Metasploit module to use"
       },
       {
         "name": "options",
         "type": "Dict[str, Any]",
         "default": {},
-        "required": false
+        "required": false,
+        "doc": "Dictionary of module options"
       }
     ],
     "route": "api/tools/metasploit",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "A big toolbox of ready-made 'tricks' (exploits) for getting into systems with known weaknesses, used to prove a weakness is real."
   },
   {
     "name": "msfvenom_generate",
@@ -512,43 +625,55 @@
         "name": "payload",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "The payload to generate"
       },
       {
         "name": "format_type",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Output format (exe, elf, raw, etc.)",
+        "options": [
+          "exe",
+          "elf",
+          "raw"
+        ]
       },
       {
         "name": "output_file",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Output file path"
       },
       {
         "name": "encoder",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Encoder to use"
       },
       {
         "name": "iterations",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Number of encoding iterations"
       },
       {
         "name": "additional_args",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Additional MSFVenom arguments"
       }
     ],
     "route": "api/tools/msfvenom",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "Builds a small custom program (a payload) that, if it runs on a target computer, phones home so you know you got in."
   },
   {
     "name": "nbtscan_netbios",
@@ -559,31 +684,40 @@
         "name": "target",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "The target IP address or range"
       },
       {
         "name": "verbose",
         "type": "bool",
         "default": false,
-        "required": false
+        "required": false,
+        "doc": "Enable verbose output",
+        "options": [
+          "true",
+          "false"
+        ]
       },
       {
         "name": "timeout",
         "type": "int",
         "default": 2,
-        "required": false
+        "required": false,
+        "doc": "Timeout in seconds"
       },
       {
         "name": "additional_args",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Additional nbtscan arguments"
       }
     ],
     "route": "api/tools/nbtscan",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a classic, well-known security tool brought into HexStrike's toolbox. In short: execute nbtscan for NetBIOS name scanning with enhanced logging."
   },
   {
     "name": "netexec_scan",
@@ -594,49 +728,62 @@
         "name": "target",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "The target IP or network"
       },
       {
         "name": "protocol",
         "type": "str",
         "default": "smb",
-        "required": false
+        "required": false,
+        "doc": "Protocol to use (smb, ssh, winrm, etc.)",
+        "options": [
+          "smb",
+          "ssh",
+          "winrm"
+        ]
       },
       {
         "name": "username",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Username for authentication"
       },
       {
         "name": "password",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Password for authentication"
       },
       {
         "name": "hash_value",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Hash for pass-the-hash attacks"
       },
       {
         "name": "module",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "NetExec module to execute"
       },
       {
         "name": "additional_args",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Additional NetExec arguments"
       }
     ],
     "route": "api/tools/netexec",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a classic, well-known security tool brought into HexStrike's toolbox. In short: execute NetExec (formerly CrackMapExec) for network list out with enhanced logging."
   },
   {
     "name": "nikto_scan",
@@ -647,19 +794,22 @@
         "name": "target",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "The target URL or IP"
       },
       {
         "name": "additional_args",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Additional Nikto arguments"
       }
     ],
     "route": "api/tools/nikto",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "Gives a website a quick health check, looking for old software versions and common misconfigurations that are easy to fix but often forgotten."
   },
   {
     "name": "nmap_advanced_scan",
@@ -670,67 +820,107 @@
         "name": "target",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "The target IP address or hostname"
       },
       {
         "name": "scan_type",
         "type": "str",
         "default": "-sS",
-        "required": false
+        "required": false,
+        "doc": "Nmap scan type (e.g., -sS, -sT, -sU)",
+        "options": [
+          "-sS",
+          "-sT",
+          "-sU"
+        ]
       },
       {
         "name": "ports",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Specific ports to scan"
       },
       {
         "name": "timing",
         "type": "str",
         "default": "T4",
-        "required": false
+        "required": false,
+        "doc": "Timing template (T0-T5)",
+        "options": [
+          "T0",
+          "T1",
+          "T2",
+          "T3",
+          "T4",
+          "T5"
+        ]
       },
       {
         "name": "nse_scripts",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Custom NSE scripts to run"
       },
       {
         "name": "os_detection",
         "type": "bool",
         "default": false,
-        "required": false
+        "required": false,
+        "doc": "Enable OS detection",
+        "options": [
+          "true",
+          "false"
+        ]
       },
       {
         "name": "version_detection",
         "type": "bool",
         "default": false,
-        "required": false
+        "required": false,
+        "doc": "Enable version detection",
+        "options": [
+          "true",
+          "false"
+        ]
       },
       {
         "name": "aggressive",
         "type": "bool",
         "default": false,
-        "required": false
+        "required": false,
+        "doc": "Enable aggressive scanning",
+        "options": [
+          "true",
+          "false"
+        ]
       },
       {
         "name": "stealth",
         "type": "bool",
         "default": false,
-        "required": false
+        "required": false,
+        "doc": "Enable stealth mode",
+        "options": [
+          "true",
+          "false"
+        ]
       },
       {
         "name": "additional_args",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Additional Nmap arguments"
       }
     ],
     "route": "api/tools/nmap-advanced",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "Same idea as a regular Nmap knock, but you get to pick exactly how loud you knock, how fast, and whether to also ask 'what are you?' to whatever answers the door."
   },
   {
     "name": "responder_credential_harvest",
@@ -741,49 +931,73 @@
         "name": "interface",
         "type": "str",
         "default": "eth0",
-        "required": false
+        "required": false,
+        "doc": "Network interface to use"
       },
       {
         "name": "analyze",
         "type": "bool",
         "default": false,
-        "required": false
+        "required": false,
+        "doc": "Analyze mode only",
+        "options": [
+          "true",
+          "false"
+        ]
       },
       {
         "name": "wpad",
         "type": "bool",
         "default": true,
-        "required": false
+        "required": false,
+        "doc": "Enable WPAD rogue proxy",
+        "options": [
+          "true",
+          "false"
+        ]
       },
       {
         "name": "force_wpad_auth",
         "type": "bool",
         "default": false,
-        "required": false
+        "required": false,
+        "doc": "Force WPAD authentication",
+        "options": [
+          "true",
+          "false"
+        ]
       },
       {
         "name": "fingerprint",
         "type": "bool",
         "default": false,
-        "required": false
+        "required": false,
+        "doc": "Fingerprint mode",
+        "options": [
+          "true",
+          "false"
+        ]
       },
       {
         "name": "duration",
         "type": "int",
         "default": 300,
-        "required": false
+        "required": false,
+        "doc": "Duration to run in seconds"
       },
       {
         "name": "additional_args",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Additional Responder arguments"
       }
     ],
     "route": "api/tools/responder",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a classic, well-known security tool brought into HexStrike's toolbox. In short: execute Responder for credential harvesting with enhanced logging."
   },
   {
     "name": "rpcclient_enumeration",
@@ -794,43 +1008,50 @@
         "name": "target",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "The target IP address"
       },
       {
         "name": "username",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Username for authentication"
       },
       {
         "name": "password",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Password for authentication"
       },
       {
         "name": "domain",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Domain for authentication"
       },
       {
         "name": "commands",
         "type": "str",
         "default": "enumdomusers;enumdomgroups;querydominfo",
-        "required": false
+        "required": false,
+        "doc": "Semicolon-separated RPC commands"
       },
       {
         "name": "additional_args",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Additional rpcclient arguments"
       }
     ],
     "route": "api/tools/rpcclient",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a classic, well-known security tool brought into HexStrike's toolbox. In short: execute rpcclient for RPC list out with enhanced logging."
   },
   {
     "name": "rustscan_fast_scan",
@@ -841,49 +1062,61 @@
         "name": "target",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "The target IP address or hostname"
       },
       {
         "name": "ports",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Specific ports to scan (e.g., \"22,80,443\")"
       },
       {
         "name": "ulimit",
         "type": "int",
         "default": 5000,
-        "required": false
+        "required": false,
+        "doc": "File descriptor limit"
       },
       {
         "name": "batch_size",
         "type": "int",
         "default": 4500,
-        "required": false
+        "required": false,
+        "doc": "Batch size for scanning"
       },
       {
         "name": "timeout",
         "type": "int",
         "default": 1500,
-        "required": false
+        "required": false,
+        "doc": "Timeout in milliseconds"
       },
       {
         "name": "scripts",
         "type": "bool",
         "default": false,
-        "required": false
+        "required": false,
+        "doc": "Run Nmap scripts on discovered ports",
+        "options": [
+          "true",
+          "false"
+        ]
       },
       {
         "name": "additional_args",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Additional Rustscan arguments"
       }
     ],
     "route": "api/tools/rustscan",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "Knocks on ALL the doors of a computer super fast, then hands the short list of open ones to Nmap to take a closer look."
   },
   {
     "name": "smbmap_scan",
@@ -894,37 +1127,43 @@
         "name": "target",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "The target IP address"
       },
       {
         "name": "username",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Username for authentication"
       },
       {
         "name": "password",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Password for authentication"
       },
       {
         "name": "domain",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Domain for authentication"
       },
       {
         "name": "additional_args",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Additional SMBMap arguments"
       }
     ],
     "route": "api/tools/smbmap",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "Checks which shared folders on a Windows-style server you're allowed to open, and whether you can read or even write files in them."
   },
   {
     "name": "sqlmap_scan",
@@ -935,25 +1174,29 @@
         "name": "url",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "The target URL"
       },
       {
         "name": "data",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "POST data for testing"
       },
       {
         "name": "additional_args",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Additional SQLMap arguments"
       }
     ],
     "route": "api/tools/sqlmap",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "Pokes at a website's search boxes and login forms to see if it accidentally lets you talk directly to its database, like finding a secret door behind a painting."
   },
   {
     "name": "subfinder_scan",
@@ -964,31 +1207,44 @@
         "name": "domain",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "The target domain"
       },
       {
         "name": "silent",
         "type": "bool",
         "default": true,
-        "required": false
+        "required": false,
+        "doc": "Run in silent mode",
+        "options": [
+          "true",
+          "false"
+        ]
       },
       {
         "name": "all_sources",
         "type": "bool",
         "default": false,
-        "required": false
+        "required": false,
+        "doc": "Use all sources",
+        "options": [
+          "true",
+          "false"
+        ]
       },
       {
         "name": "additional_args",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Additional Subfinder arguments"
       }
     ],
     "route": "api/tools/subfinder",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "Another way to find those hidden sibling websites (subdomains) under a domain, by asking lots of different sources at once."
   },
   {
     "name": "volatility_analyze",
@@ -999,31 +1255,36 @@
         "name": "memory_file",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "Path to memory dump file"
       },
       {
         "name": "plugin",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "Volatility plugin to use"
       },
       {
         "name": "profile",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Memory profile to use"
       },
       {
         "name": "additional_args",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Additional Volatility arguments"
       }
     ],
     "route": "api/tools/volatility",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a classic, well-known security tool brought into HexStrike's toolbox. In short: execute Volatility for memory forensics analysis with enhanced logging."
   },
   {
     "name": "wpscan_analyze",
@@ -1034,19 +1295,22 @@
         "name": "url",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "The WordPress site URL"
       },
       {
         "name": "additional_args",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Additional WPScan arguments"
       }
     ],
     "route": "api/tools/wpscan",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "A nikto-style check made just for WordPress websites - looks for old plugins, themes, and usernames that could be a way in."
   },
   {
     "name": "arjun_scan",
@@ -1057,49 +1321,61 @@
         "name": "url",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "Target URL"
       },
       {
         "name": "method",
         "type": "str",
         "default": "GET",
-        "required": false
+        "required": false,
+        "doc": "HTTP method (GET, POST, etc.)",
+        "options": [
+          "GET",
+          "POST"
+        ]
       },
       {
         "name": "data",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "POST data for testing"
       },
       {
         "name": "headers",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Custom headers"
       },
       {
         "name": "timeout",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Request timeout"
       },
       {
         "name": "output_file",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Output file path"
       },
       {
         "name": "additional_args",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Additional Arjun arguments"
       }
     ],
     "route": "api/tools/arjun",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool for poking at websites to see how they're built and where they're weak. In short: execute Arjun for parameter discovery with enhanced logging."
   },
   {
     "name": "autorecon_scan",
@@ -1110,241 +1386,309 @@
         "name": "target",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Single target to scan"
       },
       {
         "name": "target_file",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "File containing multiple targets"
       },
       {
         "name": "ports",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Specific ports to scan"
       },
       {
         "name": "output_dir",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Output directory"
       },
       {
         "name": "max_scans",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Maximum number of concurrent scans"
       },
       {
         "name": "max_port_scans",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Maximum number of concurrent port scans"
       },
       {
         "name": "heartbeat",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Heartbeat interval"
       },
       {
         "name": "timeout",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Global timeout"
       },
       {
         "name": "target_timeout",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Per-target timeout"
       },
       {
         "name": "config_file",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Configuration file path"
       },
       {
         "name": "global_file",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Global configuration file"
       },
       {
         "name": "plugins_dir",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Plugins directory"
       },
       {
         "name": "add_plugins_dir",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Additional plugins directory"
       },
       {
         "name": "tags",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Plugin tags to include"
       },
       {
         "name": "exclude_tags",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Plugin tags to exclude"
       },
       {
         "name": "port_scans",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Port scan plugins to run"
       },
       {
         "name": "service_scans",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Service scan plugins to run"
       },
       {
         "name": "reports",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Report plugins to run"
       },
       {
         "name": "single_target",
         "type": "bool",
         "default": false,
-        "required": false
+        "required": false,
+        "doc": "Use single target directory structure",
+        "options": [
+          "true",
+          "false"
+        ]
       },
       {
         "name": "only_scans_dir",
         "type": "bool",
         "default": false,
-        "required": false
+        "required": false,
+        "doc": "Only create scans directory",
+        "options": [
+          "true",
+          "false"
+        ]
       },
       {
         "name": "no_port_dirs",
         "type": "bool",
         "default": false,
-        "required": false
+        "required": false,
+        "doc": "Don't create port directories",
+        "options": [
+          "true",
+          "false"
+        ]
       },
       {
         "name": "nmap",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Custom nmap command"
       },
       {
         "name": "nmap_append",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Arguments to append to nmap"
       },
       {
         "name": "proxychains",
         "type": "bool",
         "default": false,
-        "required": false
+        "required": false,
+        "doc": "Use proxychains",
+        "options": [
+          "true",
+          "false"
+        ]
       },
       {
         "name": "disable_sanity_checks",
         "type": "bool",
         "default": false,
-        "required": false
+        "required": false,
+        "doc": "Disable sanity checks",
+        "options": [
+          "true",
+          "false"
+        ]
       },
       {
         "name": "disable_keyboard_control",
         "type": "bool",
         "default": false,
-        "required": false
+        "required": false,
+        "doc": "Disable keyboard control",
+        "options": [
+          "true",
+          "false"
+        ]
       },
       {
         "name": "force_services",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Force service detection"
       },
       {
         "name": "accessible",
         "type": "bool",
         "default": false,
-        "required": false
+        "required": false,
+        "doc": "Enable accessible output",
+        "options": [
+          "true",
+          "false"
+        ]
       },
       {
         "name": "verbose",
         "type": "int",
         "default": 0,
-        "required": false
+        "required": false,
+        "doc": "Verbosity level (0-3)"
       },
       {
         "name": "curl_path",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Custom curl path"
       },
       {
         "name": "dirbuster_tool",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Directory busting tool"
       },
       {
         "name": "dirbuster_wordlist",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Directory busting wordlist"
       },
       {
         "name": "dirbuster_threads",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Directory busting threads"
       },
       {
         "name": "dirbuster_ext",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Directory busting extensions"
       },
       {
         "name": "onesixtyone_community_strings",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "SNMP community strings"
       },
       {
         "name": "global_username_wordlist",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Global username wordlist"
       },
       {
         "name": "global_password_wordlist",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Global password wordlist"
       },
       {
         "name": "global_domain",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Global domain"
       },
       {
         "name": "additional_args",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Additional AutoRecon arguments"
       }
     ],
     "route": "api/tools/autorecon",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool for poking at websites to see how they're built and where they're weak. In short: execute AutoRecon for comprehensive target list out with full parameter support."
   },
   {
     "name": "burpsuite_scan",
@@ -1355,55 +1699,68 @@
         "name": "project_file",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Burp project file path"
       },
       {
         "name": "config_file",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Burp configuration file path"
       },
       {
         "name": "target",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Target URL"
       },
       {
         "name": "headless",
         "type": "bool",
         "default": false,
-        "required": false
+        "required": false,
+        "doc": "Run in headless mode",
+        "options": [
+          "true",
+          "false"
+        ]
       },
       {
         "name": "scan_type",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Type of scan to perform"
       },
       {
         "name": "scan_config",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Scan configuration"
       },
       {
         "name": "output_file",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Output file path"
       },
       {
         "name": "additional_args",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Additional Burp Suite arguments"
       }
     ],
     "route": "api/tools/burpsuite",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool for poking at websites to see how they're built and where they're weak. In short: execute Burp Suite with enhanced logging."
   },
   {
     "name": "dnsenum_scan",
@@ -1414,31 +1771,36 @@
         "name": "domain",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "Target domain"
       },
       {
         "name": "dns_server",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "DNS server to use"
       },
       {
         "name": "wordlist",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Wordlist for brute forcing"
       },
       {
         "name": "additional_args",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Additional dnsenum arguments"
       }
     ],
     "route": "api/tools/dnsenum",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool for poking at websites to see how they're built and where they're weak. In short: execute dnsenum for DNS list out with enhanced logging."
   },
   {
     "name": "fierce_scan",
@@ -1449,25 +1811,29 @@
         "name": "domain",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "Target domain"
       },
       {
         "name": "dns_server",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "DNS server to use"
       },
       {
         "name": "additional_args",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Additional fierce arguments"
       }
     ],
     "route": "api/tools/fierce",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool for poking at websites to see how they're built and where they're weak. In short: execute fierce for DNS scouting with enhanced logging."
   },
   {
     "name": "wafw00f_scan",
@@ -1478,19 +1844,22 @@
         "name": "target",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "Target URL or IP"
       },
       {
         "name": "additional_args",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Additional wafw00f arguments"
       }
     ],
     "route": "api/tools/wafw00f",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool for poking at websites to see how they're built and where they're weak. In short: execute wafw00f to identify and fingerprint WAF products with enhanced logging."
   },
   {
     "name": "zap_scan",
@@ -1501,61 +1870,85 @@
         "name": "target",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Target URL"
       },
       {
         "name": "scan_type",
         "type": "str",
         "default": "baseline",
-        "required": false
+        "required": false,
+        "doc": "Type of scan (baseline, full, api)",
+        "options": [
+          "baseline",
+          "full",
+          "api"
+        ]
       },
       {
         "name": "api_key",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "ZAP API key"
       },
       {
         "name": "daemon",
         "type": "bool",
         "default": false,
-        "required": false
+        "required": false,
+        "doc": "Run in daemon mode",
+        "options": [
+          "true",
+          "false"
+        ]
       },
       {
         "name": "port",
         "type": "str",
         "default": "8090",
-        "required": false
+        "required": false,
+        "doc": "Port for ZAP daemon"
       },
       {
         "name": "host",
         "type": "str",
         "default": "0.0.0.0",
-        "required": false
+        "required": false,
+        "doc": "Host for ZAP daemon"
       },
       {
         "name": "format_type",
         "type": "str",
         "default": "xml",
-        "required": false
+        "required": false,
+        "doc": "Output format (xml, json, html)",
+        "options": [
+          "xml",
+          "json",
+          "html"
+        ]
       },
       {
         "name": "output_file",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Output file path"
       },
       {
         "name": "additional_args",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Additional ZAP arguments"
       }
     ],
     "route": "api/tools/zap",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool for poking at websites to see how they're built and where they're weak. In short: execute OWASP ZAP with enhanced logging."
   },
   {
     "name": "ai_generate_attack_suite",
@@ -1566,19 +1959,22 @@
         "name": "target_url",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "Target URL for testing"
       },
       {
         "name": "attack_types",
         "type": "str",
         "default": "xss,sqli,lfi",
-        "required": false
+        "required": false,
+        "doc": "Comma-separated list of attack types"
       }
     ],
     "route": null,
     "method": "POST",
     "path_params": [],
-    "composite": true
+    "composite": true,
+    "eli5": "This is a tool for taking apart a finished program to see how it works inside. In short: generate comprehensive attack suite with multiple little program types."
   },
   {
     "name": "ai_generate_payload",
@@ -1589,31 +1985,56 @@
         "name": "attack_type",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "Type of attack (xss, sqli, lfi, cmd_injection, ssti, xxe)",
+        "options": [
+          "xss",
+          "sqli",
+          "lfi",
+          "cmd_injection",
+          "ssti",
+          "xxe"
+        ]
       },
       {
         "name": "complexity",
         "type": "str",
         "default": "basic",
-        "required": false
+        "required": false,
+        "doc": "Complexity level (basic, advanced, bypass)",
+        "options": [
+          "basic",
+          "advanced",
+          "bypass"
+        ]
       },
       {
         "name": "technology",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Target technology (php, asp, jsp, python, nodejs)",
+        "options": [
+          "php",
+          "asp",
+          "jsp",
+          "python",
+          "nodejs"
+        ]
       },
       {
         "name": "url",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Target URL for context"
       }
     ],
     "route": "api/ai/generate_payload",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool for taking apart a finished program to see how it works inside. In short: generate AI-powered contextual payloads for security testing."
   },
   {
     "name": "ai_test_payload",
@@ -1624,25 +2045,33 @@
         "name": "payload",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "The payload to test"
       },
       {
         "name": "target_url",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "Target URL to test against"
       },
       {
         "name": "method",
         "type": "str",
         "default": "GET",
-        "required": false
+        "required": false,
+        "doc": "HTTP method (GET, POST)",
+        "options": [
+          "GET",
+          "POST"
+        ]
       }
     ],
     "route": "api/ai/test_payload",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool for taking apart a finished program to see how it works inside. In short: test generated little program against target with AI analysis."
   },
   {
     "name": "anew_data_processing",
@@ -1653,25 +2082,29 @@
         "name": "input_data",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "Input data to process"
       },
       {
         "name": "output_file",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Output file path"
       },
       {
         "name": "additional_args",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Additional anew arguments"
       }
     ],
     "route": "api/tools/anew",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool for taking apart a finished program to see how it works inside. In short: execute anew for appending new lines to files (useful for data processing)."
   },
   {
     "name": "angr_symbolic_execution",
@@ -1682,43 +2115,55 @@
         "name": "binary",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "Binary to analyze"
       },
       {
         "name": "script_content",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Custom angr script content"
       },
       {
         "name": "find_address",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Address to find during symbolic execution"
       },
       {
         "name": "avoid_addresses",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Comma-separated addresses to avoid"
       },
       {
         "name": "analysis_type",
         "type": "str",
         "default": "symbolic",
-        "required": false
+        "required": false,
+        "doc": "Type of analysis (symbolic, cfg, static)",
+        "options": [
+          "symbolic",
+          "cfg",
+          "static"
+        ]
       },
       {
         "name": "additional_args",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Additional arguments"
       }
     ],
     "route": "api/tools/angr",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool for taking apart a finished program to see how it works inside. In short: execute angr for symbolic execution and binary analysis."
   },
   {
     "name": "api_fuzzer",
@@ -1729,31 +2174,36 @@
         "name": "base_url",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "Base URL of the API"
       },
       {
         "name": "endpoints",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Comma-separated list of specific endpoints to test"
       },
       {
         "name": "methods",
         "type": "str",
         "default": "GET,POST,PUT,DELETE",
-        "required": false
+        "required": false,
+        "doc": "HTTP methods to test (comma-separated)"
       },
       {
         "name": "wordlist",
         "type": "str",
         "default": "/usr/share/wordlists/api/api-endpoints.txt",
-        "required": false
+        "required": false,
+        "doc": "Wordlist for endpoint discovery"
       }
     ],
     "route": "api/tools/api_fuzzer",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool for taking apart a finished program to see how it works inside. In short: advanced API endpoint throw lots of weird inputs at with intelligent parameter discovery."
   },
   {
     "name": "api_schema_analyzer",
@@ -1764,19 +2214,27 @@
         "name": "schema_url",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "URL to the API schema (OpenAPI/Swagger/GraphQL)"
       },
       {
         "name": "schema_type",
         "type": "str",
         "default": "openapi",
-        "required": false
+        "required": false,
+        "doc": "Type of schema (openapi, swagger, graphql)",
+        "options": [
+          "openapi",
+          "swagger",
+          "graphql"
+        ]
       }
     ],
     "route": "api/tools/api_schema_analyzer",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool for taking apart a finished program to see how it works inside. In short: analyze API schemas and identify potential security issues."
   },
   {
     "name": "arjun_parameter_discovery",
@@ -1787,49 +2245,70 @@
         "name": "url",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "The target URL"
       },
       {
         "name": "method",
         "type": "str",
         "default": "GET",
-        "required": false
+        "required": false,
+        "doc": "HTTP method to use",
+        "options": [
+          "GET",
+          "POST",
+          "PUT",
+          "DELETE",
+          "PATCH",
+          "HEAD",
+          "OPTIONS"
+        ]
       },
       {
         "name": "wordlist",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Custom wordlist file"
       },
       {
         "name": "delay",
         "type": "int",
         "default": 0,
-        "required": false
+        "required": false,
+        "doc": "Delay between requests"
       },
       {
         "name": "threads",
         "type": "int",
         "default": 25,
-        "required": false
+        "required": false,
+        "doc": "Number of threads"
       },
       {
         "name": "stable",
         "type": "bool",
         "default": false,
-        "required": false
+        "required": false,
+        "doc": "Use stable mode",
+        "options": [
+          "true",
+          "false"
+        ]
       },
       {
         "name": "additional_args",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Additional Arjun arguments"
       }
     ],
     "route": "api/tools/arjun",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "Guesses hidden form-field names a webpage secretly accepts, even though it doesn't show them anywhere on the page."
   },
   {
     "name": "binwalk_analyze",
@@ -1840,25 +2319,33 @@
         "name": "file_path",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "Path to the file to analyze"
       },
       {
         "name": "extract",
         "type": "bool",
         "default": false,
-        "required": false
+        "required": false,
+        "doc": "Whether to extract discovered files",
+        "options": [
+          "true",
+          "false"
+        ]
       },
       {
         "name": "additional_args",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Additional Binwalk arguments"
       }
     ],
     "route": "api/tools/binwalk",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "Looks inside a single file to find other files hidden or packed inside it, like finding toys hidden inside a cereal box."
   },
   {
     "name": "checksec_analyze",
@@ -1869,13 +2356,15 @@
         "name": "binary",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "Path to the binary file"
       }
     ],
     "route": "api/tools/checksec",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool for taking apart a finished program to see how it works inside. In short: check security features of a binary with enhanced logging."
   },
   {
     "name": "comprehensive_api_audit",
@@ -1886,31 +2375,36 @@
         "name": "base_url",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "Base URL of the API"
       },
       {
         "name": "schema_url",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Optional API schema URL"
       },
       {
         "name": "jwt_token",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Optional JWT token for analysis"
       },
       {
         "name": "graphql_endpoint",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Optional GraphQL endpoint"
       }
     ],
     "route": null,
     "method": "POST",
     "path_params": [],
-    "composite": true
+    "composite": true,
+    "eli5": "This is a tool for taking apart a finished program to see how it works inside. In short: comprehensive API security audit combining multiple testing techniques."
   },
   {
     "name": "dalfox_xss_scan",
@@ -1921,49 +2415,73 @@
         "name": "url",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "The target URL"
       },
       {
         "name": "pipe_mode",
         "type": "bool",
         "default": false,
-        "required": false
+        "required": false,
+        "doc": "Use pipe mode for input",
+        "options": [
+          "true",
+          "false"
+        ]
       },
       {
         "name": "blind",
         "type": "bool",
         "default": false,
-        "required": false
+        "required": false,
+        "doc": "Enable blind XSS testing",
+        "options": [
+          "true",
+          "false"
+        ]
       },
       {
         "name": "mining_dom",
         "type": "bool",
         "default": true,
-        "required": false
+        "required": false,
+        "doc": "Enable DOM mining",
+        "options": [
+          "true",
+          "false"
+        ]
       },
       {
         "name": "mining_dict",
         "type": "bool",
         "default": true,
-        "required": false
+        "required": false,
+        "doc": "Enable dictionary mining",
+        "options": [
+          "true",
+          "false"
+        ]
       },
       {
         "name": "custom_payload",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Custom XSS payload"
       },
       {
         "name": "additional_args",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Additional Dalfox arguments"
       }
     ],
     "route": "api/tools/dalfox",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool for taking apart a finished program to see how it works inside. In short: execute Dalfox for advanced XSS weak spot scanning with enhanced logging."
   },
   {
     "name": "dirsearch_scan",
@@ -1974,43 +2492,54 @@
         "name": "url",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "The target URL"
       },
       {
         "name": "extensions",
         "type": "str",
         "default": "php,html,js,txt,xml,json",
-        "required": false
+        "required": false,
+        "doc": "File extensions to search for"
       },
       {
         "name": "wordlist",
         "type": "str",
         "default": "/usr/share/wordlists/dirsearch/common.txt",
-        "required": false
+        "required": false,
+        "doc": "Wordlist file to use"
       },
       {
         "name": "threads",
         "type": "int",
         "default": 30,
-        "required": false
+        "required": false,
+        "doc": "Number of threads to use"
       },
       {
         "name": "recursive",
         "type": "bool",
         "default": false,
-        "required": false
+        "required": false,
+        "doc": "Enable recursive scanning",
+        "options": [
+          "true",
+          "false"
+        ]
       },
       {
         "name": "additional_args",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Additional Dirsearch arguments"
       }
     ],
     "route": "api/tools/dirsearch",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "Walks through a big list of common file and folder names, checking each one to see if the website actually has it."
   },
   {
     "name": "dotdotpwn_scan",
@@ -2021,25 +2550,34 @@
         "name": "target",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "The target hostname or IP"
       },
       {
         "name": "module",
         "type": "str",
         "default": "http",
-        "required": false
+        "required": false,
+        "doc": "Module to use (http, ftp, tftp, etc.)",
+        "options": [
+          "http",
+          "ftp",
+          "tftp"
+        ]
       },
       {
         "name": "additional_args",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Additional DotDotPwn arguments"
       }
     ],
     "route": "api/tools/dotdotpwn",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool for taking apart a finished program to see how it works inside. In short: execute DotDotPwn for directory traversal testing with enhanced logging."
   },
   {
     "name": "exiftool_extract",
@@ -2050,31 +2588,41 @@
         "name": "file_path",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "Path to file for metadata extraction"
       },
       {
         "name": "output_format",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Output format (json, xml, csv)",
+        "options": [
+          "json",
+          "xml",
+          "csv"
+        ]
       },
       {
         "name": "tags",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Specific tags to extract"
       },
       {
         "name": "additional_args",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Additional ExifTool arguments"
       }
     ],
     "route": "api/tools/exiftool",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "Reads the hidden notes a file carries about itself - like when a photo secretly remembers the camera and location it was taken."
   },
   {
     "name": "feroxbuster_scan",
@@ -2085,31 +2633,36 @@
         "name": "url",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "The target URL"
       },
       {
         "name": "wordlist",
         "type": "str",
         "default": "/usr/share/wordlists/dirb/common.txt",
-        "required": false
+        "required": false,
+        "doc": "Wordlist file to use"
       },
       {
         "name": "threads",
         "type": "int",
         "default": 10,
-        "required": false
+        "required": false,
+        "doc": "Number of threads"
       },
       {
         "name": "additional_args",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Additional Feroxbuster arguments"
       }
     ],
     "route": "api/tools/feroxbuster",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "Like gobuster, but it also automatically explores any new folders it finds, going deeper and deeper on its own."
   },
   {
     "name": "foremost_carving",
@@ -2120,31 +2673,41 @@
         "name": "input_file",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "Input file or device to carve"
       },
       {
         "name": "output_dir",
         "type": "str",
         "default": "/tmp/foremost_output",
-        "required": false
+        "required": false,
+        "doc": "Output directory for carved files"
       },
       {
         "name": "file_types",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "File types to carve (jpg,gif,png,etc.)",
+        "options": [
+          "jpg",
+          "gif",
+          "png"
+        ]
       },
       {
         "name": "additional_args",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Additional Foremost arguments"
       }
     ],
     "route": "api/tools/foremost",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool for taking apart a finished program to see how it works inside. In short: execute Foremost for file carving with enhanced logging."
   },
   {
     "name": "gau_discovery",
@@ -2155,37 +2718,47 @@
         "name": "domain",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "The target domain"
       },
       {
         "name": "providers",
         "type": "str",
         "default": "wayback,commoncrawl,otx,urlscan",
-        "required": false
+        "required": false,
+        "doc": "Data providers to use"
       },
       {
         "name": "include_subs",
         "type": "bool",
         "default": true,
-        "required": false
+        "required": false,
+        "doc": "Include subdomains",
+        "options": [
+          "true",
+          "false"
+        ]
       },
       {
         "name": "blacklist",
         "type": "str",
         "default": "png,jpg,gif,jpeg,swf,woff,svg,pdf,css,ico",
-        "required": false
+        "required": false,
+        "doc": "File extensions to blacklist"
       },
       {
         "name": "additional_args",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Additional Gau arguments"
       }
     ],
     "route": "api/tools/gau",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool for taking apart a finished program to see how it works inside. In short: execute Gau (Get All URLs) for URL discovery from multiple sources with enhanced logging."
   },
   {
     "name": "gdb_analyze",
@@ -2196,31 +2769,36 @@
         "name": "binary",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "Path to the binary file"
       },
       {
         "name": "commands",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "GDB commands to execute"
       },
       {
         "name": "script_file",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Path to GDB script file"
       },
       {
         "name": "additional_args",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Additional GDB arguments"
       }
     ],
     "route": "api/tools/gdb",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "Lets you run a program one tiny step at a time and peek inside its brain (memory) while it's running, to see exactly what it's doing."
   },
   {
     "name": "gdb_peda_debug",
@@ -2231,37 +2809,43 @@
         "name": "binary",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Binary to debug"
       },
       {
         "name": "commands",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "GDB commands to execute"
       },
       {
         "name": "attach_pid",
         "type": "int",
         "default": 0,
-        "required": false
+        "required": false,
+        "doc": "Process ID to attach to"
       },
       {
         "name": "core_file",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Core dump file to analyze"
       },
       {
         "name": "additional_args",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Additional GDB arguments"
       }
     ],
     "route": "api/tools/gdb-peda",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool for taking apart a finished program to see how it works inside. In short: execute GDB with PEDA for enhanced debugging and trick to get in."
   },
   {
     "name": "ghidra_analysis",
@@ -2272,43 +2856,54 @@
         "name": "binary",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "Path to the binary file"
       },
       {
         "name": "project_name",
         "type": "str",
         "default": "hexstrike_analysis",
-        "required": false
+        "required": false,
+        "doc": "Ghidra project name"
       },
       {
         "name": "script_file",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Custom Ghidra script to run"
       },
       {
         "name": "analysis_timeout",
         "type": "int",
         "default": 300,
-        "required": false
+        "required": false,
+        "doc": "Analysis timeout in seconds"
       },
       {
         "name": "output_format",
         "type": "str",
         "default": "xml",
-        "required": false
+        "required": false,
+        "doc": "Output format (xml, json)",
+        "options": [
+          "xml",
+          "json"
+        ]
       },
       {
         "name": "additional_args",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Additional Ghidra arguments"
       }
     ],
     "route": "api/tools/ghidra",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "Takes a program that's already built (just 1s and 0s) and turns it back into something closer to readable code, so you can study it."
   },
   {
     "name": "graphql_scanner",
@@ -2319,31 +2914,44 @@
         "name": "endpoint",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "GraphQL endpoint URL"
       },
       {
         "name": "introspection",
         "type": "bool",
         "default": true,
-        "required": false
+        "required": false,
+        "doc": "Test introspection queries",
+        "options": [
+          "true",
+          "false"
+        ]
       },
       {
         "name": "query_depth",
         "type": "int",
         "default": 10,
-        "required": false
+        "required": false,
+        "doc": "Maximum query depth to test"
       },
       {
         "name": "test_mutations",
         "type": "bool",
         "default": true,
-        "required": false
+        "required": false,
+        "doc": "Test mutation operations",
+        "options": [
+          "true",
+          "false"
+        ]
       }
     ],
     "route": "api/tools/graphql_scanner",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool for taking apart a finished program to see how it works inside. In short: advanced GraphQL security scanning and introspection."
   },
   {
     "name": "hakrawler_crawl",
@@ -2354,49 +2962,73 @@
         "name": "url",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "Target URL to crawl"
       },
       {
         "name": "depth",
         "type": "int",
         "default": 2,
-        "required": false
+        "required": false,
+        "doc": "Crawling depth (mapped to -d)"
       },
       {
         "name": "forms",
         "type": "bool",
         "default": true,
-        "required": false
+        "required": false,
+        "doc": "Include forms in crawling (mapped to -s)",
+        "options": [
+          "true",
+          "false"
+        ]
       },
       {
         "name": "robots",
         "type": "bool",
         "default": true,
-        "required": false
+        "required": false,
+        "doc": "Check robots.txt (mapped to -subs)",
+        "options": [
+          "true",
+          "false"
+        ]
       },
       {
         "name": "sitemap",
         "type": "bool",
         "default": true,
-        "required": false
+        "required": false,
+        "doc": "Check sitemap.xml (mapped to -subs)",
+        "options": [
+          "true",
+          "false"
+        ]
       },
       {
         "name": "wayback",
         "type": "bool",
         "default": false,
-        "required": false
+        "required": false,
+        "doc": "Use Wayback Machine (mapped to -subs)",
+        "options": [
+          "true",
+          "false"
+        ]
       },
       {
         "name": "additional_args",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Additional Hakrawler arguments"
       }
     ],
     "route": "api/tools/hakrawler",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool for taking apart a finished program to see how it works inside. In short: execute Hakrawler for web endpoint discovery with enhanced logging."
   },
   {
     "name": "hashpump_attack",
@@ -2407,37 +3039,43 @@
         "name": "signature",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "Original hash signature"
       },
       {
         "name": "data",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "Original data"
       },
       {
         "name": "key_length",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "Length of secret key"
       },
       {
         "name": "append_data",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "Data to append"
       },
       {
         "name": "additional_args",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Additional HashPump arguments"
       }
     ],
     "route": "api/tools/hashpump",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool for taking apart a finished program to see how it works inside. In short: execute HashPump for scrambled password length extension attacks with enhanced logging."
   },
   {
     "name": "httpx_probe",
@@ -2448,61 +3086,95 @@
         "name": "target",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": ""
       },
       {
         "name": "probe",
         "type": "bool",
         "default": true,
-        "required": false
+        "required": false,
+        "doc": "",
+        "options": [
+          "true",
+          "false"
+        ]
       },
       {
         "name": "tech_detect",
         "type": "bool",
         "default": false,
-        "required": false
+        "required": false,
+        "doc": "",
+        "options": [
+          "true",
+          "false"
+        ]
       },
       {
         "name": "status_code",
         "type": "bool",
         "default": false,
-        "required": false
+        "required": false,
+        "doc": "Filter by status code",
+        "options": [
+          "true",
+          "false"
+        ]
       },
       {
         "name": "content_length",
         "type": "bool",
         "default": false,
-        "required": false
+        "required": false,
+        "doc": "Show content length output_file: Output file path",
+        "options": [
+          "true",
+          "false"
+        ]
       },
       {
         "name": "title",
         "type": "bool",
         "default": false,
-        "required": false
+        "required": false,
+        "doc": "",
+        "options": [
+          "true",
+          "false"
+        ]
       },
       {
         "name": "web_server",
         "type": "bool",
         "default": false,
-        "required": false
+        "required": false,
+        "doc": "",
+        "options": [
+          "true",
+          "false"
+        ]
       },
       {
         "name": "threads",
         "type": "int",
         "default": 50,
-        "required": false
+        "required": false,
+        "doc": ""
       },
       {
         "name": "additional_args",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Additional HTTPx arguments"
       }
     ],
     "route": "api/tools/httpx",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool for taking apart a finished program to see how it works inside. In short: execute httpx for fast HTTP probing and technology detection."
   },
   {
     "name": "httpx_probe",
@@ -2513,55 +3185,68 @@
         "name": "targets",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Target URLs or IPs"
       },
       {
         "name": "target_file",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "File containing targets"
       },
       {
         "name": "ports",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Ports to probe"
       },
       {
         "name": "methods",
         "type": "str",
         "default": "GET",
-        "required": false
+        "required": false,
+        "doc": "HTTP methods to use"
       },
       {
         "name": "status_code",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Filter by status code"
       },
       {
         "name": "content_length",
         "type": "bool",
         "default": false,
-        "required": false
+        "required": false,
+        "doc": "Show content length",
+        "options": [
+          "true",
+          "false"
+        ]
       },
       {
         "name": "output_file",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Output file path"
       },
       {
         "name": "additional_args",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Additional HTTPx arguments"
       }
     ],
     "route": "api/tools/httpx",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool for taking apart a finished program to see how it works inside. In short: execute HTTPx for HTTP probing with enhanced logging."
   },
   {
     "name": "jaeles_vulnerability_scan",
@@ -2572,43 +3257,50 @@
         "name": "url",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "The target URL"
       },
       {
         "name": "signatures",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Custom signature path"
       },
       {
         "name": "config",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Configuration file"
       },
       {
         "name": "threads",
         "type": "int",
         "default": 20,
-        "required": false
+        "required": false,
+        "doc": "Number of threads"
       },
       {
         "name": "timeout",
         "type": "int",
         "default": 20,
-        "required": false
+        "required": false,
+        "doc": "Request timeout"
       },
       {
         "name": "additional_args",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Additional Jaeles arguments"
       }
     ],
     "route": "api/tools/jaeles",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool for taking apart a finished program to see how it works inside. In short: execute Jaeles for advanced weak spot scanning with custom signatures."
   },
   {
     "name": "jwt_analyzer",
@@ -2619,19 +3311,22 @@
         "name": "jwt_token",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "JWT token to analyze"
       },
       {
         "name": "target_url",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Optional target URL for testing token manipulation"
       }
     ],
     "route": "api/tools/jwt_analyzer",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "Looks inside a JWT token - a little signed note websites use to remember who you are - to see if it was built safely."
   },
   {
     "name": "katana_crawl",
@@ -2642,43 +3337,62 @@
         "name": "url",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "The target URL to crawl"
       },
       {
         "name": "depth",
         "type": "int",
         "default": 3,
-        "required": false
+        "required": false,
+        "doc": "Crawling depth"
       },
       {
         "name": "js_crawl",
         "type": "bool",
         "default": true,
-        "required": false
+        "required": false,
+        "doc": "Enable JavaScript crawling",
+        "options": [
+          "true",
+          "false"
+        ]
       },
       {
         "name": "form_extraction",
         "type": "bool",
         "default": true,
-        "required": false
+        "required": false,
+        "doc": "Enable form extraction",
+        "options": [
+          "true",
+          "false"
+        ]
       },
       {
         "name": "output_format",
         "type": "str",
         "default": "json",
-        "required": false
+        "required": false,
+        "doc": "Output format (json, txt)",
+        "options": [
+          "json",
+          "txt"
+        ]
       },
       {
         "name": "additional_args",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Additional Katana arguments"
       }
     ],
     "route": "api/tools/katana",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool for taking apart a finished program to see how it works inside. In short: execute Katana for next-generation crawling and spidering with enhanced logging."
   },
   {
     "name": "libc_database_lookup",
@@ -2689,31 +3403,41 @@
         "name": "action",
         "type": "str",
         "default": "find",
-        "required": false
+        "required": false,
+        "doc": "Action to perform (find, dump, download)",
+        "options": [
+          "find",
+          "dump",
+          "download"
+        ]
       },
       {
         "name": "symbols",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Symbols with offsets for find action (format: \"symbol1:offset1 symbol2:offset2\")"
       },
       {
         "name": "libc_id",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Libc ID for dump/download actions"
       },
       {
         "name": "additional_args",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Additional arguments"
       }
     ],
     "route": "api/tools/libc-database",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool for taking apart a finished program to see how it works inside. In short: execute libc-database for libc identification and offset lookup."
   },
   {
     "name": "objdump_analyze",
@@ -2724,25 +3448,33 @@
         "name": "binary",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "Path to the binary file"
       },
       {
         "name": "disassemble",
         "type": "bool",
         "default": true,
-        "required": false
+        "required": false,
+        "doc": "Whether to disassemble the binary",
+        "options": [
+          "true",
+          "false"
+        ]
       },
       {
         "name": "additional_args",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Additional objdump arguments"
       }
     ],
     "route": "api/tools/objdump",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool for taking apart a finished program to see how it works inside. In short: analyze a binary using objdump with enhanced logging."
   },
   {
     "name": "one_gadget_search",
@@ -2753,25 +3485,34 @@
         "name": "libc_path",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "Path to libc binary"
       },
       {
         "name": "level",
         "type": "int",
         "default": 1,
-        "required": false
+        "required": false,
+        "doc": "Constraint level (0, 1, 2)",
+        "options": [
+          "0",
+          "1",
+          "2"
+        ]
       },
       {
         "name": "additional_args",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Additional one_gadget arguments"
       }
     ],
     "route": "api/tools/one-gadget",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool for taking apart a finished program to see how it works inside. In short: execute one_gadget to find one-shot RCE gadgets in libc."
   },
   {
     "name": "paramspider_discovery",
@@ -2782,37 +3523,43 @@
         "name": "domain",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "Target domain"
       },
       {
         "name": "exclude",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Extensions to exclude"
       },
       {
         "name": "output_file",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Output file path"
       },
       {
         "name": "level",
         "type": "int",
         "default": 2,
-        "required": false
+        "required": false,
+        "doc": "Crawling level"
       },
       {
         "name": "additional_args",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Additional ParamSpider arguments"
       }
     ],
     "route": "api/tools/paramspider",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool for taking apart a finished program to see how it works inside. In short: execute ParamSpider for parameter discovery with enhanced logging."
   },
   {
     "name": "paramspider_mining",
@@ -2823,37 +3570,43 @@
         "name": "domain",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "The target domain"
       },
       {
         "name": "level",
         "type": "int",
         "default": 2,
-        "required": false
+        "required": false,
+        "doc": "Mining level depth"
       },
       {
         "name": "exclude",
         "type": "str",
         "default": "png,jpg,gif,jpeg,swf,woff,svg,pdf,css,ico",
-        "required": false
+        "required": false,
+        "doc": "File extensions to exclude"
       },
       {
         "name": "output",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Output file path"
       },
       {
         "name": "additional_args",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Additional ParamSpider arguments"
       }
     ],
     "route": "api/tools/paramspider",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool for taking apart a finished program to see how it works inside. In short: execute ParamSpider for parameter mining from web archives with enhanced logging."
   },
   {
     "name": "pwninit_setup",
@@ -2864,37 +3617,47 @@
         "name": "binary",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "Binary file to set up"
       },
       {
         "name": "libc",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Libc file to use"
       },
       {
         "name": "ld",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Loader file to use"
       },
       {
         "name": "template_type",
         "type": "str",
         "default": "python",
-        "required": false
+        "required": false,
+        "doc": "Template type (python, c)",
+        "options": [
+          "python",
+          "c"
+        ]
       },
       {
         "name": "additional_args",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Additional pwninit arguments"
       }
     ],
     "route": "api/tools/pwninit",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool for taking apart a finished program to see how it works inside. In short: execute pwninit for CTF binary trick to get in setup."
   },
   {
     "name": "pwntools_exploit",
@@ -2905,43 +3668,56 @@
         "name": "script_content",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Python script content using pwntools"
       },
       {
         "name": "target_binary",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Local binary to exploit"
       },
       {
         "name": "target_host",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Remote host to connect to"
       },
       {
         "name": "target_port",
         "type": "int",
         "default": 0,
-        "required": false
+        "required": false,
+        "doc": "Remote port to connect to"
       },
       {
         "name": "exploit_type",
         "type": "str",
         "default": "local",
-        "required": false
+        "required": false,
+        "doc": "Type of exploit (local, remote, format_string, rop)",
+        "options": [
+          "local",
+          "remote",
+          "format_string",
+          "rop"
+        ]
       },
       {
         "name": "additional_args",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Additional arguments"
       }
     ],
     "route": "api/tools/pwntools",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool for taking apart a finished program to see how it works inside. In short: execute Pwntools for trick to get in development and automation."
   },
   {
     "name": "qsreplace_parameter_replacement",
@@ -2952,25 +3728,29 @@
         "name": "urls",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "URLs to process"
       },
       {
         "name": "replacement",
         "type": "str",
         "default": "FUZZ",
-        "required": false
+        "required": false,
+        "doc": "Replacement string for parameters"
       },
       {
         "name": "additional_args",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Additional qsreplace arguments"
       }
     ],
     "route": "api/tools/qsreplace",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool for taking apart a finished program to see how it works inside. In short: execute qsreplace for query string parameter replacement."
   },
   {
     "name": "radare2_analyze",
@@ -2981,25 +3761,29 @@
         "name": "binary",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "Path to the binary file"
       },
       {
         "name": "commands",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Radare2 commands to execute"
       },
       {
         "name": "additional_args",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Additional Radare2 arguments"
       }
     ],
     "route": "api/tools/radare2",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "Like Ghidra - pulls a finished program apart to see how it works inside, piece by piece."
   },
   {
     "name": "ropgadget_search",
@@ -3010,25 +3794,29 @@
         "name": "binary",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "Path to the binary file"
       },
       {
         "name": "gadget_type",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Type of gadgets to search for"
       },
       {
         "name": "additional_args",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Additional ROPgadget arguments"
       }
     ],
     "route": "api/tools/ropgadget",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool for taking apart a finished program to see how it works inside. In short: search for ROP gadgets in a binary using ROPgadget with enhanced logging."
   },
   {
     "name": "ropper_gadget_search",
@@ -3039,43 +3827,61 @@
         "name": "binary",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "Binary to search for gadgets"
       },
       {
         "name": "gadget_type",
         "type": "str",
         "default": "rop",
-        "required": false
+        "required": false,
+        "doc": "Type of gadgets (rop, jop, sys, all)",
+        "options": [
+          "rop",
+          "jop",
+          "sys",
+          "all"
+        ]
       },
       {
         "name": "quality",
         "type": "int",
         "default": 1,
-        "required": false
+        "required": false,
+        "doc": "Gadget quality level (1-5)"
       },
       {
         "name": "arch",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Target architecture (x86, x86_64, arm, etc.)",
+        "options": [
+          "x86",
+          "x86_64",
+          "arm"
+        ]
       },
       {
         "name": "search_string",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Specific gadget pattern to search for"
       },
       {
         "name": "additional_args",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Additional ropper arguments"
       }
     ],
     "route": "api/tools/ropper",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool for taking apart a finished program to see how it works inside. In short: execute ropper for advanced ROP/JOP gadget searching."
   },
   {
     "name": "steghide_analysis",
@@ -3086,43 +3892,55 @@
         "name": "action",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "Action to perform (extract, embed, info)",
+        "options": [
+          "extract",
+          "embed",
+          "info"
+        ]
       },
       {
         "name": "cover_file",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "Cover file for steganography"
       },
       {
         "name": "embed_file",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "File to embed (for embed action)"
       },
       {
         "name": "passphrase",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Passphrase for steganography"
       },
       {
         "name": "output_file",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Output file path"
       },
       {
         "name": "additional_args",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Additional Steghide arguments"
       }
     ],
     "route": "api/tools/steghide",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "Checks whether a secret message or file has been hidden inside a picture or audio file, tucked away where you can't see it."
   },
   {
     "name": "strings_extract",
@@ -3133,25 +3951,29 @@
         "name": "file_path",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "Path to the file"
       },
       {
         "name": "min_len",
         "type": "int",
         "default": 4,
-        "required": false
+        "required": false,
+        "doc": "Minimum string length"
       },
       {
         "name": "additional_args",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Additional strings arguments"
       }
     ],
     "route": "api/tools/strings",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool for taking apart a finished program to see how it works inside. In short: extract strings from a binary file with enhanced logging."
   },
   {
     "name": "uro_url_filtering",
@@ -3162,31 +3984,36 @@
         "name": "urls",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "URLs to filter"
       },
       {
         "name": "whitelist",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Whitelist patterns"
       },
       {
         "name": "blacklist",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Blacklist patterns"
       },
       {
         "name": "additional_args",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Additional uro arguments"
       }
     ],
     "route": "api/tools/uro",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool for taking apart a finished program to see how it works inside. In short: execute uro for filtering out similar URLs."
   },
   {
     "name": "volatility3_analyze",
@@ -3197,31 +4024,36 @@
         "name": "memory_file",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "Path to memory dump file"
       },
       {
         "name": "plugin",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "Volatility3 plugin to execute"
       },
       {
         "name": "output_file",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Output file path"
       },
       {
         "name": "additional_args",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Additional Volatility3 arguments"
       }
     ],
     "route": "api/tools/volatility3",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "Looks through a snapshot of a computer's memory (what it was thinking about right when the snapshot was taken) to find clues."
   },
   {
     "name": "waybackurls_discovery",
@@ -3232,31 +4064,44 @@
         "name": "domain",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "The target domain"
       },
       {
         "name": "get_versions",
         "type": "bool",
         "default": false,
-        "required": false
+        "required": false,
+        "doc": "Get all versions of URLs",
+        "options": [
+          "true",
+          "false"
+        ]
       },
       {
         "name": "no_subs",
         "type": "bool",
         "default": false,
-        "required": false
+        "required": false,
+        "doc": "Don't include subdomains",
+        "options": [
+          "true",
+          "false"
+        ]
       },
       {
         "name": "additional_args",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Additional Waybackurls arguments"
       }
     ],
     "route": "api/tools/waybackurls",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool for taking apart a finished program to see how it works inside. In short: execute Waybackurls for historical URL discovery with enhanced logging."
   },
   {
     "name": "wfuzz_scan",
@@ -3267,25 +4112,29 @@
         "name": "url",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "The target URL (use FUZZ where you want to inject payloads)"
       },
       {
         "name": "wordlist",
         "type": "str",
         "default": "/usr/share/wordlists/dirb/common.txt",
-        "required": false
+        "required": false,
+        "doc": "Wordlist file to use"
       },
       {
         "name": "additional_args",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Additional Wfuzz arguments"
       }
     ],
     "route": "api/tools/wfuzz",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool for taking apart a finished program to see how it works inside. In short: execute Wfuzz for web application throw lots of weird inputs at with enhanced logging."
   },
   {
     "name": "x8_parameter_discovery",
@@ -3296,43 +4145,59 @@
         "name": "url",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "The target URL"
       },
       {
         "name": "wordlist",
         "type": "str",
         "default": "/usr/share/wordlists/x8/params.txt",
-        "required": false
+        "required": false,
+        "doc": "Parameter wordlist"
       },
       {
         "name": "method",
         "type": "str",
         "default": "GET",
-        "required": false
+        "required": false,
+        "doc": "HTTP method",
+        "options": [
+          "GET",
+          "POST",
+          "PUT",
+          "DELETE",
+          "PATCH",
+          "HEAD",
+          "OPTIONS"
+        ]
       },
       {
         "name": "body",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Request body"
       },
       {
         "name": "headers",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Custom headers"
       },
       {
         "name": "additional_args",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Additional x8 arguments"
       }
     ],
     "route": "api/tools/x8",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool for taking apart a finished program to see how it works inside. In short: execute x8 for hidden parameter discovery with enhanced logging."
   },
   {
     "name": "xsser_scan",
@@ -3343,25 +4208,29 @@
         "name": "url",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "The target URL"
       },
       {
         "name": "params",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Parameters to test"
       },
       {
         "name": "additional_args",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Additional XSSer arguments"
       }
     ],
     "route": "api/tools/xsser",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool for taking apart a finished program to see how it works inside. In short: execute XSSer for XSS weak spot testing with enhanced logging."
   },
   {
     "name": "xxd_hexdump",
@@ -3372,31 +4241,36 @@
         "name": "file_path",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "Path to the file"
       },
       {
         "name": "offset",
         "type": "str",
         "default": "0",
-        "required": false
+        "required": false,
+        "doc": "Offset to start reading from"
       },
       {
         "name": "length",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Number of bytes to read"
       },
       {
         "name": "additional_args",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Additional xxd arguments"
       }
     ],
     "route": "api/tools/xxd",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool for taking apart a finished program to see how it works inside. In short: create a hex dump of a file using xxd with enhanced logging."
   },
   {
     "name": "bugbounty_authentication_bypass_testing",
@@ -3407,19 +4281,28 @@
         "name": "target_url",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "Target URL with authentication"
       },
       {
         "name": "auth_type",
         "type": "str",
         "default": "form",
-        "required": false
+        "required": false,
+        "doc": "Type of authentication (form, jwt, oauth, saml)",
+        "options": [
+          "form",
+          "jwt",
+          "oauth",
+          "saml"
+        ]
       }
     ],
     "route": null,
     "method": "POST",
     "path_params": [],
-    "composite": true
+    "composite": true,
+    "eli5": "This is a ready-made checklist for hunting the kind of bugs that earn a reward. In short: create login check bypass testing workflow for bug bounty hunting."
   },
   {
     "name": "bugbounty_business_logic_testing",
@@ -3430,19 +4313,27 @@
         "name": "domain",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "Target domain for bug bounty"
       },
       {
         "name": "program_type",
         "type": "str",
         "default": "web",
-        "required": false
+        "required": false,
+        "doc": "Type of program (web, api, mobile)",
+        "options": [
+          "web",
+          "api",
+          "mobile"
+        ]
       }
     ],
     "route": "api/bugbounty/business-logic-workflow",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a ready-made checklist for hunting the kind of bugs that earn a reward. In short: create business logic testing workflow for advanced bug bounty hunting."
   },
   {
     "name": "bugbounty_comprehensive_assessment",
@@ -3453,37 +4344,51 @@
         "name": "domain",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "Target domain for bug bounty"
       },
       {
         "name": "scope",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Comma-separated list of in-scope domains/IPs"
       },
       {
         "name": "priority_vulns",
         "type": "str",
         "default": "rce,sqli,xss,idor,ssrf",
-        "required": false
+        "required": false,
+        "doc": "Comma-separated list of priority vulnerability types"
       },
       {
         "name": "include_osint",
         "type": "bool",
         "default": true,
-        "required": false
+        "required": false,
+        "doc": "Include OSINT gathering workflow",
+        "options": [
+          "true",
+          "false"
+        ]
       },
       {
         "name": "include_business_logic",
         "type": "bool",
         "default": true,
-        "required": false
+        "required": false,
+        "doc": "Include business logic testing workflow",
+        "options": [
+          "true",
+          "false"
+        ]
       }
     ],
     "route": "api/bugbounty/comprehensive-assessment",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a ready-made checklist for hunting the kind of bugs that earn a reward. In short: create comprehensive bug bounty assessment combining all specialized workflows."
   },
   {
     "name": "bugbounty_file_upload_testing",
@@ -3494,13 +4399,15 @@
         "name": "target_url",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "Target URL with file upload functionality"
       }
     ],
     "route": "api/bugbounty/file-upload-testing",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a ready-made checklist for hunting the kind of bugs that earn a reward. In short: create file upload weak spot testing workflow with bypass techniques."
   },
   {
     "name": "bugbounty_osint_gathering",
@@ -3511,13 +4418,15 @@
         "name": "domain",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "Target domain for OSINT gathering"
       }
     ],
     "route": "api/bugbounty/osint-workflow",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a ready-made checklist for hunting the kind of bugs that earn a reward. In short: create OSINT (Open Source Intelligence) gathering workflow for bug bounty scouting."
   },
   {
     "name": "bugbounty_reconnaissance_workflow",
@@ -3528,31 +4437,42 @@
         "name": "domain",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "Target domain for bug bounty"
       },
       {
         "name": "scope",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Comma-separated list of in-scope domains/IPs"
       },
       {
         "name": "out_of_scope",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Comma-separated list of out-of-scope domains/IPs"
       },
       {
         "name": "program_type",
         "type": "str",
         "default": "web",
-        "required": false
+        "required": false,
+        "doc": "Type of program (web, api, mobile, iot)",
+        "options": [
+          "web",
+          "api",
+          "mobile",
+          "iot"
+        ]
       }
     ],
     "route": "api/bugbounty/reconnaissance-workflow",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a ready-made checklist for hunting the kind of bugs that earn a reward. In short: create comprehensive scouting workflow for bug bounty hunting."
   },
   {
     "name": "bugbounty_vulnerability_hunting",
@@ -3563,25 +4483,35 @@
         "name": "domain",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "Target domain for bug bounty"
       },
       {
         "name": "priority_vulns",
         "type": "str",
         "default": "rce,sqli,xss,idor,ssrf",
-        "required": false
+        "required": false,
+        "doc": "Comma-separated list of priority vulnerability types"
       },
       {
         "name": "bounty_range",
         "type": "str",
         "default": "unknown",
-        "required": false
+        "required": false,
+        "doc": "Expected bounty range (low, medium, high, critical)",
+        "options": [
+          "low",
+          "medium",
+          "high",
+          "critical"
+        ]
       }
     ],
     "route": "api/bugbounty/vulnerability-hunting-workflow",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a ready-made checklist for hunting the kind of bugs that earn a reward. In short: create weak spot hunting workflow prioritized by impact and bounty potential."
   },
   {
     "name": "checkov_iac_scan",
@@ -3592,43 +4522,60 @@
         "name": "directory",
         "type": "str",
         "default": ".",
-        "required": false
+        "required": false,
+        "doc": "Directory to scan"
       },
       {
         "name": "framework",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Framework to scan (terraform, cloudformation, kubernetes, etc.)",
+        "options": [
+          "terraform",
+          "cloudformation",
+          "kubernetes"
+        ]
       },
       {
         "name": "check",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Specific check to run"
       },
       {
         "name": "skip_check",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Check to skip"
       },
       {
         "name": "output_format",
         "type": "str",
         "default": "json",
-        "required": false
+        "required": false,
+        "doc": "Output format (json, yaml, cli)",
+        "options": [
+          "json",
+          "yaml",
+          "cli"
+        ]
       },
       {
         "name": "additional_args",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Additional Checkov arguments"
       }
     ],
     "route": "api/tools/checkov",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "Reads infrastructure 'recipe' files (like Terraform) before they're ever run, and flags recipe steps that would build something unsafe."
   },
   {
     "name": "clair_vulnerability_scan",
@@ -3639,31 +4586,40 @@
         "name": "image",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "Container image to scan"
       },
       {
         "name": "config",
         "type": "str",
         "default": "/etc/clair/config.yaml",
-        "required": false
+        "required": false,
+        "doc": "Clair configuration file"
       },
       {
         "name": "output_format",
         "type": "str",
         "default": "json",
-        "required": false
+        "required": false,
+        "doc": "Output format (json, yaml)",
+        "options": [
+          "json",
+          "yaml"
+        ]
       },
       {
         "name": "additional_args",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Additional Clair arguments"
       }
     ],
     "route": "api/tools/clair",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool that checks whether an online cloud account's settings are safe. In short: execute Clair for container weak spot analysis."
   },
   {
     "name": "cloudmapper_analysis",
@@ -3674,31 +4630,42 @@
         "name": "action",
         "type": "str",
         "default": "collect",
-        "required": false
+        "required": false,
+        "doc": "Action to perform (collect, prepare, webserver, find_admins, etc.)",
+        "options": [
+          "collect",
+          "prepare",
+          "webserver",
+          "find_admins"
+        ]
       },
       {
         "name": "account",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "AWS account to analyze"
       },
       {
         "name": "config",
         "type": "str",
         "default": "config.json",
-        "required": false
+        "required": false,
+        "doc": "Configuration file path"
       },
       {
         "name": "additional_args",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Additional CloudMapper arguments"
       }
     ],
     "route": "api/tools/cloudmapper",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool that checks whether an online cloud account's settings are safe. In short: execute CloudMapper for AWS network visualization and security analysis."
   },
   {
     "name": "docker_bench_security_scan",
@@ -3709,31 +4676,36 @@
         "name": "checks",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Specific checks to run"
       },
       {
         "name": "exclude",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Checks to exclude"
       },
       {
         "name": "output_file",
         "type": "str",
         "default": "/tmp/docker-bench-results.json",
-        "required": false
+        "required": false,
+        "doc": "Output file path"
       },
       {
         "name": "additional_args",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Additional Docker Bench arguments"
       }
     ],
     "route": "api/tools/docker-bench-security",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool that checks whether an online cloud account's settings are safe. In short: execute Docker Bench for Security for Docker security assessment."
   },
   {
     "name": "falco_runtime_monitoring",
@@ -3744,37 +4716,47 @@
         "name": "config_file",
         "type": "str",
         "default": "/etc/falco/falco.yaml",
-        "required": false
+        "required": false,
+        "doc": "Falco configuration file"
       },
       {
         "name": "rules_file",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Custom rules file"
       },
       {
         "name": "output_format",
         "type": "str",
         "default": "json",
-        "required": false
+        "required": false,
+        "doc": "Output format (json, text)",
+        "options": [
+          "json",
+          "text"
+        ]
       },
       {
         "name": "duration",
         "type": "int",
         "default": 60,
-        "required": false
+        "required": false,
+        "doc": "Monitoring duration in seconds"
       },
       {
         "name": "additional_args",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Additional Falco arguments"
       }
     ],
     "route": "api/tools/falco",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool that checks whether an online cloud account's settings are safe. In short: execute Falco for runtime security monitoring."
   },
   {
     "name": "kube_bench_cis",
@@ -3785,37 +4767,53 @@
         "name": "targets",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Targets to check (master, node, etcd, policies)",
+        "options": [
+          "master",
+          "node",
+          "etcd",
+          "policies"
+        ]
       },
       {
         "name": "version",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Kubernetes version"
       },
       {
         "name": "config_dir",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Configuration directory"
       },
       {
         "name": "output_format",
         "type": "str",
         "default": "json",
-        "required": false
+        "required": false,
+        "doc": "Output format (json, yaml)",
+        "options": [
+          "json",
+          "yaml"
+        ]
       },
       {
         "name": "additional_args",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Additional kube-bench arguments"
       }
     ],
     "route": "api/tools/kube-bench",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool that checks whether an online cloud account's settings are safe. In short: execute kube-bench for CIS Kubernetes benchmark checks."
   },
   {
     "name": "kube_hunter_scan",
@@ -3826,49 +4824,65 @@
         "name": "target",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Specific target to scan"
       },
       {
         "name": "remote",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Remote target to scan"
       },
       {
         "name": "cidr",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "CIDR range to scan"
       },
       {
         "name": "interface",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Network interface to scan"
       },
       {
         "name": "active",
         "type": "bool",
         "default": false,
-        "required": false
+        "required": false,
+        "doc": "Enable active hunting (potentially harmful)",
+        "options": [
+          "true",
+          "false"
+        ]
       },
       {
         "name": "report",
         "type": "str",
         "default": "json",
-        "required": false
+        "required": false,
+        "doc": "Report format (json, yaml)",
+        "options": [
+          "json",
+          "yaml"
+        ]
       },
       {
         "name": "additional_args",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Additional kube-hunter arguments"
       }
     ],
     "route": "api/tools/kube-hunter",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "Pokes around a Kubernetes cluster (a fleet of containers) looking for doors left open that shouldn't be."
   },
   {
     "name": "pacu_exploitation",
@@ -3879,37 +4893,43 @@
         "name": "session_name",
         "type": "str",
         "default": "hexstrike_session",
-        "required": false
+        "required": false,
+        "doc": "Pacu session name"
       },
       {
         "name": "modules",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Comma-separated list of modules to run"
       },
       {
         "name": "data_services",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Data services to enumerate"
       },
       {
         "name": "regions",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "AWS regions to target"
       },
       {
         "name": "additional_args",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Additional Pacu arguments"
       }
     ],
     "route": "api/tools/pacu",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool that checks whether an online cloud account's settings are safe. In short: execute Pacu for AWS trick to get in framework."
   },
   {
     "name": "prowler_scan",
@@ -3920,49 +4940,67 @@
         "name": "provider",
         "type": "str",
         "default": "aws",
-        "required": false
+        "required": false,
+        "doc": "Cloud provider (aws, azure, gcp)",
+        "options": [
+          "aws",
+          "azure",
+          "gcp"
+        ]
       },
       {
         "name": "profile",
         "type": "str",
         "default": "default",
-        "required": false
+        "required": false,
+        "doc": "AWS profile to use"
       },
       {
         "name": "region",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Specific region to scan"
       },
       {
         "name": "checks",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Specific checks to run"
       },
       {
         "name": "output_dir",
         "type": "str",
         "default": "/tmp/prowler_output",
-        "required": false
+        "required": false,
+        "doc": "Directory to save results"
       },
       {
         "name": "output_format",
         "type": "str",
         "default": "json",
-        "required": false
+        "required": false,
+        "doc": "Output format (json, csv, html)",
+        "options": [
+          "json",
+          "csv",
+          "html"
+        ]
       },
       {
         "name": "additional_args",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Additional Prowler arguments"
       }
     ],
     "route": "api/tools/prowler",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "Goes through an AWS cloud account's settings room by room, checking that doors are locked the way they're supposed to be."
   },
   {
     "name": "scout_suite_assessment",
@@ -3973,43 +5011,57 @@
         "name": "provider",
         "type": "str",
         "default": "aws",
-        "required": false
+        "required": false,
+        "doc": "Cloud provider (aws, azure, gcp, aliyun, oci)",
+        "options": [
+          "aws",
+          "azure",
+          "gcp",
+          "aliyun",
+          "oci"
+        ]
       },
       {
         "name": "profile",
         "type": "str",
         "default": "default",
-        "required": false
+        "required": false,
+        "doc": "AWS profile to use"
       },
       {
         "name": "report_dir",
         "type": "str",
         "default": "/tmp/scout-suite",
-        "required": false
+        "required": false,
+        "doc": "Directory to save reports"
       },
       {
         "name": "services",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Specific services to assess"
       },
       {
         "name": "exceptions",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Exceptions file path"
       },
       {
         "name": "additional_args",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Additional Scout Suite arguments"
       }
     ],
     "route": "api/tools/scout-suite",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool that checks whether an online cloud account's settings are safe. In short: execute Scout Suite for multi-cloud security assessment."
   },
   {
     "name": "terrascan_iac_scan",
@@ -4020,43 +5072,65 @@
         "name": "scan_type",
         "type": "str",
         "default": "all",
-        "required": false
+        "required": false,
+        "doc": "Type of scan (all, terraform, k8s, etc.)",
+        "options": [
+          "all",
+          "terraform",
+          "k8s"
+        ]
       },
       {
         "name": "iac_dir",
         "type": "str",
         "default": ".",
-        "required": false
+        "required": false,
+        "doc": "Infrastructure as code directory"
       },
       {
         "name": "policy_type",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Policy type to use"
       },
       {
         "name": "output_format",
         "type": "str",
         "default": "json",
-        "required": false
+        "required": false,
+        "doc": "Output format (json, yaml, xml)",
+        "options": [
+          "json",
+          "yaml",
+          "xml"
+        ]
       },
       {
         "name": "severity",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Severity filter (high, medium, low)",
+        "options": [
+          "high",
+          "medium",
+          "low"
+        ]
       },
       {
         "name": "additional_args",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Additional Terrascan arguments"
       }
     ],
     "route": "api/tools/terrascan",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool that checks whether an online cloud account's settings are safe. In short: execute Terrascan for infrastructure as code security scanning."
   },
   {
     "name": "trivy_scan",
@@ -4067,43 +5141,68 @@
         "name": "scan_type",
         "type": "str",
         "default": "image",
-        "required": false
+        "required": false,
+        "doc": "Type of scan (image, fs, repo, config)",
+        "options": [
+          "image",
+          "fs",
+          "repo",
+          "config"
+        ]
       },
       {
         "name": "target",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Target to scan (image name, directory, repository)"
       },
       {
         "name": "output_format",
         "type": "str",
         "default": "json",
-        "required": false
+        "required": false,
+        "doc": "Output format (json, table, sarif)",
+        "options": [
+          "json",
+          "table",
+          "sarif"
+        ]
       },
       {
         "name": "severity",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Severity filter (UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL)",
+        "options": [
+          "UNKNOWN",
+          "LOW",
+          "MEDIUM",
+          "HIGH",
+          "CRITICAL"
+        ]
       },
       {
         "name": "output_file",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "File to save results"
       },
       {
         "name": "additional_args",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Additional Trivy arguments"
       }
     ],
     "route": "api/tools/trivy",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "Checks a container image or project's folder of ingredients (dependencies) against a list of known weak spots, like checking food expiry dates."
   },
   {
     "name": "gobuster_scan",
@@ -4114,31 +5213,42 @@
         "name": "url",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "The target URL"
       },
       {
         "name": "mode",
         "type": "str",
         "default": "dir",
-        "required": false
+        "required": false,
+        "doc": "Scan mode (dir, dns, fuzz, vhost)",
+        "options": [
+          "dir",
+          "dns",
+          "fuzz",
+          "vhost"
+        ]
       },
       {
         "name": "wordlist",
         "type": "str",
         "default": "/usr/share/wordlists/dirb/common.txt",
-        "required": false
+        "required": false,
+        "doc": "Path to wordlist file"
       },
       {
         "name": "additional_args",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Additional Gobuster arguments"
       }
     ],
     "route": "api/tools/gobuster",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "Same idea as ffuf - guesses lots of folder and page names on a website to find the ones that are hiding there."
   },
   {
     "name": "nmap_scan",
@@ -4149,31 +5259,36 @@
         "name": "target",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "The IP address or hostname to scan"
       },
       {
         "name": "scan_type",
         "type": "str",
         "default": "-sV",
-        "required": false
+        "required": false,
+        "doc": "Scan type (e.g., -sV for version detection, -sC for scripts)"
       },
       {
         "name": "ports",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Comma-separated list of ports or port ranges"
       },
       {
         "name": "additional_args",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Additional Nmap arguments"
       }
     ],
     "route": "api/tools/nmap",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "Nmap knocks on a computer's doors (ports) one by one and listens for an answer, so you can find out which doors are open and what's behind them."
   },
   {
     "name": "nuclei_scan",
@@ -4184,37 +5299,55 @@
         "name": "target",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "The target URL or IP"
       },
       {
         "name": "severity",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Filter by severity (critical,high,medium,low,info)",
+        "options": [
+          "critical",
+          "high",
+          "medium",
+          "low",
+          "info"
+        ]
       },
       {
         "name": "tags",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Filter by tags (e.g. cve,rce,lfi)",
+        "options": [
+          "cve",
+          "rce",
+          "lfi"
+        ]
       },
       {
         "name": "template",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Custom template path"
       },
       {
         "name": "additional_args",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Additional Nuclei arguments"
       }
     ],
     "route": "api/tools/nuclei",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "Runs through a giant checklist of known weak spots other people have already found in websites, and tells you if this one has any of them."
   },
   {
     "name": "browser_agent_inspect",
@@ -4225,43 +5358,64 @@
         "name": "url",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "Target URL to inspect"
       },
       {
         "name": "headless",
         "type": "bool",
         "default": true,
-        "required": false
+        "required": false,
+        "doc": "Run browser in headless mode",
+        "options": [
+          "true",
+          "false"
+        ]
       },
       {
         "name": "wait_time",
         "type": "int",
         "default": 5,
-        "required": false
+        "required": false,
+        "doc": "Time to wait after page load"
       },
       {
         "name": "action",
         "type": "str",
         "default": "navigate",
-        "required": false
+        "required": false,
+        "doc": "Action to perform (navigate, screenshot, close, status)",
+        "options": [
+          "navigate",
+          "screenshot",
+          "close",
+          "status"
+        ]
       },
       {
         "name": "proxy_port",
         "type": "int",
         "default": null,
-        "required": false
+        "required": false,
+        "doc": "Optional proxy port for request interception"
       },
       {
         "name": "active_tests",
         "type": "bool",
         "default": false,
-        "required": false
+        "required": false,
+        "doc": "Run lightweight active reflected XSS tests (safe GET-only)",
+        "options": [
+          "true",
+          "false"
+        ]
       }
     ],
     "route": "api/tools/browser-agent",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool for clicking around a website like a visitor while quietly checking for security mistakes. In short: aI-powered browser agent for comprehensive web application inspection and security analysis."
   },
   {
     "name": "burpsuite_alternative_scan",
@@ -4272,37 +5426,53 @@
         "name": "target",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "Target URL or domain to scan"
       },
       {
         "name": "scan_type",
         "type": "str",
         "default": "comprehensive",
-        "required": false
+        "required": false,
+        "doc": "Type of scan (comprehensive, spider, passive, active)",
+        "options": [
+          "comprehensive",
+          "spider",
+          "passive",
+          "active"
+        ]
       },
       {
         "name": "headless",
         "type": "bool",
         "default": true,
-        "required": false
+        "required": false,
+        "doc": "Run browser in headless mode",
+        "options": [
+          "true",
+          "false"
+        ]
       },
       {
         "name": "max_depth",
         "type": "int",
         "default": 3,
-        "required": false
+        "required": false,
+        "doc": "Maximum crawling depth"
       },
       {
         "name": "max_pages",
         "type": "int",
         "default": 50,
-        "required": false
+        "required": false,
+        "doc": "Maximum pages to analyze"
       }
     ],
     "route": "api/tools/burpsuite-alternative",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "Crawls a website like a visitor would, clicking around and filling in forms, while quietly checking each page for common security mistakes."
   },
   {
     "name": "error_handling_statistics",
@@ -4312,7 +5482,8 @@
     "route": "api/error-handling/statistics",
     "method": "GET",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool for clicking around a website like a visitor while quietly checking for security mistakes. In short: get intelligent error handling system statistics and recent error patterns."
   },
   {
     "name": "http_framework_test",
@@ -4323,43 +5494,65 @@
         "name": "url",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "Target URL to test"
       },
       {
         "name": "method",
         "type": "str",
         "default": "GET",
-        "required": false
+        "required": false,
+        "doc": "HTTP method (GET, POST, PUT, DELETE, etc.)",
+        "options": [
+          "GET",
+          "POST",
+          "PUT",
+          "DELETE"
+        ]
       },
       {
         "name": "data",
         "type": "dict",
         "default": {},
-        "required": false
+        "required": false,
+        "doc": "Request data/parameters"
       },
       {
         "name": "headers",
         "type": "dict",
         "default": {},
-        "required": false
+        "required": false,
+        "doc": "Custom headers"
       },
       {
         "name": "cookies",
         "type": "dict",
         "default": {},
-        "required": false
+        "required": false,
+        "doc": "Custom cookies"
       },
       {
         "name": "action",
         "type": "str",
         "default": "request",
-        "required": false
+        "required": false,
+        "doc": "Action to perform (request, spider, proxy_history, set_rules, set_scope, repeater, intruder)",
+        "options": [
+          "request",
+          "spider",
+          "proxy_history",
+          "set_rules",
+          "set_scope",
+          "repeater",
+          "intruder"
+        ]
       }
     ],
     "route": "api/tools/http-framework",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool for clicking around a website like a visitor while quietly checking for security mistakes. In short: enhanced HTTP testing framework (Burp Suite alternative) for comprehensive web security testing."
   },
   {
     "name": "http_intruder",
@@ -4370,49 +5563,72 @@
         "name": "url",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": ""
       },
       {
         "name": "method",
         "type": "str",
         "default": "GET",
-        "required": false
+        "required": false,
+        "doc": "",
+        "options": [
+          "GET",
+          "POST",
+          "PUT",
+          "DELETE",
+          "PATCH",
+          "HEAD",
+          "OPTIONS"
+        ]
       },
       {
         "name": "location",
         "type": "str",
         "default": "query",
-        "required": false
+        "required": false,
+        "doc": "query|body|headers|cookie.",
+        "options": [
+          "query",
+          "body",
+          "headers",
+          "cookie"
+        ]
       },
       {
         "name": "params",
         "type": "list",
         "default": null,
-        "required": false
+        "required": false,
+        "doc": ""
       },
       {
         "name": "payloads",
         "type": "list",
         "default": null,
-        "required": false
+        "required": false,
+        "doc": ""
       },
       {
         "name": "base_data",
         "type": "dict",
         "default": null,
-        "required": false
+        "required": false,
+        "doc": ""
       },
       {
         "name": "max_requests",
         "type": "int",
         "default": 100,
-        "required": false
+        "required": false,
+        "doc": ""
       }
     ],
     "route": "api/tools/http-framework",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool for clicking around a website like a visitor while quietly checking for security mistakes. In short: simple Intruder (sniper) throw lots of weird inputs at. Iterates payloads over each param individually."
   },
   {
     "name": "http_repeater",
@@ -4423,13 +5639,15 @@
         "name": "request_spec",
         "type": "dict",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": ""
       }
     ],
     "route": "api/tools/http-framework",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool for clicking around a website like a visitor while quietly checking for security mistakes. In short: send a crafted request (Burp Repeater equivalent). request_spec keys: url, method, headers, cookies, data."
   },
   {
     "name": "http_set_rules",
@@ -4440,13 +5658,15 @@
         "name": "rules",
         "type": "list",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": ""
       }
     ],
     "route": "api/tools/http-framework",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool for clicking around a website like a visitor while quietly checking for security mistakes. In short: set match/replace rules used to rewrite parts of URL/query/headers/body before sending."
   },
   {
     "name": "http_set_scope",
@@ -4457,19 +5677,26 @@
         "name": "host",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": ""
       },
       {
         "name": "include_subdomains",
         "type": "bool",
         "default": true,
-        "required": false
+        "required": false,
+        "doc": "",
+        "options": [
+          "true",
+          "false"
+        ]
       }
     ],
     "route": "api/tools/http-framework",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool for clicking around a website like a visitor while quietly checking for security mistakes. In short: define in-scope host (and optionally part of a website's address) so out-of-scope requests are skipped."
   },
   {
     "name": "test_error_recovery",
@@ -4480,25 +5707,34 @@
         "name": "tool_name",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "Name of tool to simulate error for"
       },
       {
         "name": "error_type",
         "type": "str",
         "default": "timeout",
-        "required": false
+        "required": false,
+        "doc": "Type of error to simulate (timeout, permission_denied, network_unreachable, etc.)",
+        "options": [
+          "timeout",
+          "permission_denied",
+          "network_unreachable"
+        ]
       },
       {
         "name": "target",
         "type": "str",
         "default": "example.com",
-        "required": false
+        "required": false,
+        "doc": "Target for the simulated test"
       }
     ],
     "route": "api/error-handling/test-recovery",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool for clicking around a website like a visitor while quietly checking for security mistakes. In short: test the intelligent error recovery system with simulated failures."
   },
   {
     "name": "create_scan_summary",
@@ -4509,37 +5745,43 @@
         "name": "target",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "Target that was scanned"
       },
       {
         "name": "tools_used",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "Comma-separated list of tools used"
       },
       {
         "name": "vulnerabilities_found",
         "type": "int",
         "default": 0,
-        "required": false
+        "required": false,
+        "doc": "Number of vulnerabilities discovered"
       },
       {
         "name": "execution_time",
         "type": "float",
         "default": 0.0,
-        "required": false
+        "required": false,
+        "doc": "Total execution time in seconds"
       },
       {
         "name": "findings",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Additional findings or notes"
       }
     ],
     "route": "api/visual/summary-report",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool for turning scan results into a nicer-looking report. In short: create a comprehensive scan summary report with beautiful visual formatting."
   },
   {
     "name": "create_vulnerability_report",
@@ -4550,25 +5792,29 @@
         "name": "vulnerabilities",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "JSON string containing vulnerability data"
       },
       {
         "name": "target",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Target that was scanned"
       },
       {
         "name": "scan_type",
         "type": "str",
         "default": "comprehensive",
-        "required": false
+        "required": false,
+        "doc": "Type of scan performed"
       }
     ],
     "route": "api/visual/vulnerability-card",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool for turning scan results into a nicer-looking report. In short: create a beautiful weak spot report with severity-based styling and visual indicators."
   },
   {
     "name": "display_system_metrics",
@@ -4578,7 +5824,8 @@
     "route": "api/telemetry",
     "method": "GET",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool for turning scan results into a nicer-looking report. In short: display current system metrics and performance indicators with visual formatting."
   },
   {
     "name": "format_tool_output_visual",
@@ -4589,25 +5836,33 @@
         "name": "tool_name",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "Name of the security tool"
       },
       {
         "name": "output",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "Raw output from the tool"
       },
       {
         "name": "success",
         "type": "bool",
         "default": true,
-        "required": false
+        "required": false,
+        "doc": "Whether the tool execution was successful",
+        "options": [
+          "true",
+          "false"
+        ]
       }
     ],
     "route": "api/visual/tool-output",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool for turning scan results into a nicer-looking report. In short: format tool output with beautiful visual styling, syntax highlighting, and structure."
   },
   {
     "name": "get_live_dashboard",
@@ -4617,7 +5872,8 @@
     "route": "api/processes/dashboard",
     "method": "GET",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool for turning scan results into a nicer-looking report. In short: get a beautiful live dashboard showing all active processes with enhanced visual formatting."
   },
   {
     "name": "create_file",
@@ -4628,25 +5884,33 @@
         "name": "filename",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "Name of the file to create"
       },
       {
         "name": "content",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "Content to write to the file"
       },
       {
         "name": "binary",
         "type": "bool",
         "default": false,
-        "required": false
+        "required": false,
+        "doc": "Whether the content is binary data",
+        "options": [
+          "true",
+          "false"
+        ]
       }
     ],
     "route": "api/files/create",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool for reading, writing, or building files on the HexStrike server. In short: create a file with specified content on the HexStrike server."
   },
   {
     "name": "delete_file",
@@ -4657,13 +5921,15 @@
         "name": "filename",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "Name of the file or directory to delete"
       }
     ],
     "route": "api/files/delete",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool for reading, writing, or building files on the HexStrike server. In short: delete a file or directory on the HexStrike server."
   },
   {
     "name": "generate_payload",
@@ -4674,31 +5940,41 @@
         "name": "payload_type",
         "type": "str",
         "default": "buffer",
-        "required": false
+        "required": false,
+        "doc": "Type of payload (buffer, cyclic, random)",
+        "options": [
+          "buffer",
+          "cyclic",
+          "random"
+        ]
       },
       {
         "name": "size",
         "type": "int",
         "default": 1024,
-        "required": false
+        "required": false,
+        "doc": "Size of the payload in bytes"
       },
       {
         "name": "pattern",
         "type": "str",
         "default": "A",
-        "required": false
+        "required": false,
+        "doc": "Pattern to use for buffer payloads"
       },
       {
         "name": "filename",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Custom filename (auto-generated if empty)"
       }
     ],
     "route": "api/payloads/generate",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool for reading, writing, or building files on the HexStrike server. In short: generate large payloads for testing and trick to get in."
   },
   {
     "name": "list_files",
@@ -4709,13 +5985,15 @@
         "name": "directory",
         "type": "str",
         "default": ".",
-        "required": false
+        "required": false,
+        "doc": "Directory to list (relative to server's base directory)"
       }
     ],
     "route": "api/files/list",
     "method": "GET",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool for reading, writing, or building files on the HexStrike server. In short: list files in a directory on the HexStrike server."
   },
   {
     "name": "modify_file",
@@ -4726,25 +6004,33 @@
         "name": "filename",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "Name of the file to modify"
       },
       {
         "name": "content",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "Content to write or append"
       },
       {
         "name": "append",
         "type": "bool",
         "default": false,
-        "required": false
+        "required": false,
+        "doc": "Whether to append to the file (True) or overwrite (False)",
+        "options": [
+          "true",
+          "false"
+        ]
       }
     ],
     "route": "api/files/modify",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool for reading, writing, or building files on the HexStrike server. In short: modify an existing file on the HexStrike server."
   },
   {
     "name": "ai_reconnaissance_workflow",
@@ -4755,19 +6041,22 @@
         "name": "target",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "Target for reconnaissance"
       },
       {
         "name": "depth",
         "type": "str",
         "default": "standard",
-        "required": false
+        "required": false,
+        "doc": "Reconnaissance depth - \"surface\", \"standard\", or \"deep\""
       }
     ],
     "route": "api/intelligence/analyze-target",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool that uses AI to help pick the right next move during a security test. In short: execute AI-driven scouting workflow with intelligent tool chaining."
   },
   {
     "name": "ai_vulnerability_assessment",
@@ -4778,19 +6067,22 @@
         "name": "target",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "Target for vulnerability assessment"
       },
       {
         "name": "focus_areas",
         "type": "str",
         "default": "all",
-        "required": false
+        "required": false,
+        "doc": "Comma-separated focus areas - \"web\", \"network\", \"api\", \"all\""
       }
     ],
     "route": "api/intelligence/analyze-target",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool that uses AI to help pick the right next move during a security test. In short: perform AI-driven weak spot assessment with intelligent prioritization."
   },
   {
     "name": "analyze_target_intelligence",
@@ -4801,13 +6093,15 @@
         "name": "target",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "Target URL, IP address, or domain to analyze"
       }
     ],
     "route": "api/intelligence/analyze-target",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool that uses AI to help pick the right next move during a security test. In short: analyze target using AI-powered intelligence to create comprehensive profile."
   },
   {
     "name": "create_attack_chain_ai",
@@ -4818,19 +6112,22 @@
         "name": "target",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "Target for the attack chain"
       },
       {
         "name": "objective",
         "type": "str",
         "default": "comprehensive",
-        "required": false
+        "required": false,
+        "doc": "Attack objective - \"comprehensive\", \"quick\", or \"stealth\""
       }
     ],
     "route": "api/intelligence/create-attack-chain",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool that uses AI to help pick the right next move during a security test. In short: create an intelligent attack chain using AI-driven tool sequencing and optimization."
   },
   {
     "name": "detect_technologies_ai",
@@ -4841,13 +6138,15 @@
         "name": "target",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "Target to analyze for technology detection"
       }
     ],
     "route": "api/intelligence/technology-detection",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool that uses AI to help pick the right next move during a security test. In short: use AI to detect technologies and provide technology-specific testing recommendations."
   },
   {
     "name": "intelligent_smart_scan",
@@ -4858,25 +6157,29 @@
         "name": "target",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "Target to scan"
       },
       {
         "name": "objective",
         "type": "str",
         "default": "comprehensive",
-        "required": false
+        "required": false,
+        "doc": "Scanning objective - \"comprehensive\", \"quick\", or \"stealth\""
       },
       {
         "name": "max_tools",
         "type": "int",
         "default": 5,
-        "required": false
+        "required": false,
+        "doc": "Maximum number of tools to use"
       }
     ],
     "route": "api/intelligence/smart-scan",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool that uses AI to help pick the right next move during a security test. In short: execute an intelligent scan using AI-driven tool selection and parameter optimization."
   },
   {
     "name": "optimize_tool_parameters_ai",
@@ -4887,25 +6190,33 @@
         "name": "target",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "Target to test"
       },
       {
         "name": "tool",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "Security tool to optimize"
       },
       {
         "name": "context",
         "type": "str",
         "default": "{}",
-        "required": false
+        "required": false,
+        "doc": "JSON string with additional context (stealth, aggressive, etc.)",
+        "options": [
+          "stealth",
+          "aggressive"
+        ]
       }
     ],
     "route": "api/intelligence/optimize-parameters",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool that uses AI to help pick the right next move during a security test. In short: use AI to optimize tool parameters based on target profile and context."
   },
   {
     "name": "select_optimal_tools_ai",
@@ -4916,19 +6227,22 @@
         "name": "target",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "Target to analyze"
       },
       {
         "name": "objective",
         "type": "str",
         "default": "comprehensive",
-        "required": false
+        "required": false,
+        "doc": "Testing objective - \"comprehensive\", \"quick\", or \"stealth\""
       }
     ],
     "route": "api/intelligence/select-tools",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool that uses AI to help pick the right next move during a security test. In short: use AI to select optimal security tools based on target analysis and testing objective."
   },
   {
     "name": "execute_python_script",
@@ -4939,25 +6253,29 @@
         "name": "script",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "Python script content to execute"
       },
       {
         "name": "env_name",
         "type": "str",
         "default": "default",
-        "required": false
+        "required": false,
+        "doc": "Name of the virtual environment"
       },
       {
         "name": "filename",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Custom script filename (auto-generated if empty)"
       }
     ],
     "route": "api/python/execute",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool for setting up a clean Python workspace to run other tools in. In short: execute a Python script in a virtual environment on the HexStrike server."
   },
   {
     "name": "install_python_package",
@@ -4968,19 +6286,22 @@
         "name": "package",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "Name of the Python package to install"
       },
       {
         "name": "env_name",
         "type": "str",
         "default": "default",
-        "required": false
+        "required": false,
+        "doc": "Name of the virtual environment"
       }
     ],
     "route": "api/python/install",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool for setting up a clean Python workspace to run other tools in. In short: install a Python package in a virtual environment on the HexStrike server."
   },
   {
     "name": "advanced_payload_generation",
@@ -4991,31 +6312,50 @@
         "name": "attack_type",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "Type of attack (rce, privilege_escalation, persistence, exfiltration, xss, sqli)",
+        "options": [
+          "rce",
+          "privilege_escalation",
+          "persistence",
+          "exfiltration",
+          "xss",
+          "sqli"
+        ]
       },
       {
         "name": "target_context",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Target environment details (OS, software versions, security controls)"
       },
       {
         "name": "evasion_level",
         "type": "str",
         "default": "standard",
-        "required": false
+        "required": false,
+        "doc": "Evasion sophistication (basic, standard, advanced, nation-state)",
+        "options": [
+          "basic",
+          "standard",
+          "advanced",
+          "nation-state"
+        ]
       },
       {
         "name": "custom_constraints",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Custom payload constraints (size limits, character restrictions, etc.)"
       }
     ],
     "route": "api/ai/advanced-payload-generation",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool for watching what the HexStrike server itself is doing right now. In short: generate advanced payloads with AI-powered evasion techniques and contextual adaptation."
   },
   {
     "name": "clear_cache",
@@ -5025,7 +6365,8 @@
     "route": "api/cache/clear",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool for watching what the HexStrike server itself is doing right now. In short: clear the cache on the HexStrike AI server."
   },
   {
     "name": "correlate_threat_intelligence",
@@ -5036,25 +6377,48 @@
         "name": "indicators",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "Comma-separated IOCs (IPs, domains, hashes, CVEs, etc.)",
+        "options": [
+          "IPs",
+          "domains",
+          "hashes",
+          "CVEs"
+        ]
       },
       {
         "name": "timeframe",
         "type": "str",
         "default": "30d",
-        "required": false
+        "required": false,
+        "doc": "Time window for correlation (7d, 30d, 90d, 1y)",
+        "options": [
+          "7d",
+          "30d",
+          "90d",
+          "1y"
+        ]
       },
       {
         "name": "sources",
         "type": "str",
         "default": "all",
-        "required": false
+        "required": false,
+        "doc": "Intelligence sources to query (cve, exploit-db, github, twitter, all)",
+        "options": [
+          "cve",
+          "exploit-db",
+          "github",
+          "twitter",
+          "all"
+        ]
       }
     ],
     "route": "api/vuln-intel/threat-feeds",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool for watching what the HexStrike server itself is doing right now. In short: correlate threat intelligence across multiple sources with advanced analysis."
   },
   {
     "name": "discover_attack_chains",
@@ -5065,25 +6429,33 @@
         "name": "target_software",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "Target software/system (e.g., \"Apache HTTP Server\", \"Windows Server 2019\")"
       },
       {
         "name": "attack_depth",
         "type": "int",
         "default": 3,
-        "required": false
+        "required": false,
+        "doc": "Maximum number of stages in attack chain (1-5)"
       },
       {
         "name": "include_zero_days",
         "type": "bool",
         "default": false,
-        "required": false
+        "required": false,
+        "doc": "Include potential zero-day vulnerabilities in analysis",
+        "options": [
+          "true",
+          "false"
+        ]
       }
     ],
     "route": "api/vuln-intel/attack-chains",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool for watching what the HexStrike server itself is doing right now. In short: discover multi-stage attack chains for target software with weak spot correlation."
   },
   {
     "name": "execute_command",
@@ -5094,19 +6466,26 @@
         "name": "command",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "The command to execute"
       },
       {
         "name": "use_cache",
         "type": "bool",
         "default": true,
-        "required": false
+        "required": false,
+        "doc": "Whether to use caching for this command",
+        "options": [
+          "true",
+          "false"
+        ]
       }
     ],
     "route": "api/command",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool for watching what the HexStrike server itself is doing right now. In short: execute an arbitrary command on the HexStrike AI server with enhanced logging."
   },
   {
     "name": "generate_exploit_from_cve",
@@ -5117,37 +6496,65 @@
         "name": "cve_id",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "CVE identifier (e.g., CVE-2024-1234)"
       },
       {
         "name": "target_os",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Target operating system (windows, linux, macos, any)",
+        "options": [
+          "windows",
+          "linux",
+          "macos",
+          "any"
+        ]
       },
       {
         "name": "target_arch",
         "type": "str",
         "default": "x64",
-        "required": false
+        "required": false,
+        "doc": "Target architecture (x86, x64, arm, any)",
+        "options": [
+          "x86",
+          "x64",
+          "arm",
+          "any"
+        ]
       },
       {
         "name": "exploit_type",
         "type": "str",
         "default": "poc",
-        "required": false
+        "required": false,
+        "doc": "Type of exploit to generate (poc, weaponized, stealth)",
+        "options": [
+          "poc",
+          "weaponized",
+          "stealth"
+        ]
       },
       {
         "name": "evasion_level",
         "type": "str",
         "default": "none",
-        "required": false
+        "required": false,
+        "doc": "Evasion sophistication (none, basic, advanced)",
+        "options": [
+          "none",
+          "basic",
+          "advanced"
+        ]
       }
     ],
     "route": "api/vuln-intel/exploit-generate",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool for watching what the HexStrike server itself is doing right now. In short: generate working exploits from CVE information using AI-powered analysis."
   },
   {
     "name": "get_cache_stats",
@@ -5157,7 +6564,8 @@
     "route": "api/cache/stats",
     "method": "GET",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool for watching what the HexStrike server itself is doing right now. In short: get cache statistics from the HexStrike AI server."
   },
   {
     "name": "get_process_dashboard",
@@ -5167,7 +6575,8 @@
     "route": "api/processes/dashboard",
     "method": "GET",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool for watching what the HexStrike server itself is doing right now. In short: get enhanced process dashboard with visual status indicators."
   },
   {
     "name": "get_process_status",
@@ -5178,7 +6587,8 @@
         "name": "pid",
         "type": "int",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "Process ID to check"
       }
     ],
     "route": "api/processes/status/{pid}",
@@ -5186,7 +6596,8 @@
     "path_params": [
       "pid"
     ],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool for watching what the HexStrike server itself is doing right now. In short: get the status of a specific process."
   },
   {
     "name": "get_telemetry",
@@ -5196,7 +6607,8 @@
     "route": "api/telemetry",
     "method": "GET",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool for watching what the HexStrike server itself is doing right now. In short: get system telemetry from the HexStrike AI server."
   },
   {
     "name": "list_active_processes",
@@ -5206,7 +6618,8 @@
     "route": "api/processes/list",
     "method": "GET",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool for watching what the HexStrike server itself is doing right now. In short: list all active processes on the HexStrike AI server."
   },
   {
     "name": "monitor_cve_feeds",
@@ -5217,25 +6630,36 @@
         "name": "hours",
         "type": "int",
         "default": 24,
-        "required": false
+        "required": false,
+        "doc": "Hours to look back for new CVEs (default: 24)"
       },
       {
         "name": "severity_filter",
         "type": "str",
         "default": "HIGH,CRITICAL",
-        "required": false
+        "required": false,
+        "doc": "Filter by CVSS severity - comma-separated values (LOW,MEDIUM,HIGH,CRITICAL,ALL)",
+        "options": [
+          "LOW",
+          "MEDIUM",
+          "HIGH",
+          "CRITICAL",
+          "ALL"
+        ]
       },
       {
         "name": "keywords",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Filter CVEs by keywords in description (comma-separated)"
       }
     ],
     "route": "api/vuln-intel/cve-monitor",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool for watching what the HexStrike server itself is doing right now. In short: monitor CVE databases for new weak spot with AI analysis."
   },
   {
     "name": "pause_process",
@@ -5246,7 +6670,8 @@
         "name": "pid",
         "type": "int",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "Process ID to pause"
       }
     ],
     "route": "api/processes/pause/{pid}",
@@ -5254,7 +6679,8 @@
     "path_params": [
       "pid"
     ],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool for watching what the HexStrike server itself is doing right now. In short: pause a specific running process."
   },
   {
     "name": "research_zero_day_opportunities",
@@ -5265,25 +6691,34 @@
         "name": "target_software",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "Software to research for vulnerabilities (e.g., \"nginx\", \"OpenSSL\")"
       },
       {
         "name": "analysis_depth",
         "type": "str",
         "default": "standard",
-        "required": false
+        "required": false,
+        "doc": "Depth of analysis (quick, standard, comprehensive)",
+        "options": [
+          "quick",
+          "standard",
+          "comprehensive"
+        ]
       },
       {
         "name": "source_code_url",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "URL to source code repository for enhanced analysis"
       }
     ],
     "route": "api/vuln-intel/zero-day-research",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool for watching what the HexStrike server itself is doing right now. In short: automated zero-day weak spot research using AI analysis and pattern recognition."
   },
   {
     "name": "resume_process",
@@ -5294,7 +6729,8 @@
         "name": "pid",
         "type": "int",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "Process ID to resume"
       }
     ],
     "route": "api/processes/resume/{pid}",
@@ -5302,7 +6738,8 @@
     "path_params": [
       "pid"
     ],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool for watching what the HexStrike server itself is doing right now. In short: resume a paused process."
   },
   {
     "name": "server_health",
@@ -5312,7 +6749,8 @@
     "route": "health",
     "method": "GET",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool for watching what the HexStrike server itself is doing right now. In short: check the health status of the HexStrike AI server."
   },
   {
     "name": "terminate_process",
@@ -5323,7 +6761,8 @@
         "name": "pid",
         "type": "int",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "Process ID to terminate"
       }
     ],
     "route": "api/processes/terminate/{pid}",
@@ -5331,7 +6770,8 @@
     "path_params": [
       "pid"
     ],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool for watching what the HexStrike server itself is doing right now. In short: terminate a specific running process."
   },
   {
     "name": "threat_hunting_assistant",
@@ -5342,25 +6782,36 @@
         "name": "target_environment",
         "type": "str",
         "default": null,
-        "required": true
+        "required": true,
+        "doc": "Environment to hunt in (e.g., \"Windows Domain\", \"Cloud Infrastructure\")"
       },
       {
         "name": "threat_indicators",
         "type": "str",
         "default": "",
-        "required": false
+        "required": false,
+        "doc": "Known IOCs or suspicious indicators to investigate"
       },
       {
         "name": "hunt_focus",
         "type": "str",
         "default": "general",
-        "required": false
+        "required": false,
+        "doc": "Focus area (general, apt, ransomware, insider_threat, supply_chain)",
+        "options": [
+          "general",
+          "apt",
+          "ransomware",
+          "insider_threat",
+          "supply_chain"
+        ]
       }
     ],
     "route": null,
     "method": "POST",
     "path_params": [],
-    "composite": true
+    "composite": true,
+    "eli5": "This is a tool for watching what the HexStrike server itself is doing right now. In short: aI-powered threat hunting assistant with weak spot correlation and attack simulation."
   },
   {
     "name": "vulnerability_intelligence_dashboard",
@@ -5370,6 +6821,7 @@
     "route": "api/vuln-intel/cve-monitor",
     "method": "POST",
     "path_params": [],
-    "composite": false
+    "composite": false,
+    "eli5": "This is a tool for watching what the HexStrike server itself is doing right now. In short: get a comprehensive weak spot intelligence dashboard with latest threats and trends."
   }
 ]
