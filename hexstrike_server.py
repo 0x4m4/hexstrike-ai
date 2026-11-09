@@ -438,6 +438,70 @@ class ModernVisualEngine:
 
         return f"{color}▶ {command[:60]}{'...' if len(command) > 60 else ''} | {status.upper()}{duration_text}{ModernVisualEngine.COLORS['RESET']}"
 
+    @staticmethod
+    def render_vulnerability_card(vuln_data: Dict[str, Any]) -> str:
+        """Render vulnerability as a beautiful card with severity indicators"""
+
+        severity = vuln_data.get('severity', 'info').lower()
+        title = vuln_data.get('title', 'Unknown Vulnerability')
+        url = vuln_data.get('url', 'N/A')
+        description = vuln_data.get('description', 'No description available')
+        cvss = vuln_data.get('cvss_score', 0.0)
+
+        # Get severity color
+        severity_color = ModernVisualEngine.COLORS['HACKER_RED'] if severity == 'critical' else ModernVisualEngine.COLORS['HACKER_RED'] if severity == 'high' else ModernVisualEngine.COLORS['CYBER_ORANGE'] if severity == 'medium' else ModernVisualEngine.COLORS['CYBER_ORANGE'] if severity == 'low' else ModernVisualEngine.COLORS['NEON_BLUE']
+
+        # Severity indicators
+        severity_indicators = {
+            'critical': '🔥 CRITICAL',
+            'high': '⚠️  HIGH',
+            'medium': '📊 MEDIUM',
+            'low': '📝 LOW',
+            'info': 'ℹ️  INFO'
+        }
+
+        severity_badge = severity_indicators.get(severity, '❓ UNKNOWN')
+
+        # Create the vulnerability card
+        card = f"""
+{ModernVisualEngine.COLORS['BOLD']}╭─────────────────────────────────────────────────────────────────────────────╮{ModernVisualEngine.COLORS['RESET']}
+{ModernVisualEngine.COLORS['BOLD']}│{ModernVisualEngine.COLORS['RESET']} {severity_color}{severity_badge}{ModernVisualEngine.COLORS['RESET']} {ModernVisualEngine.COLORS['BOLD']}{title[:60]}{ModernVisualEngine.COLORS['RESET']}
+{ModernVisualEngine.COLORS['BOLD']}├─────────────────────────────────────────────────────────────────────────────┤{ModernVisualEngine.COLORS['RESET']}
+{ModernVisualEngine.COLORS['BOLD']}│{ModernVisualEngine.COLORS['RESET']} {ModernVisualEngine.COLORS['NEON_BLUE']}🎯 Target:{ModernVisualEngine.COLORS['RESET']} {url[:65]}
+{ModernVisualEngine.COLORS['BOLD']}│{ModernVisualEngine.COLORS['RESET']} {ModernVisualEngine.COLORS['CYBER_ORANGE']}📊 CVSS:{ModernVisualEngine.COLORS['RESET']} {cvss}/10.0
+{ModernVisualEngine.COLORS['BOLD']}│{ModernVisualEngine.COLORS['RESET']} {ModernVisualEngine.COLORS['CYBER_ORANGE']}📋 Description:{ModernVisualEngine.COLORS['RESET']}
+{ModernVisualEngine.COLORS['BOLD']}│{ModernVisualEngine.COLORS['RESET']}   {description[:70]}
+{ModernVisualEngine.COLORS['BOLD']}╰─────────────────────────────────────────────────────────────────────────────╯{ModernVisualEngine.COLORS['RESET']}
+"""
+        return card
+
+    @staticmethod
+    def create_summary_report(results: Dict[str, Any]) -> str:
+        """Generate a beautiful summary report"""
+
+        total_vulns = len(results.get('vulnerabilities', []))
+        critical_vulns = len([v for v in results.get('vulnerabilities', []) if v.get('severity') == 'critical'])
+        high_vulns = len([v for v in results.get('vulnerabilities', []) if v.get('severity') == 'high'])
+        execution_time = results.get('execution_time', 0)
+        tools_used = results.get('tools_used', [])
+
+        report = f"""
+{ModernVisualEngine.COLORS['MATRIX_GREEN']}{ModernVisualEngine.COLORS['BOLD']}╔══════════════════════════════════════════════════════════════════════════════╗
+║                              📊 SCAN SUMMARY REPORT                          ║
+╠══════════════════════════════════════════════════════════════════════════════╣{ModernVisualEngine.COLORS['RESET']}
+{ModernVisualEngine.COLORS['BOLD']}║{ModernVisualEngine.COLORS['RESET']} {ModernVisualEngine.COLORS['NEON_BLUE']}🎯 Target:{ModernVisualEngine.COLORS['RESET']} {results.get('target', 'Unknown')[:60]}
+{ModernVisualEngine.COLORS['BOLD']}║{ModernVisualEngine.COLORS['RESET']} {ModernVisualEngine.COLORS['CYBER_ORANGE']}⏱️  Duration:{ModernVisualEngine.COLORS['RESET']} {execution_time:.2f} seconds
+{ModernVisualEngine.COLORS['BOLD']}║{ModernVisualEngine.COLORS['RESET']} {ModernVisualEngine.COLORS['WARNING']}🛠️  Tools Used:{ModernVisualEngine.COLORS['RESET']} {len(tools_used)} tools
+{ModernVisualEngine.COLORS['BOLD']}╠──────────────────────────────────────────────────────────────────────────────╣{ModernVisualEngine.COLORS['RESET']}
+{ModernVisualEngine.COLORS['BOLD']}║{ModernVisualEngine.COLORS['RESET']} {ModernVisualEngine.COLORS['HACKER_RED']}🔥 Critical:{ModernVisualEngine.COLORS['RESET']} {critical_vulns} vulnerabilities
+{ModernVisualEngine.COLORS['BOLD']}║{ModernVisualEngine.COLORS['RESET']} {ModernVisualEngine.COLORS['ERROR']}⚠️  High:{ModernVisualEngine.COLORS['RESET']} {high_vulns} vulnerabilities
+{ModernVisualEngine.COLORS['BOLD']}║{ModernVisualEngine.COLORS['RESET']} {ModernVisualEngine.COLORS['MATRIX_GREEN']}📈 Total Found:{ModernVisualEngine.COLORS['RESET']} {total_vulns} vulnerabilities
+{ModernVisualEngine.COLORS['BOLD']}╠──────────────────────────────────────────────────────────────────────────────╣{ModernVisualEngine.COLORS['RESET']}
+{ModernVisualEngine.COLORS['BOLD']}║{ModernVisualEngine.COLORS['RESET']} {ModernVisualEngine.COLORS['ELECTRIC_PURPLE']}🚀 Tools:{ModernVisualEngine.COLORS['RESET']} {', '.join(tools_used[:5])}{'...' if len(tools_used) > 5 else ''}
+{ModernVisualEngine.COLORS['MATRIX_GREEN']}{ModernVisualEngine.COLORS['BOLD']}╚══════════════════════════════════════════════════════════════════════════════╝{ModernVisualEngine.COLORS['RESET']}
+"""
+        return report
+
 # ============================================================================
 # INTELLIGENT DECISION ENGINE (v6.0 ENHANCEMENT)
 # ============================================================================
@@ -8633,13 +8697,14 @@ cve_intelligence = CVEIntelligenceManager()
 exploit_generator = AIExploitGenerator()
 vulnerability_correlator = VulnerabilityCorrelator()
 
-def execute_command(command: str, use_cache: bool = True) -> Dict[str, Any]:
+def execute_command(command: str, use_cache: bool = True, timeout: int = COMMAND_TIMEOUT) -> Dict[str, Any]:
     """
     Execute a shell command with enhanced features
 
     Args:
         command: The command to execute
         use_cache: Whether to use caching for this command
+        timeout: Seconds to allow the command to run before it's killed
 
     Returns:
         A dictionary containing the stdout, stderr, return code, and metadata
@@ -8652,7 +8717,7 @@ def execute_command(command: str, use_cache: bool = True) -> Dict[str, Any]:
             return cached_result
 
     # Execute command
-    executor = EnhancedCommandExecutor(command)
+    executor = EnhancedCommandExecutor(command, timeout=timeout)
     result = executor.execute()
 
     # Cache successful results
@@ -9288,27 +9353,29 @@ def get_telemetry():
 # PROCESS MANAGEMENT API ENDPOINTS (v5.0 ENHANCEMENT)
 # ============================================================================
 
+def _serializable_process_info(info):
+    """Build a JSON-safe copy of a process registry entry (drops the raw Popen handle)."""
+    runtime = time.time() - info["start_time"]
+    safe = {k: v for k, v in info.items() if k != "process"}
+    safe["runtime_formatted"] = f"{runtime:.1f}s"
+    if info.get("progress", 0) > 0:
+        eta = (runtime / info["progress"]) * (1.0 - info["progress"])
+        safe["eta_formatted"] = f"{eta:.1f}s"
+    else:
+        safe["eta_formatted"] = "Unknown"
+    return safe
+
 @app.route("/api/processes/list", methods=["GET"])
 def list_processes():
     """List all active processes"""
     try:
         processes = ProcessManager.list_active_processes()
-
-        # Add calculated fields for each process
-        for pid, info in processes.items():
-            runtime = time.time() - info["start_time"]
-            info["runtime_formatted"] = f"{runtime:.1f}s"
-
-            if info["progress"] > 0:
-                eta = (runtime / info["progress"]) * (1.0 - info["progress"])
-                info["eta_formatted"] = f"{eta:.1f}s"
-            else:
-                info["eta_formatted"] = "Unknown"
+        safe_processes = {pid: _serializable_process_info(info) for pid, info in processes.items()}
 
         return jsonify({
             "success": True,
-            "active_processes": processes,
-            "total_count": len(processes)
+            "active_processes": safe_processes,
+            "total_count": len(safe_processes)
         })
     except Exception as e:
         logger.error(f"💥 Error listing processes: {str(e)}")
@@ -9321,19 +9388,9 @@ def get_process_status(pid):
         process_info = ProcessManager.get_process_status(pid)
 
         if process_info:
-            # Add calculated fields
-            runtime = time.time() - process_info["start_time"]
-            process_info["runtime_formatted"] = f"{runtime:.1f}s"
-
-            if process_info["progress"] > 0:
-                eta = (runtime / process_info["progress"]) * (1.0 - process_info["progress"])
-                process_info["eta_formatted"] = f"{eta:.1f}s"
-            else:
-                process_info["eta_formatted"] = "Unknown"
-
             return jsonify({
                 "success": True,
-                "process": process_info
+                "process": _serializable_process_info(process_info)
             })
         else:
             return jsonify({
