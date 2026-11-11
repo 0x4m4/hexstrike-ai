@@ -2501,6 +2501,34 @@ def setup_mcp_server(hexstrike_client: HexStrikeClient) -> FastMCP:
         return result
 
     @mcp.tool()
+    def crtsh_subdomain_enum(domain: str, exclude_expired: bool = False) -> Dict[str, Any]:
+        """
+        Enumerate subdomains from Certificate Transparency logs via crt.sh with enhanced logging.
+
+        Queries the free crt.sh JSON API (no API key required) for certificates
+        issued for the target domain and returns the deduplicated in-scope
+        subdomains found in the public Certificate Transparency logs.
+
+        Args:
+            domain: The target domain (e.g., example.com)
+            exclude_expired: Exclude expired certificates from the results
+
+        Returns:
+            Deduplicated subdomain list with certificate counts
+        """
+        data = {
+            "domain": domain,
+            "exclude_expired": exclude_expired
+        }
+        logger.info(f"📜 Starting crt.sh subdomain enumeration: {domain}")
+        result = hexstrike_client.safe_post("api/tools/crtsh", data)
+        if result.get("success"):
+            logger.info(f"✅ crt.sh enumeration completed for {domain} | Subdomains: {result.get('count', 0)}")
+        else:
+            logger.error(f"❌ crt.sh enumeration failed for {domain}")
+        return result
+
+    @mcp.tool()
     def arjun_parameter_discovery(url: str, method: str = "GET", wordlist: str = "",
                                  delay: int = 0, threads: int = 25, stable: bool = False,
                                  additional_args: str = "") -> Dict[str, Any]:

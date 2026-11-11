@@ -451,6 +451,7 @@ Configure VS Code settings in `.vscode/settings.json`:
 
 - **Amass** - Advanced subdomain enumeration and OSINT gathering
 - **Subfinder** - Fast passive subdomain discovery with API integration
+- **crt.sh** - Certificate Transparency subdomain enumeration from public CT logs (no API key required)
 - **Hakrawler** - Fast web endpoint discovery and crawling
 - **HTTPx** - Fast and multi-purpose HTTP toolkit with technology detection
 - **ParamSpider** - Mining parameters from web archives

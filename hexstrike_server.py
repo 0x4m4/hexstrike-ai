@@ -12944,6 +12944,109 @@ def waybackurls():
         logger.error(f"💥 Error in waybackurls endpoint: {str(e)}")
         return jsonify({"error": f"Server error: {str(e)}"}), 500
 
+def parse_crtsh_certificates(entries, domain):
+    """Parse crt.sh certificate transparency results into a deduplicated,
+    in-scope subdomain list.
+
+    crt.sh returns one JSON object per certificate, each with a
+    ``name_value`` field that may hold several hostnames separated by
+    newlines (wildcard entries included). This helper normalises those
+    names, strips wildcard prefixes, drops out-of-scope hosts (certificates
+    on shared hosting list unrelated domains), and returns the sorted
+    unique subdomains of ``domain``.
+
+    Args:
+        entries: List of certificate dicts from the crt.sh JSON API.
+        domain: The target domain; only it and its subdomains are kept.
+
+    Returns:
+        Sorted list of unique in-scope hostnames (lowercase).
+    """
+    domain = (domain or "").strip().lower().strip(".")
+    if not domain or not isinstance(entries, list):
+        return []
+
+    subdomains = set()
+    for entry in entries:
+        if not isinstance(entry, dict):
+            continue
+        for raw_name in str(entry.get("name_value", "")).splitlines():
+            name = raw_name.strip().lower()
+            if name.startswith("*."):
+                name = name[2:]
+            if not name:
+                continue
+            if name == domain or name.endswith("." + domain):
+                subdomains.add(name)
+
+    return sorted(subdomains)
+
+
+@app.route("/api/tools/crtsh", methods=["POST"])
+def crtsh():
+    """Enumerate subdomains from Certificate Transparency logs via crt.sh.
+
+    Queries the free, keyless crt.sh JSON API for certificates issued for
+    the target domain and returns the deduplicated in-scope subdomains.
+    No API key and no external binary are required.
+    """
+    try:
+        params = request.json
+        domain = params.get("domain", "").strip().lower().strip(".") if params else ""
+        exclude_expired = params.get("exclude_expired", False)
+
+        if not domain:
+            logger.warning("🌐 crt.sh called without domain parameter")
+            return jsonify({
+                "error": "Domain parameter is required"
+            }), 400
+
+        crtsh_url = f"https://crt.sh/?q=%25.{domain}&output=json"
+        if exclude_expired:
+            crtsh_url += "&exclude=expired"
+
+        logger.info(f"🔍 Starting crt.sh subdomain enumeration: {domain}")
+        try:
+            response = requests.get(crtsh_url, timeout=30)
+        except requests.RequestException as req_error:
+            logger.error(f"💥 crt.sh request failed for {domain}: {str(req_error)}")
+            return jsonify({
+                "success": False,
+                "error": f"crt.sh request failed: {str(req_error)}"
+            }), 502
+
+        if response.status_code != 200:
+            logger.error(f"💥 crt.sh returned HTTP {response.status_code} for {domain}")
+            return jsonify({
+                "success": False,
+                "error": f"crt.sh returned HTTP {response.status_code}"
+            }), 502
+
+        try:
+            entries = response.json()
+        except ValueError:
+            logger.error(f"💥 crt.sh returned invalid JSON for {domain}")
+            return jsonify({
+                "success": False,
+                "error": "crt.sh returned an invalid JSON response"
+            }), 502
+
+        subdomains = parse_crtsh_certificates(entries, domain)
+        logger.info(f"📊 crt.sh completed for {domain} | Subdomains found: {len(subdomains)}")
+        return jsonify({
+            "success": True,
+            "tool": "crtsh",
+            "domain": domain,
+            "subdomains": subdomains,
+            "count": len(subdomains),
+            "certificates_seen": len(entries) if isinstance(entries, list) else 0
+        })
+    except Exception as e:
+        logger.error(f"💥 Error in crtsh endpoint: {str(e)}")
+        return jsonify({
+            "error": f"Server error: {str(e)}"
+        }), 500
+
 @app.route("/api/tools/arjun", methods=["POST"])
 def arjun():
     """Execute Arjun for HTTP parameter discovery with enhanced logging"""
