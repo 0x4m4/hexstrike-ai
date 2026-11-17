@@ -36,9 +36,15 @@ from datetime import datetime, timedelta
 from typing import Dict, Any, Optional
 from collections import OrderedDict
 import shutil
+import shlex
 import venv
 import zipfile
 from pathlib import Path
+from hexstrike_httpx import (  # ProjectDiscovery httpx helpers (issue #77)
+    INSTALL_HINT,
+    build_httpx_command,
+    find_projectdiscovery_httpx,
+)
 from flask import Flask, request, jsonify
 import psutil
 import signal
@@ -9097,8 +9103,14 @@ def health_check():
 
     for tool in all_tools:
         try:
-            result = execute_command(f"which {tool}", use_cache=True)
-            tools_status[tool] = result["success"]
+            if tool == "httpx":
+                # `which httpx` alone is a false positive: a pip-installed
+                # Python httpx CLI also answers to that name but cannot run
+                # probes (issue #77). Validate the binary identity instead.
+                tools_status[tool] = find_projectdiscovery_httpx() is not None
+            else:
+                result = execute_command(f"which {tool}", use_cache=True)
+                tools_status[tool] = result["success"]
         except:
             tools_status[tool] = False
 
@@ -9947,8 +9959,14 @@ def execute_httpx_scan(target, params):
     """Execute httpx scan with optimized parameters"""
     try:
         additional_args = params.get('additional_args', '-tech-detect -status-code')
-        # Use shell command with pipe for httpx
-        cmd = f"echo {target} | httpx {additional_args}"
+        # Resolve the ProjectDiscovery httpx binary: a pip-installed
+        # Python `httpx` CLI may shadow it on PATH (issue #77).
+        httpx_binary = find_projectdiscovery_httpx()
+        if httpx_binary is None:
+            return {"success": False, "error": INSTALL_HINT}
+        # Pipe the target via stdin (valid for ProjectDiscovery httpx)
+        # using the resolved binary.
+        cmd = f"echo {shlex.quote(target)} | {shlex.quote(httpx_binary)} {additional_args}"
 
         return execute_command(cmd)
     except Exception as e:
@@ -13151,28 +13169,19 @@ def httpx():
             logger.warning("🌐 httpx called without target parameter")
             return jsonify({"error": "Target parameter is required"}), 400
 
-        command = f"httpx -l {target} -t {threads}"
+        # Resolve the ProjectDiscovery httpx binary first: a pip-installed
+        # Python `httpx` CLI may shadow it on PATH but cannot run this
+        # probe (issue #77). Fail clearly instead of running the wrong
+        # binary and returning a confusing error.
+        httpx_binary = find_projectdiscovery_httpx()
+        if httpx_binary is None:
+            logger.error("🌐 ProjectDiscovery httpx binary not found")
+            return jsonify({"success": False, "error": INSTALL_HINT}), 503
 
-        if probe:
-            command += " -probe"
-
-        if tech_detect:
-            command += " -tech-detect"
-
-        if status_code:
-            command += " -sc"
-
-        if content_length:
-            command += " -cl"
-
-        if title:
-            command += " -title"
-
-        if web_server:
-            command += " -server"
-
-        if additional_args:
-            command += f" {additional_args}"
+        command = build_httpx_command(
+            httpx_binary, target, threads, probe, tech_detect, status_code,
+            content_length, title, web_server, additional_args,
+        )
 
         logger.info(f"🌍 Starting httpx probe: {target}")
         result = execute_command(command)
